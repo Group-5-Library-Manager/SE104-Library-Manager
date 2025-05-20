@@ -18,7 +18,7 @@
 | :-- | :------- | :------------------- | :--------------------------------------------------------- | :--------------------- | :--------------------|
 | 1   | 23521811 | Nguyễn Thanh Vũ      | [github.com/](https://github.com/XXXXXX)                   | 23521811@gm.uit.edu.vn |                      |
 | 2   | 23520917 | Trần Quang Mạnh      | [github.com/manhtq0508](https://github.com/manhtq0508)     | 23520917@gm.uit.edu.vn |                      |
-| 3   | 23521020 | Dương Khánh Ngọc     | [github.com/](https://github.com/Ngoc95)                   | 23521020@gm.uit.edu.vn |                      |
-| 4   | 23520867 | Tôn Vĩnh Lộc         | [github.com/](https://github.com/troller290)               | 23520867@gm.uit.edu.vn |                      |
+| 3   | 23521020 | Dương Khánh Ngọc     | [github.com/Ngoc95](https://github.com/Ngoc95)                   | 23521020@gm.uit.edu.vn |                      |
+| 4   | 23520867 | Tôn Vĩnh Lộc         | [github.com/troller290](https://github.com/troller290)               | 23520867@gm.uit.edu.vn |                      |
 
 # SETUP TRƯỚC KHI KHỞI ĐỘNG PROJECT

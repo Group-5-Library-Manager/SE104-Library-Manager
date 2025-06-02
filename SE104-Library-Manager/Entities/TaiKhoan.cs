@@ -6,7 +6,7 @@ namespace SE104_Library_Manager.Entities;
 public class TaiKhoan
 {
     [Key]
-    public int MaNhanVien { get; set; }
+    public required int MaNhanVien { get; set; }
     public required string TenDangNhap { get; set; }
     public required string MatKhau { get; set; }
     public required int MaVaiTro { get; set; }

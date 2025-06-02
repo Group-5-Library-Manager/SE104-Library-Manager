@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Windows;
 using SE104_Library_Manager.Extensions;
 using SE104_Library_Manager.Services;
+using SE104_Library_Manager.Views;
 
 namespace SE104_Library_Manager;
 
@@ -36,7 +37,7 @@ public partial class App : Application
 
         // !IMPORTANT: Do not use StartupUri for anything needing dependency injection (DI)
         // Due to the way WPF handles StartupUri, it does not support DI properly.
-        MainWindow mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
-        mainWindow.Show();
+        LoginWindow loginWindow = ServiceProvider.GetRequiredService<LoginWindow>();
+        loginWindow.ShowDialog();
     }
 }

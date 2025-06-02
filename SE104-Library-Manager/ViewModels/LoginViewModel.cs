@@ -33,7 +33,7 @@ public partial class LoginViewModel(IUserSessionManager userSessionManager, IAut
         try
         {
             UserProfile userProfile = await authService.AuthenticateAsync(Username, password);
-            userSessionManager.SetCurrentUserProfile(userProfile)
+            userSessionManager.SetCurrentUserProfile(userProfile);
 
             ErrorMessage = "Đăng nhập thành công!";
             await ShowErrorMessageAsync(3);

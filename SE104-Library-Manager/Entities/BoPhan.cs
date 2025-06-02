@@ -7,7 +7,7 @@ public class BoPhan
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public required int MaBoPhan { get; set; }
+    public int MaBoPhan { get; set; }
     public required string TenBoPhan { get; set; }
 
     public ICollection<NhanVien> DsNhanVien { get; set; } = new List<NhanVien>();

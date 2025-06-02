@@ -7,7 +7,7 @@ public class ChucVu
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public required int MaChucVu { get; set; }
+    public int MaChucVu { get; set; }
     public required string TenChucVu { get; set; }
 
     public ICollection<NhanVien> DsNhanVien { get; set; } = new List<NhanVien>();

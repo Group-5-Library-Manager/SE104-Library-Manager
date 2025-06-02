@@ -7,7 +7,7 @@ public class NhaXuatBan
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public required int MaNhaXuatBan { get; set; }
+    public int MaNhaXuatBan { get; set; }
     public required string TenNhaXuatBan { get; set; }
 
     public ICollection<Sach> DsSach { get; set; } = new List<Sach>();

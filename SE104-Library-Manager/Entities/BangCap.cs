@@ -7,7 +7,7 @@ public class BangCap
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public required int MaBangCap { get; set; }
+    public int MaBangCap { get; set; }
     public required string TenBangCap { get; set; }
 
     public ICollection<NhanVien> DsNhanVien { get; set; } = new List<NhanVien>();

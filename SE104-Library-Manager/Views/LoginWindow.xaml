@@ -1,0 +1,207 @@
+﻿<Window x:Class="SE104_Library_Manager.Views.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        xmlns:viewmodel="clr-namespace:SE104_Library_Manager.ViewModels"
+        Title="Đăng nhập" 
+        Height="519" Width="775"
+        WindowStartupLocation="CenterScreen">
+    
+    <Window.Background>
+        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#5A79C3" Offset="0.0"/>
+            <GradientStop Color="#4A5A9C" Offset="0.5"/>
+            <GradientStop Color="#2E3E6F" Offset="1.0"/>
+        </LinearGradientBrush>
+    </Window.Background>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="1"
+                Width="350"
+                Padding="20"
+                Background="Transparent">
+            <StackPanel Orientation="Vertical"
+                        HorizontalAlignment="Stretch"  >
+
+                <TextBlock Text="Đăng nhập"
+                           FontSize="32"
+                           FontWeight="Bold"
+                           Foreground="White"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,10"/>
+
+                <Border CornerRadius="8"
+                        Background="#FFF8D7DA"
+                        Padding="2"
+                        Margin="0,0,0,5"
+                        Visibility="{Binding ShowErrorMessage, UpdateSourceTrigger=PropertyChanged}">
+                    <TextBox Background="Transparent"
+                             BorderThickness="0"
+                             FontSize="12"
+                             Padding="8,4"
+                             Foreground="#B00020"
+                             MinHeight="35"
+                             VerticalContentAlignment="Center"
+                             TextWrapping="Wrap"
+                             Text="{Binding ErrorMessage, UpdateSourceTrigger=PropertyChanged}"/>
+                </Border>
+                <TextBlock Text="Tên đăng nhập:"
+                           FontSize="14"
+                           FontWeight="Bold"
+                           Foreground="White"
+                           Margin="0,0,0,5"/>
+                <Border CornerRadius="8"
+                        Background="#F0F0F0"
+                        Padding="2"
+                        Margin="0,0,0,20">
+                    <TextBox Background="Transparent"
+                             BorderThickness="0"
+                             FontSize="14"
+                             Padding="8,4"
+                             Foreground="#333333"
+                             MinHeight="35"
+                             VerticalContentAlignment="Center"
+                             Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"/>
+                </Border>
+
+                <TextBlock Text="Mật khẩu:"
+                           FontSize="14"
+                           FontWeight="Bold"
+                           Foreground="White"
+                           Margin="0,0,0,5"/>
+                <Border CornerRadius="8"
+                        Background="#F0F0F0"
+                        Padding="2"
+                        Margin="0,0,0,5">
+                    <PasswordBox x:Name="passwordBox"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 FontSize="14"
+                                 Padding="8,4"
+                                 Foreground="#333333"
+                                 MinHeight="35"
+                                 VerticalContentAlignment="Center"/>
+                </Border>
+
+                <TextBlock FontSize="12"
+                           FontWeight="Bold"
+                           FontStyle="Italic"
+                           Foreground="White"
+                           HorizontalAlignment="Right"
+                           Margin="0,0,0,20">
+                    <Hyperlink NavigateUri="#"
+                                TextDecorations="Underline"
+                                Cursor="Hand">
+                        <Hyperlink.Style>
+                            <Style TargetType="Hyperlink">
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="TextDecorations" Value="Underline"/>
+                                <Setter Property="Cursor" Value="Hand"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Foreground" Value="#FFFFA0"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Hyperlink.Style>
+                        Quên mật khẩu?
+                    </Hyperlink>
+                </TextBlock>
+
+                <Button Content="Đăng nhập"
+                        Width="120" Height="40"
+                        FontSize="16"
+                        FontWeight="SemiBold"
+                        Foreground="#2E3E6F"
+                        Background="White"
+                        Cursor="Hand"
+                        HorizontalAlignment="Center"
+                        Padding="10,4"
+                        Margin="0,10,0,0"
+                        BorderThickness="0"
+                        Command="{Binding LoginCommand}"
+                        CommandParameter="{Binding ElementName=passwordBox}">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Grid>
+                                <Border x:Name="PART_ShadowHost"
+                                        Background="Transparent"
+                                        CornerRadius="8"
+                                        SnapsToDevicePixels="True">
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="Black"
+                                                          BlurRadius="8"
+                                                          ShadowDepth="2"
+                                                          Opacity="0.3"/>
+                                    </Border.Effect>
+                                </Border>
+
+                                <Border x:Name="PART_BackgroundHost"
+                                        Background="{TemplateBinding Background}"
+                                        CornerRadius="8"
+                                        SnapsToDevicePixels="True">
+                                    <ContentPresenter HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"
+                                                      RecognizesAccessKey="True"/>
+                                </Border>
+                            </Grid>
+
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="PART_BackgroundHost"
+                                            Property="Background"
+                                            Value="#F5F5F5" />
+                                    <Setter TargetName="PART_ShadowHost"
+                                            Property="Effect">
+                                        <Setter.Value>
+                                            <DropShadowEffect Color="Black"
+                                                              BlurRadius="12"
+                                                              ShadowDepth="4"
+                                                              Opacity="0.3"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="PART_BackgroundHost"
+                                            Property="Background"
+                                            Value="#E0E0E0" />
+                                    <Setter TargetName="PART_ShadowHost"
+                                            Property="Effect">
+                                        <Setter.Value>
+                                            <DropShadowEffect Color="Black"
+                                                              BlurRadius="6"
+                                                              ShadowDepth="1"
+                                                              Opacity="0.2"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+
+                                <Trigger Property="IsMouseOver" Value="False">
+                                    <Setter TargetName="PART_ShadowHost"
+                                            Property="Effect">
+                                        <Setter.Value>
+                                            <DropShadowEffect Color="Black"
+                                                              BlurRadius="8"
+                                                              ShadowDepth="2"
+                                                              Opacity="0.3"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </StackPanel>
+        </Border>
+    </Grid>
+
+</Window>

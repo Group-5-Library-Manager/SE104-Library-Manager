@@ -7,7 +7,7 @@ public class TheLoai
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public required int MaTheLoai { get; set; }
+    public int MaTheLoai { get; set; }
     public required string TenTheLoai { get; set; }
 
     public ICollection<Sach> DsSach { get; set; } = new List<Sach>();

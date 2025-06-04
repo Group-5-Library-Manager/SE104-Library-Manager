@@ -24,6 +24,9 @@ public static class AppServiceExtensions
         services.AddTransient<LoginWindow>();
         services.AddTransient<LoginViewModel>();
 
+        services.AddTransient<MainWindow>();
+        services.AddTransient<MainViewModel>();
+
         return services;
     }
 }

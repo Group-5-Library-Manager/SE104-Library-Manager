@@ -1,7 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 using SE104_Library_Manager.Interfaces;
 using SE104_Library_Manager.Models;
+using SE104_Library_Manager.Views;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -37,9 +39,19 @@ public partial class LoginViewModel(IUserSessionManager userSessionManager, IAut
 
             ErrorMessage = "Đăng nhập thành công!";
             await ShowErrorMessageAsync(3);
-            // Navigate to the main application window or perform any other action
-            // For example, you might want to close the login window here
-            Application.Current.MainWindow?.Close();
+            if (userProfile != null)
+            {
+                var mainWindow = App.ServiceProvider?.GetRequiredService<MainWindow>();
+                if (mainWindow != null)
+                {
+                    Window currentWindow = Application.Current.MainWindow;
+
+                    Application.Current.MainWindow = mainWindow;
+                    mainWindow.Show();
+
+                    currentWindow?.Close();
+                }
+            }   
         }
         catch (Exception ex)
         {

@@ -8,6 +8,10 @@
                 <ResourceDictionary Source="Styles/MenuButtonStyle.xaml"/>
                 <ResourceDictionary Source="Styles/MenuTextStyle.xaml"/>
                 <ResourceDictionary Source="Styles/LogoutButtonStyle.xaml"/>
+                <ResourceDictionary Source="Styles/TabStyle.xaml" />
+                <ResourceDictionary Source="Styles/PrimaryButtonStyle.xaml" />
+                <ResourceDictionary Source="Styles/SecondaryButtonStyle.xaml" />
+                <ResourceDictionary Source="Styles/AddButtonDarkIconStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

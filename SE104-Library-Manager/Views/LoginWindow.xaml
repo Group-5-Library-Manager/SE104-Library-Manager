@@ -7,7 +7,8 @@
         xmlns:viewmodel="clr-namespace:SE104_Library_Manager.ViewModels"
         Title="Đăng nhập" 
         Height="519" Width="775"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        FocusManager.FocusedElement="{Binding ElementName=usernameTextBox}">
     
     <Window.Background>
         <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
@@ -55,14 +56,15 @@
                 </Border>
                 <TextBlock Text="Tên đăng nhập:"
                            FontSize="14"
-                           FontWeight="Bold"
+                           FontWeight="SemiBold"
                            Foreground="White"
                            Margin="0,0,0,5"/>
                 <Border CornerRadius="8"
                         Background="#F0F0F0"
                         Padding="2"
                         Margin="0,0,0,20">
-                    <TextBox Background="Transparent"
+                    <TextBox x:Name="usernameTextBox"
+                             Background="Transparent"
                              BorderThickness="0"
                              FontSize="14"
                              Padding="8,4"
@@ -74,13 +76,13 @@
 
                 <TextBlock Text="Mật khẩu:"
                            FontSize="14"
-                           FontWeight="Bold"
+                           FontWeight="SemiBold"
                            Foreground="White"
                            Margin="0,0,0,5"/>
                 <Border CornerRadius="8"
                         Background="#F0F0F0"
                         Padding="2"
-                        Margin="0,0,0,5">
+                        Margin="0,0,0,20">
                     <PasswordBox x:Name="passwordBox"
                                  Background="Transparent"
                                  BorderThickness="0"
@@ -90,31 +92,6 @@
                                  MinHeight="35"
                                  VerticalContentAlignment="Center"/>
                 </Border>
-
-                <TextBlock FontSize="12"
-                           FontWeight="Bold"
-                           FontStyle="Italic"
-                           Foreground="White"
-                           HorizontalAlignment="Right"
-                           Margin="0,0,0,20">
-                    <Hyperlink NavigateUri="#"
-                                TextDecorations="Underline"
-                                Cursor="Hand">
-                        <Hyperlink.Style>
-                            <Style TargetType="Hyperlink">
-                                <Setter Property="Foreground" Value="White"/>
-                                <Setter Property="TextDecorations" Value="Underline"/>
-                                <Setter Property="Cursor" Value="Hand"/>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Foreground" Value="#FFFFA0"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Hyperlink.Style>
-                        Quên mật khẩu?
-                    </Hyperlink>
-                </TextBlock>
 
                 <Button Content="Đăng nhập"
                         Width="120" Height="40"
@@ -127,6 +104,7 @@
                         Padding="10,4"
                         Margin="0,10,0,0"
                         BorderThickness="0"
+                        IsDefault="True"
                         Command="{Binding LoginCommand}"
                         CommandParameter="{Binding ElementName=passwordBox}">
                     <Button.Template>

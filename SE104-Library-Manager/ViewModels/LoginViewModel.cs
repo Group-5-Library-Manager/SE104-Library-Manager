@@ -21,7 +21,7 @@ public partial class LoginViewModel(IUserSessionManager userSessionManager, IAut
     private Visibility showErrorMessage = Visibility.Hidden;
 
     [RelayCommand]
-    public async Task LoginAsync(PasswordBox passwordBox)
+    public async Task Login(PasswordBox passwordBox)
     {
         string password = passwordBox.Password;
 
@@ -37,8 +37,6 @@ public partial class LoginViewModel(IUserSessionManager userSessionManager, IAut
             UserProfile userProfile = await authService.AuthenticateAsync(Username, password);
             userSessionManager.SetCurrentUserProfile(userProfile);
 
-            ErrorMessage = "Đăng nhập thành công!";
-            await ShowErrorMessageAsync(3);
             if (userProfile != null)
             {
                 var mainWindow = App.ServiceProvider?.GetRequiredService<MainWindow>();

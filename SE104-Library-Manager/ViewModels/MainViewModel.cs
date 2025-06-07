@@ -1,11 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SE104_Library_Manager.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SE104_Library_Manager.Views;
 using System.Windows;
 
 namespace SE104_Library_Manager.ViewModels
@@ -38,10 +34,10 @@ namespace SE104_Library_Manager.ViewModels
                     // CurrentView = new BooksViewModel();
                     break;
                 case "Reader":
-                    // CurrentView = new ReadersViewModel();
+                    CurrentView = App.ServiceProvider?.GetService(typeof(ReaderView)) as ReaderView;
                     break;
                 case "Staff":
-                    // CurrentView = new StaffViewModel();
+                    CurrentView = App.ServiceProvider?.GetService(typeof(StaffView)) as StaffView;
                     break;
                 case "Borrow":
                     // CurrentView = new BorrowViewModel();

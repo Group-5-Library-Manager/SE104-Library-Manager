@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SE104_Library_Manager.Data;
 using SE104_Library_Manager.Entities;
+using System.Threading.Tasks;
 
 namespace SE104_Library_Manager.Services;
 
@@ -44,6 +45,7 @@ public class DatabaseService
         await EnsureCreateBangCap(context);
         await EnsureCreateBoPhan(context);
         await EnsureCreateChucVu(context);
+        await EnsureCreateLoaiDocGia(context);
         await context.SaveChangesAsync(); // Ensure the above entities are saved before creating employees
 
 
@@ -51,6 +53,9 @@ public class DatabaseService
         await context.SaveChangesAsync();
 
         await EnsureCreateAdminAccount(context);
+        await context.SaveChangesAsync();
+
+        await EnsureCreateReader(context);
         await context.SaveChangesAsync();
     }
 
@@ -136,6 +141,41 @@ public class DatabaseService
                 MaVaiTro = 1 // Assuming the first role is ADMIN
             };
             context.DsTaiKhoan.Add(adminAccount);
+        }
+    }
+
+    private async Task EnsureCreateLoaiDocGia(DatabaseContext context)
+    {
+        if (!await context.DsLoaiDocGia.AnyAsync())
+        {
+            await context.DsLoaiDocGia.AddAsync(new LoaiDocGia { TenLoaiDocGia = "X" });
+            await context.DsLoaiDocGia.AddAsync(new LoaiDocGia { TenLoaiDocGia = "Y" });
+        }
+    }
+
+    private async Task EnsureCreateReader(DatabaseContext context)
+    {
+        if (!context.DsDocGia.Any())
+        {
+            await context.DsDocGia.AddAsync(new DocGia
+            {
+                TenDocGia = "Nguyen Van A",
+                NgaySinh = new DateOnly(1995, 5, 20),
+                DiaChi = "123 Đường ABC, Quận 1, TP.HCM",
+                Email = "demo1@gmail.com",
+                NgayLapThe = DateOnly.FromDateTime(DateTime.Now),
+                MaLoaiDocGia = 1
+            });
+
+            await context.DsDocGia.AddAsync(new DocGia
+            {
+                TenDocGia = "Nguyen Van A",
+                NgaySinh = new DateOnly(1995, 5, 20),
+                DiaChi = "123 Đường ABC, Quận 1, TP.HCM",
+                Email = "demo2@gmail.com",
+                NgayLapThe = new DateOnly(1995, 5, 20),
+                MaLoaiDocGia = 1
+            });
         }
     }
 }

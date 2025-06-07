@@ -1,0 +1,592 @@
+﻿<UserControl x:Class="SE104_Library_Manager.Views.ReaderView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:converters="clr-namespace:SE104_Library_Manager.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <UserControl.Resources>
+        <converters:PrefixConverter x:Key="PrefixConverter" />
+        <converters:ReaderStatusMultiConverter x:Key="ReaderStatusMultiConverter" />
+        <converters:DateOnlyConverter x:Key="DateOnlyConverter" />
+        <converters:DateOnlyFormattedConverter x:Key="DateOnlyFormattedConverter" />
+    </UserControl.Resources>
+    
+    <Grid Margin="20">
+        <TabControl SelectedItem="{Binding SelectedTab, UpdateSourceTrigger=PropertyChanged}">
+            <TabItem IsSelected="True" Header="Độc giả">
+                <Grid Margin="0. 20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Border BorderThickness="1"
+                            BorderBrush="Black"
+                            Padding="20"
+                            Grid.Row="0">
+                        <StackPanel Orientation="Vertical">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Mã độc giả: "
+                                           FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding SelectedReaderForEdit.MaDocGia, Converter={StaticResource PrefixConverter}, ConverterParameter=DG}"
+                                           FontWeight="SemiBold" />
+                                <TextBlock Text="Ngày lập: "
+                                           FontWeight="SemiBold"
+                                           Margin="40, 0, 0, 0"/>
+                                <TextBlock Text="{Binding SelectedReaderForEdit.NgayLapThe, Converter={StaticResource DateOnlyFormattedConverter}}"
+                                           FontWeight="SemiBold" />
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0">
+                                <TextBlock Text="Tên độc giả: "
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"/>
+                                <Border BorderThickness="0"
+                                        CornerRadius="5"
+                                        Background="#EEEEEE"
+                                        Width="250">
+                                    <TextBox BorderThickness="0"
+                                             Background="Transparent"
+                                             Padding="8, 4"
+                                             Text="{Binding SelectedReaderForEdit.TenDocGia}"
+                                             VerticalContentAlignment="Center" />
+                                </Border>
+
+                                <TextBlock Text="Ngày sinh: "
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"
+                                           Margin="20, 0, 0, 0"/>
+                                <DatePicker Width="200"
+                                            Language="vi-VN"
+                                            SelectedDate="{Binding SelectedReaderForEdit.NgaySinh, Converter={StaticResource DateOnlyConverter}}"/>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0">
+                                <TextBlock Text="Email: "
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center" />
+                                <Border BorderThickness="0"
+                                        CornerRadius="5"
+                                        Background="#EEEEEE"
+                                        Width="295">
+                                    <TextBox Background="Transparent"
+                                             BorderThickness="0" 
+                                             Padding="8, 4"
+                                             Text="{Binding SelectedReaderForEdit.Email}"
+                                             VerticalContentAlignment="Center"/>
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0">
+                                <TextBlock Text="Địa chỉ: "
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center" />
+                                <Border BorderThickness="0"
+                                        CornerRadius="5"
+                                        Background="#EEEEEE"
+                                        Width="400">
+                                    <TextBox Background="Transparent"
+                                             BorderThickness="0" 
+                                             Padding="8, 4"
+                                             Text="{Binding SelectedReaderForEdit.DiaChi}"
+                                             VerticalContentAlignment="Center"/>
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0">
+                                <TextBlock Text="Loại độc giả: "
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center" />
+                                <Border BorderThickness="0"
+                                        CornerRadius="5"
+                                        Background="#EEEEEE"
+                                        Padding="2"
+                                        Width="200">
+                                    <ComboBox BorderThickness="0"
+                                              Padding="8,4"
+                                              VerticalContentAlignment="Center"
+                                              ItemsSource="{Binding DsLoaiDocGia}"
+                                              SelectedValuePath="MaLoaiDocGia"
+                                              DisplayMemberPath="TenLoaiDocGia"
+                                              SelectedValue="{Binding SelectedReaderForEdit.MaLoaiDocGia}"/>
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0">
+                                <TextBlock Text="Trạng thái: "
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center" />
+                                <TextBlock x:Name="ReaderStatusTextBlock"
+                                           FontWeight="SemiBold">
+                                    <TextBlock.Text>
+                                        <MultiBinding Converter="{StaticResource ReaderStatusMultiConverter}">
+                                            <Binding Path="SelectedReaderForEdit.NgayLapThe"/>
+                                            <Binding Path="QuyDinhHienTai.ThoiHanTheDocGia"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="Black" />
+
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource Self}}" Value="Còn hạn">
+                                                    <Setter Property="Foreground" Value="DarkGreen" />
+                                                </DataTrigger>
+
+                                                <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource Self}}" Value="Hết hạn">
+                                                    <Setter Property="Foreground" Value="Red" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0, 40, 0, 0">
+                                <Button Content="Cập nhật"
+                                        Width="150"
+                                        Command="{Binding EditReaderCommand}"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        Margin="0, 0, 20, 0"/>
+                                <Button Content="Xóa"
+                                        Width="150"
+                                        Command="{Binding DeleteReaderCommand}"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Margin="20, 0, 20, 0"/>
+                                <Button Content="Gia hạn thẻ"
+                                        Command="{Binding RenewReaderCommand}"
+                                        Width="150"
+                                        Margin="20, 0, 0, 0">
+
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text, ElementName=ReaderStatusTextBlock}" Value="">
+                                                    <Setter Property="Visibility" Value="Hidden" />
+                                                </DataTrigger>
+
+                                                <DataTrigger Binding="{Binding Text, ElementName=ReaderStatusTextBlock}" Value="Còn hạn">
+                                                    <Setter Property="Visibility" Value="Hidden" />
+                                                </DataTrigger>
+
+                                                <DataTrigger Binding="{Binding Text, ElementName=ReaderStatusTextBlock}" Value="Hết hạn">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                    
+                                </Button>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <Border BorderThickness="0"
+                            CornerRadius="10"
+                            Margin="0, 40, 0, 0"
+                            Padding="20"
+                            Grid.Row="1">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="#FF536FB5" Offset="0"/>
+                                <GradientStop Color="#FF24304F" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Orientation="Horizontal" Grid.Row="0">
+                                <Border BorderThickness="0"
+                                        CornerRadius="15"
+                                        Background="White"
+                                        Height="40"
+                                        Width="350"
+                                        Padding="10, 0, 10, 0">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Grid Grid.Column="0">
+                                            <Grid>
+                                                <TextBox x:Name="SearchDocGia"
+                                                         Text="{Binding SearchReaderQuery, UpdateSourceTrigger=PropertyChanged}"
+                                                         VerticalAlignment="Center" 
+                                                         HorizontalAlignment="Stretch" 
+                                                         Margin="5"
+                                                         Padding="5,0"
+                                                         BorderThickness="0"
+                                                         VerticalContentAlignment="Center" />
+                                                <TextBlock Text="Tìm kiếm"
+                                                           IsHitTestVisible="False"
+                                                           VerticalAlignment="Center"
+                                                           Margin="15,0,0,0"
+                                                           Foreground="DarkGray"
+                                                           HorizontalAlignment="Left">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Text, ElementName=SearchDocGia}" Value="">
+                                                                    <Setter Property="Visibility" Value="Visible" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Grid>
+                                        </Grid>
+                                        <Button Grid.Column="1"
+                                                Command="{Binding SearchReadersCommand}">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Grid>
+                                                        <Ellipse x:Name="ellipse"
+                                                                 Width="40"
+                                                                 Height="40"
+                                                                 Fill="Transparent"
+                                                                 Stroke="Transparent"
+                                                                 StrokeThickness="0" />
+
+                                                        <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                                    </Grid>
+
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="ellipse" Property="Fill" Value="#EEE" />
+                                                        </Trigger>
+
+                                                        <Trigger Property="IsPressed" Value="True">
+                                                            <Setter TargetName="ellipse" Property="Fill" Value="#CCC" />
+                                                        </Trigger>
+
+                                                        <Trigger Property="IsEnabled" Value="False">
+                                                            <Setter TargetName="ellipse" Property="Opacity" Value="0.5" />
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Button.Template>
+
+                                            <Image Source="/Assets/icon_search.png" Stretch="Uniform" Width="30" Height="30" />
+                                        </Button>
+
+                                    </Grid>
+                                </Border>
+
+                                <Button Content="Thêm độc giả"
+                                        Command="{Binding AddReaderCommand}"
+                                        Margin="40, 0, 0, 0"
+                                        Style="{StaticResource AddButtonDarkIconStyle}" />
+                            </StackPanel>
+
+
+                            <Grid Background="White"
+                                    Grid.Row="1"
+                                    Margin="0, 40, 0, 0">
+                                <DataGrid SelectionMode="Single"
+                                            AutoGenerateColumns="False"
+                                            Background="Transparent"
+                                            CanUserReorderColumns="False"
+                                            CanUserResizeRows="False"
+                                            CanUserAddRows="False"
+                                            CanUserDeleteRows="False"
+                                            BorderThickness="0"
+                                            IsReadOnly="True"
+                                            HeadersVisibility="Column"
+                                            HorizontalScrollBarVisibility="Hidden"
+                                            VerticalScrollBarVisibility="Hidden"
+                                            ItemsSource="{Binding DsDocGia}"
+                                            SelectedItem="{Binding SelectedReader}">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Mã độc giả" Width="*" Binding="{Binding MaDocGia, Converter={StaticResource PrefixConverter}, ConverterParameter=DG}">
+                                            <DataGridTextColumn.HeaderStyle>
+                                                <Style TargetType="DataGridColumnHeader">
+                                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                                </Style>
+                                            </DataGridTextColumn.HeaderStyle>
+                                        </DataGridTextColumn>
+                                        
+                                        <DataGridTextColumn Header="Tên độc giả" Width="*" Binding="{Binding TenDocGia}">
+                                            <DataGridTextColumn.HeaderStyle>
+                                                <Style TargetType="DataGridColumnHeader">
+                                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                                </Style>
+                                            </DataGridTextColumn.HeaderStyle>
+                                        </DataGridTextColumn>
+
+                                        <DataGridTextColumn Header="Địa chỉ" Width="*" Binding="{Binding DiaChi}">
+                                            <DataGridTextColumn.HeaderStyle>
+                                                <Style TargetType="DataGridColumnHeader">
+                                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                                </Style>
+                                            </DataGridTextColumn.HeaderStyle>
+                                        </DataGridTextColumn>
+
+                                        <DataGridTextColumn Header="Email" Width="*" Binding="{Binding Email}">
+                                            <DataGridTextColumn.HeaderStyle>
+                                                <Style TargetType="DataGridColumnHeader">
+                                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                                </Style>
+                                            </DataGridTextColumn.HeaderStyle>
+                                        </DataGridTextColumn>
+
+                                        <DataGridTextColumn Header="Loại độc giả" Width="*" Binding="{Binding LoaiDocGia.TenLoaiDocGia}">
+                                            <DataGridTextColumn.HeaderStyle>
+                                                <Style TargetType="DataGridColumnHeader">
+                                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                                </Style>
+                                            </DataGridTextColumn.HeaderStyle>
+                                        </DataGridTextColumn>
+
+                                        <DataGridTextColumn Header="Ngày sinh" Width="*" Binding="{Binding NgaySinh, Converter={StaticResource DateOnlyFormattedConverter}}">
+                                            <DataGridTextColumn.HeaderStyle>
+                                                <Style TargetType="DataGridColumnHeader">
+                                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                                </Style>
+                                            </DataGridTextColumn.HeaderStyle>
+                                        </DataGridTextColumn>
+
+                                        <DataGridTextColumn Header="Ngày lập" Width="*" Binding="{Binding NgayLapThe, Converter={StaticResource DateOnlyFormattedConverter}}">
+                                            <DataGridTextColumn.HeaderStyle>
+                                                <Style TargetType="DataGridColumnHeader">
+                                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                                </Style>
+                                            </DataGridTextColumn.HeaderStyle>
+                                        </DataGridTextColumn>
+
+                                        <DataGridTextColumn Header="Tổng nợ" Width="*" Binding="{Binding TongNo}">
+                                            <DataGridTextColumn.HeaderStyle>
+                                                <Style TargetType="DataGridColumnHeader">
+                                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                                </Style>
+                                            </DataGridTextColumn.HeaderStyle>
+                                        </DataGridTextColumn>
+
+                                        <DataGridTextColumn Header="Trạng thái" Width="*">
+                                            <DataGridTextColumn.HeaderStyle>
+                                                <Style TargetType="DataGridColumnHeader">
+                                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                                </Style>
+                                            </DataGridTextColumn.HeaderStyle>
+                                            <DataGridTextColumn.Binding>
+                                                <MultiBinding Converter="{StaticResource ReaderStatusMultiConverter}">
+                                                    <Binding Path="NgayLapThe" />
+                                                    <Binding Path="DataContext.QuyDinhHienTai.ThoiHanTheDocGia" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                                </MultiBinding>
+                                            </DataGridTextColumn.Binding>
+                                        </DataGridTextColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Loại độc giả">
+                <Grid Margin="0. 20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Border BorderThickness="1"
+                            BorderBrush="Black"
+                            Padding="20"
+                            Grid.Row="0">
+                        <StackPanel Orientation="Vertical">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Mã loại: "
+                                           FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding SelectedReaderTypeForEdit.MaLoaiDocGia, Converter={StaticResource PrefixConverter}, ConverterParameter=LDG}"
+                                           FontWeight="SemiBold" />
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0">
+                                <TextBlock Text="Tên loại: "
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"/>
+                                <Border BorderThickness="0"
+                                        CornerRadius="5"
+                                        Background="#EEEEEE"
+                                        Width="250">
+                                    <TextBox BorderThickness="0"
+                                             Background="Transparent"
+                                             Padding="8, 4"
+                                             Text="{Binding SelectedReaderTypeForEdit.TenLoaiDocGia}"
+                                             VerticalContentAlignment="Center" />
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0, 40, 0, 0">
+                                <Button Content="Cập nhật"
+                                        Width="150"
+                                        Command="{Binding EditReaderTypeCommand}"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        Margin="0, 0, 20, 0"/>
+                                <Button Content="Xóa"
+                                        Width="150"
+                                        Command="{Binding DeleteReaderTypeCommand}"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Margin="20, 0, 0, 0"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <Border BorderThickness="0"
+                            CornerRadius="10"
+                            Margin="0, 40, 0, 0"
+                            Padding="20"
+                            Grid.Row="1">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="#FF536FB5" Offset="0"/>
+                                <GradientStop Color="#FF24304F" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            
+                            <StackPanel Orientation="Horizontal" Grid.Row="0">
+                                <Border BorderThickness="0"
+                                        CornerRadius="15"
+                                        Background="White"
+                                        Height="40"
+                                        Width="350"
+                                        Padding="10, 0, 10, 0">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Grid Grid.Column="0">
+                                            <Grid>
+                                                <TextBox x:Name="SearchLoaiDocGia" 
+                                                         Text="{Binding SearchReaderTypeQuery, UpdateSourceTrigger=PropertyChanged}"
+                                                         VerticalAlignment="Center" 
+                                                         HorizontalAlignment="Stretch" 
+                                                         Margin="5"
+                                                         Padding="5,0"
+                                                         BorderThickness="0"
+                                                         VerticalContentAlignment="Center" />
+                                                <TextBlock Text="Tìm kiếm"
+                                                           IsHitTestVisible="False"
+                                                           VerticalAlignment="Center"
+                                                           Margin="15,0,0,0"
+                                                           Foreground="DarkGray"
+                                                           HorizontalAlignment="Left">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Text, ElementName=SearchLoaiDocGia}" Value="">
+                                                                    <Setter Property="Visibility" Value="Visible" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Grid>
+                                        </Grid>
+                                        <Button Grid.Column="1"
+                                                Command="{Binding SearchReaderTypesCommand}">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Grid>
+                                                        <Ellipse x:Name="ellipse"
+                                                                 Width="40"
+                                                                 Height="40"
+                                                                 Fill="Transparent"
+                                                                 Stroke="Transparent"
+                                                                 StrokeThickness="0" />
+
+                                                        <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                                    </Grid>
+
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="ellipse" Property="Fill" Value="#EEE" />
+                                                        </Trigger>
+
+                                                        <Trigger Property="IsPressed" Value="True">
+                                                            <Setter TargetName="ellipse" Property="Fill" Value="#CCC" />
+                                                        </Trigger>
+
+                                                        <Trigger Property="IsEnabled" Value="False">
+                                                            <Setter TargetName="ellipse" Property="Opacity" Value="0.5" />
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Button.Template>
+
+                                            <Image Source="/Assets/icon_search.png" Stretch="Uniform" Width="30" Height="30" />
+                                        </Button>
+
+                                    </Grid>
+                                </Border>
+
+                                <Button Content="Thêm loại độc giả"
+                                        Margin="40, 0, 0, 0"
+                                        Command="{Binding AddReaderTypeCommand}"
+                                        Style="{StaticResource AddButtonDarkIconStyle}" />
+                            </StackPanel>
+
+
+                            <Grid Background="White"
+                                    Grid.Row="1"
+                                    Margin="0, 40, 0, 0">
+                                <DataGrid SelectionMode="Single"
+                                            AutoGenerateColumns="False"
+                                            Background="Transparent"
+                                            CanUserReorderColumns="False"
+                                            CanUserResizeRows="False"
+                                            CanUserAddRows="False"
+                                            CanUserDeleteRows="False"
+                                            BorderThickness="0"
+                                            IsReadOnly="True"
+                                            HeadersVisibility="Column"
+                                            HorizontalScrollBarVisibility="Hidden"
+                                            VerticalScrollBarVisibility="Hidden"
+                                            ItemsSource="{Binding DsLoaiDocGia}"
+                                            SelectedItem="{Binding SelectedReaderType}">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Mã loại độc giả" Width="*" Binding="{Binding MaLoaiDocGia, Converter={StaticResource PrefixConverter}, ConverterParameter=LDG}">
+                                            <DataGridTextColumn.HeaderStyle>
+                                                <Style TargetType="DataGridColumnHeader">
+                                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                                </Style>
+                                            </DataGridTextColumn.HeaderStyle>
+                                        </DataGridTextColumn>
+                                        <DataGridTextColumn Header="Tên loại độc giả" Width="*" Binding="{Binding TenLoaiDocGia}">
+                                            <DataGridTextColumn.HeaderStyle>
+                                                <Style TargetType="DataGridColumnHeader">
+                                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                                </Style>
+                                            </DataGridTextColumn.HeaderStyle>
+                                        </DataGridTextColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+
+</UserControl>

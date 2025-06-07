@@ -19,6 +19,9 @@ public static class AppServiceExtensions
         services.AddSingleton<IUserSessionReader>(sp => sp.GetRequiredService<UserSessionManager>());
         services.AddSingleton<IUserSessionManager>(sp => sp.GetRequiredService<UserSessionManager>());
         services.AddScoped<ITaiKhoanRepository, TaiKhoanRepository>();
+        services.AddScoped<IDocGiaRepository, DocGiaRepository>();
+        services.AddScoped<ILoaiDocGiaRepository, LoaiDocGiaRepository>();
+        services.AddScoped<IQuyDinhRepository, QuyDinhRepository>();
         services.AddScoped<IAuthService, AuthService>();
 
         services.AddTransient<LoginWindow>();
@@ -26,6 +29,17 @@ public static class AppServiceExtensions
 
         services.AddTransient<MainWindow>();
         services.AddTransient<MainViewModel>();
+
+        services.AddTransient<ReaderView>();
+        services.AddTransient<ReaderViewModel>();
+        services.AddTransient<AddReaderWindow>();
+        services.AddTransient<AddReaderViewModel>();
+        services.AddTransient<AddReaderTypeWindow>();
+        services.AddTransient<AddReaderTypeViewModel>();
+
+
+        services.AddTransient<StaffView>();
+        services.AddTransient<StaffViewModel>();
 
         return services;
     }

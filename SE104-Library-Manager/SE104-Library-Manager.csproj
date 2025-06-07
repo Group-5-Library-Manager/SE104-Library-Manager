@@ -19,6 +19,8 @@
     <None Remove="Assets\icon_staff.png" />
     <None Remove="Assets\icon_statistic.png" />
     <None Remove="Assets\icon_user.png" />
+	<None Remove="Assets\icon_search.png" />
+	<None Remove="Assets\icon_add_dark.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -63,6 +65,12 @@
     <Resource Include="Assets\icon_user.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
+	<Resource Include="Assets\icon_search.png">
+		<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	</Resource>
+	<Resource Include="Assets\icon_add_dark.png">
+		<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	</Resource>
   </ItemGroup>
 
 </Project>

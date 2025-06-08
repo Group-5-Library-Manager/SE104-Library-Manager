@@ -1,0 +1,282 @@
+﻿<Window x:Class="SE104_Library_Manager.Views.AddStaffWindow"
+        x:Name="Window"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SE104_Library_Manager.Views"
+        xmlns:converters="clr-namespace:SE104_Library_Manager.Converters"
+        FontSize="16"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterOwner"
+        Title="Thêm nhân viên" Height="825" Width="500">
+
+    <Window.Resources>
+        <converters:PasswordsToTupleConverter x:Key="PasswordsToTupleConverter" />
+    </Window.Resources>
+    
+    <StackPanel Orientation="Vertical" Margin="20">
+        <TextBlock Text="Thêm nhân viên"
+                   FontSize="28"
+                   FontWeight="Bold" 
+                   HorizontalAlignment="Center"/>
+
+        <TextBlock Text="Thông tin cá nhân"
+                   FontWeight="SemiBold"
+                   FontSize="18"/>
+
+        <Border BorderThickness="1"
+                BorderBrush="Black"
+                CornerRadius="5"
+                Padding="10"
+                Margin="0, 10, 0, 0">
+            <StackPanel Orientation="Vertical">
+                <TextBlock Text="Tên nhân viên:"
+                           FontWeight="SemiBold" />
+                <Border BorderThickness="0"
+                        CornerRadius="5"
+                        Background="#EEEEEE"
+                        Margin="0, 10, 0, 0"
+                        HorizontalAlignment="Stretch">
+                    <TextBox BorderThickness="0"
+                             Text="{Binding TenNhanVien}"
+                             Background="Transparent"
+                             Padding="8, 4" />
+                </Border>
+
+                <Grid Margin="0, 10, 0, 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    
+                    <StackPanel Orientation="Vertical" 
+                                Grid.Column="0"
+                                Grid.Row="0"
+                                Margin="0, 0, 10, 0">
+                        <TextBlock Text="Ngày sinh:"
+                                   FontWeight="SemiBold"/>
+                        <DatePicker HorizontalAlignment="Stretch"
+                                    Language="vi-VN"
+                                    SelectedDate="{Binding NgaySinh}"
+                                    Margin="0, 10, 0, 0"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Vertical"
+                                Grid.Column="1"
+                                Grid.Row="0"
+                                Margin="10, 0, 0, 0">
+                        <TextBlock Text="Chức vụ: "
+                            FontWeight="SemiBold" />
+                        
+                        <Border BorderThickness="0"
+                                CornerRadius="5"
+                                Background="#EEEEEE"
+                                Padding="2"
+                                Margin="0, 10, 0, 0">
+                            <ComboBox BorderThickness="0"
+                                      Padding="8,4"
+                                      SelectedItem="{Binding SelectedChucVu}"
+                                      ItemsSource="{Binding DsChucVu}"
+                                      SelectedValuePath="MaChucVu"
+                                      DisplayMemberPath="TenChucVu"
+                                      VerticalContentAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Vertical"
+                                Grid.Column="0"
+                                Grid.Row="1"
+                                Margin="0, 10, 10, 0">
+                        <TextBlock Text="Bộ phận: "
+                            FontWeight="SemiBold" />
+
+                        <Border BorderThickness="0"
+                                CornerRadius="5"
+                                Background="#EEEEEE"
+                                Padding="2"
+                                Margin="0, 10, 0, 0">
+                            <ComboBox BorderThickness="0"
+                                      Padding="8,4"
+                                      SelectedItem="{Binding SelectedBoPhan}"
+                                      ItemsSource="{Binding DsBoPhan}"
+                                      SelectedValuePath="MaBoPhan"
+                                      DisplayMemberPath="TenBoPhan"
+                                      VerticalContentAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Vertical"
+                                Grid.Column="1"
+                                Grid.Row="1"
+                                Margin="10, 10, 0, 0">
+                        <TextBlock Text="Bằng cấp: "
+                            FontWeight="SemiBold" />
+
+                        <Border BorderThickness="0"
+                                CornerRadius="5"
+                                Background="#EEEEEE"
+                                Padding="2"
+                                Margin="0, 10, 0, 0">
+                            <ComboBox BorderThickness="0"
+                                      Padding="8,4"
+                                      SelectedItem="{Binding SelectedBangCap}"
+                                      ItemsSource="{Binding DsBangCap}"
+                                      SelectedValuePath="MaBangCap"
+                                      DisplayMemberPath="TenBangCap"
+                                      VerticalContentAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock Text="Điện thoại:"
+                           FontWeight="SemiBold"
+                           Margin="0, 10, 0, 0" />
+                <Border BorderThickness="0"
+                        CornerRadius="5"
+                        Background="#EEEEEE"
+                        Margin="0, 10, 0, 0"
+                        HorizontalAlignment="Stretch">
+                    <TextBox BorderThickness="0"
+                             Text="{Binding DienThoai}"
+                             Background="Transparent"
+                             Padding="8, 4" />
+                </Border>
+
+                <TextBlock Text="Địa chỉ:"
+                           FontWeight="SemiBold"
+                           Margin="0, 10, 0, 0" />
+                <Border BorderThickness="0"
+                        CornerRadius="5"
+                        Background="#EEEEEE"
+                        Margin="0, 10, 0, 0"
+                        HorizontalAlignment="Stretch">
+                    <TextBox BorderThickness="0"
+                             Text="{Binding DiaChi}"
+                             Background="Transparent"
+                             Padding="8, 4" />
+                </Border>
+            </StackPanel>
+        </Border>
+
+
+        <TextBlock Text="Thông tin tài khoản"
+                   FontWeight="SemiBold"
+                   FontSize="18"
+                   Margin="0, 20, 0, 0" />
+
+        <Border BorderThickness="1"
+                BorderBrush="Black"
+                CornerRadius="5"
+                Padding="10"
+                Margin="0, 10, 0, 0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+
+                <TextBlock Text="Tên đăng nhập: "
+                           Grid.Row="0"
+                           Grid.Column="0"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"/>
+                <Border BorderThickness="0"
+                        CornerRadius="5"
+                        Background="#EEEEEE"
+                        Grid.Row="0"
+                        Grid.Column="1">
+                    <TextBox BorderThickness="0"
+                             Text="{Binding TenDangNhap}"
+                             Background="Transparent"
+                             Padding="8, 4" />
+                </Border>
+
+                <TextBlock Text="Mật khẩu: "
+                           Grid.Row="1"
+                           Grid.Column="0"
+                           FontWeight="SemiBold"
+                           Margin="0, 10, 0, 0"
+                           VerticalAlignment="Center"/>
+                <Border BorderThickness="0"
+                        CornerRadius="5"
+                        Background="#EEEEEE"
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Margin="0, 10, 0, 0">
+                    <PasswordBox x:Name="password"
+                                 BorderThickness="0"
+                                 Background="Transparent"
+                                 Padding="8, 4" />
+                </Border>
+
+                <TextBlock Text="Xác nhận mật khẩu: "
+                           Grid.Row="2"
+                           Grid.Column="0"
+                           FontWeight="SemiBold" 
+                           Margin="0, 10, 0, 0"
+                           VerticalAlignment="Center"/>
+                <Border BorderThickness="0"
+                        CornerRadius="5"
+                        Background="#EEEEEE"
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        Margin="0, 10, 0, 0">
+                    <PasswordBox x:Name="confirmPassword"
+                                 BorderThickness="0"
+                                 Background="Transparent"
+                                 Padding="8, 4" />
+                </Border>
+
+                <TextBlock Text="Vai trò: "
+                           Grid.Row="3"
+                           Grid.Column="0"
+                           FontWeight="SemiBold" 
+                           Margin="0, 10, 0, 0"
+                           VerticalAlignment="Center"/>
+
+                <TextBlock Text="Thủ thư"
+                           Grid.Row="3"
+                           Grid.Column="1"
+                           FontWeight="SemiBold"
+                           Margin="0, 10, 0, 0"
+                           VerticalAlignment="Center" />
+            </Grid>
+        </Border>
+
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    Margin="0, 30, 0, 0">
+            <Button Content="Thêm"
+                    Command="{Binding AddCommand}"
+                    Width="100"
+                    Margin="0, 0, 10, 0"
+                    Style="{StaticResource PrimaryButtonStyle}">
+                <Button.CommandParameter>
+                    <MultiBinding Converter="{StaticResource PasswordsToTupleConverter}">
+                        <Binding ElementName="password" />
+                        <Binding ElementName="confirmPassword" />
+                        <Binding ElementName="Window" />
+                    </MultiBinding>
+                </Button.CommandParameter>
+            </Button>
+            
+            <Button Content="Hủy"
+                    Command="{Binding CancelCommand}"
+                    CommandParameter="{Binding ElementName=Window}"
+                    Width="100"
+                    Margin="10, 0, 0, 0"
+                    Style="{StaticResource SecondaryButtonStyle}"/>
+        </StackPanel>
+    </StackPanel>
+</Window>

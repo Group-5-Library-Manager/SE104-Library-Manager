@@ -41,21 +41,19 @@ public class DatabaseService
         DatabaseContext context = GetDatabaseContext();
 
         await EnsureCreateQuyDinhAsync(context);
-        await EnsureCreateVaiTro(context);
-        await EnsureCreateBangCap(context);
-        await EnsureCreateBoPhan(context);
-        await EnsureCreateChucVu(context);
-        await EnsureCreateLoaiDocGia(context);
+        await EnsureCreateVaiTroAsync(context);
+        await EnsureCreateBangCapAsync(context);
+        await EnsureCreateBoPhanAsync(context);
+        await EnsureCreateChucVuAsync(context);
+        await EnsureCreateLoaiDocGiaAsync(context);
+        await EnsureCreateTheLoaiAsync(context);
         await context.SaveChangesAsync(); // Ensure the above entities are saved before creating employees
 
 
-        await EnsureCreateNhanVien(context);
+        await EnsureCreateNhanVienAsync(context);
         await context.SaveChangesAsync();
 
-        await EnsureCreateAdminAccount(context);
-        await context.SaveChangesAsync();
-
-        await EnsureCreateReader(context);
+        await EnsureCreateAdminAccountAsync(context);
         await context.SaveChangesAsync();
     }
 
@@ -67,16 +65,16 @@ public class DatabaseService
         }
     }
 
-    private async Task EnsureCreateVaiTro(DatabaseContext context)
+    private async Task EnsureCreateVaiTroAsync(DatabaseContext context)
     {
         if (!await context.DsVaiTro.AnyAsync())
         {
-            context.DsVaiTro.Add(new VaiTro { TenVaiTro = "ADMIN" });
-            context.DsVaiTro.Add(new VaiTro { TenVaiTro = "LIBRARIAN" });
+            context.DsVaiTro.Add(new VaiTro { TenVaiTro = "Quản trị viên" });
+            context.DsVaiTro.Add(new VaiTro { TenVaiTro = "Thủ thư" });
         }
     }
 
-    private async Task EnsureCreateBangCap(DatabaseContext context)
+    private async Task EnsureCreateBangCapAsync(DatabaseContext context)
     {
         if (!await context.DsBangCap.AnyAsync())
         {
@@ -89,7 +87,7 @@ public class DatabaseService
         }
     }
 
-    private async Task EnsureCreateBoPhan(DatabaseContext context)
+    private async Task EnsureCreateBoPhanAsync(DatabaseContext context)
     {
         if (!await context.DsBoPhan.AnyAsync())
         {
@@ -100,7 +98,7 @@ public class DatabaseService
         }
     }
 
-    private async Task EnsureCreateChucVu(DatabaseContext context)
+    private async Task EnsureCreateChucVuAsync(DatabaseContext context)
     {
         if (!await context.DsChucVu.AnyAsync())
         {
@@ -112,7 +110,7 @@ public class DatabaseService
         }
     }
 
-    private async Task EnsureCreateNhanVien(DatabaseContext context)
+    private async Task EnsureCreateNhanVienAsync(DatabaseContext context)
     {
         if (!await context.DsNhanVien.AnyAsync())
         {
@@ -129,7 +127,7 @@ public class DatabaseService
         }
     }
 
-    private async Task EnsureCreateAdminAccount(DatabaseContext context)
+    private async Task EnsureCreateAdminAccountAsync(DatabaseContext context)
     {
         if (!await context.DsTaiKhoan.AnyAsync())
         {
@@ -144,7 +142,7 @@ public class DatabaseService
         }
     }
 
-    private async Task EnsureCreateLoaiDocGia(DatabaseContext context)
+    private async Task EnsureCreateLoaiDocGiaAsync(DatabaseContext context)
     {
         if (!await context.DsLoaiDocGia.AnyAsync())
         {
@@ -153,29 +151,13 @@ public class DatabaseService
         }
     }
 
-    private async Task EnsureCreateReader(DatabaseContext context)
+    private async Task EnsureCreateTheLoaiAsync(DatabaseContext context)
     {
-        if (!context.DsDocGia.Any())
+        if (!await context.DsTheLoai.AnyAsync())
         {
-            await context.DsDocGia.AddAsync(new DocGia
-            {
-                TenDocGia = "Nguyen Van A",
-                NgaySinh = new DateOnly(1995, 5, 20),
-                DiaChi = "123 Đường ABC, Quận 1, TP.HCM",
-                Email = "demo1@gmail.com",
-                NgayLapThe = DateOnly.FromDateTime(DateTime.Now),
-                MaLoaiDocGia = 1
-            });
-
-            await context.DsDocGia.AddAsync(new DocGia
-            {
-                TenDocGia = "Nguyen Van A",
-                NgaySinh = new DateOnly(1995, 5, 20),
-                DiaChi = "123 Đường ABC, Quận 1, TP.HCM",
-                Email = "demo2@gmail.com",
-                NgayLapThe = new DateOnly(1995, 5, 20),
-                MaLoaiDocGia = 1
-            });
+            await context.DsTheLoai.AddAsync(new TheLoai { TenTheLoai = "A" });
+            await context.DsTheLoai.AddAsync(new TheLoai { TenTheLoai = "B" });
+            await context.DsTheLoai.AddAsync(new TheLoai { TenTheLoai = "C" });
         }
     }
 }

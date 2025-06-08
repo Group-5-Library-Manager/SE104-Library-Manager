@@ -6,11 +6,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SE104_Library_Manager.Views"
         WindowStartupLocation="CenterOwner"
+        FontSize="16"
         mc:Ignorable="d"
-        Title="Thêm độc giả" Height="450" Width="450">
+        Title="Thêm độc giả" Height="525" Width="450">
     <StackPanel Orientation="Vertical" Margin="20">
         <TextBlock Text="Lập phiếu độc giả"
-                   FontSize="24"
+                   FontSize="28"
                    FontWeight="Bold"
                    HorizontalAlignment="Center"/>
 
@@ -41,6 +42,7 @@
                            FontWeight="SemiBold"/>
                 <DatePicker HorizontalAlignment="Stretch"
                             SelectedDate="{Binding BirthDate}"
+                            Language="vi-VN"
                             Margin="0, 10, 0, 0"/>
             </StackPanel>
 

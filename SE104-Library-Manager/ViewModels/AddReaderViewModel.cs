@@ -17,7 +17,7 @@ public partial class AddReaderViewModel : ObservableObject
     private string readerName = string.Empty;
 
     [ObservableProperty]
-    private DateTime? birthDate;
+    private DateTime birthDate = new DateTime(DateTime.Now.Year - 18, DateTime.Now.Month, DateTime.Now.Day);
 
     [ObservableProperty]
     private string address = string.Empty;
@@ -38,7 +38,7 @@ public partial class AddReaderViewModel : ObservableObject
     {
         docGiaRepo = docGiaRepository;
         loaiDocGiaRepo = loaiDocGiaRepository;
-        LoadDataAsync().GetAwaiter().GetResult();
+        LoadDataAsync().ConfigureAwait(false);
     }
 
     private async Task LoadDataAsync()
@@ -53,6 +53,8 @@ public partial class AddReaderViewModel : ObservableObject
     public async Task AddReaderType()
     {
         var w = App.ServiceProvider?.GetService(typeof(AddReaderTypeWindow)) as AddReaderTypeWindow;
+        if (w == null) return;
+
         w.Owner = App.Current.MainWindow;
         w.ShowDialog();
 
@@ -61,16 +63,11 @@ public partial class AddReaderViewModel : ObservableObject
     }
 
     [RelayCommand]
-    public async Task Add(AddReaderWindow w)
+    public async Task AddAsync(AddReaderWindow w)
     {
         if (SelectedReaderType == null)
         {
             MessageBox.Show("Vui lòng chọn loại độc giả.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
-            return;
-        }
-        if (BirthDate == null)
-        {
-            MessageBox.Show("Vui lòng chọn ngày sinh.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
@@ -80,7 +77,7 @@ public partial class AddReaderViewModel : ObservableObject
             DiaChi = Address.Trim(),
             Email = Email.Trim(),
             MaLoaiDocGia = SelectedReaderType.MaLoaiDocGia,
-            NgaySinh = DateOnly.FromDateTime(BirthDate.Value),
+            NgaySinh = DateOnly.FromDateTime(BirthDate.Date),
             NgayLapThe = DateOnly.FromDateTime(DateTime.Now)
         };
 
@@ -93,7 +90,7 @@ public partial class AddReaderViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Lỗi khi thêm độc giả: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(ex.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
     }

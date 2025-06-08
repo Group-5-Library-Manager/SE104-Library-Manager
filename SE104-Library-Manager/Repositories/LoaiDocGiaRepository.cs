@@ -17,13 +17,13 @@ public class LoaiDocGiaRepository(DatabaseService dbService, IQuyDinhRepository 
             throw new InvalidOperationException($"Số lượng loại độc giả đã đạt giới hạn tối đa là {quyDinh.SoLoaiDocGiaToiDa}.");
         }
 
-        if (loaiDocGia == null) throw new ArgumentNullException(nameof(loaiDocGia), "Loại độc giả không được là null");
+        if (loaiDocGia == null) throw new ArgumentNullException("Loại độc giả không được là null");
         if (string.IsNullOrWhiteSpace(loaiDocGia.TenLoaiDocGia))
         {
-            throw new ArgumentException("Tên loại độc giả không được để trống.", nameof(loaiDocGia.TenLoaiDocGia));
+            throw new ArgumentException("Tên loại độc giả không được để trống.");
         }
 
-        var exists = await dbService.DbContext.DsLoaiDocGia.AnyAsync(ldg => ldg.TenLoaiDocGia == loaiDocGia.TenLoaiDocGia);
+        var exists = await dbService.DbContext.DsLoaiDocGia.AnyAsync(ldg => ldg.TenLoaiDocGia.ToLower() == loaiDocGia.TenLoaiDocGia.ToLower());
 
         if (exists)
         {
@@ -41,12 +41,12 @@ public class LoaiDocGiaRepository(DatabaseService dbService, IQuyDinhRepository 
 
         if (existingLoaiDocGia == null)
         {
-            throw new KeyNotFoundException($"Không tìm thấy loại độc giả với ID {id}.");
+            throw new KeyNotFoundException($"Không tìm thấy loại độc giả với mã LDG{id}.");
         }
 
         if (await dbService.DbContext.DsDocGia.AnyAsync(dg => dg.MaLoaiDocGia == id))
         {
-            throw new InvalidOperationException($"Không thể xóa loại độc giả với ID LDG{id} vì có độc giả đang sử dụng loại này.");
+            throw new InvalidOperationException($"Không thể xóa loại độc giả với mã LDG{id} vì có độc giả đang sử dụng loại này.");
         }
 
         dbService.DbContext.DsLoaiDocGia.Remove(existingLoaiDocGia);
@@ -70,22 +70,22 @@ public class LoaiDocGiaRepository(DatabaseService dbService, IQuyDinhRepository 
 
     public async Task UpdateAsync(LoaiDocGia loaiDocGia)
     {
-        if (loaiDocGia == null) throw new ArgumentNullException(nameof(loaiDocGia), "Loại độc giả không được là null");
+        if (loaiDocGia == null) throw new ArgumentNullException("Loại độc giả không được là null");
         if (string.IsNullOrWhiteSpace(loaiDocGia.TenLoaiDocGia))
         {
             throw new ArgumentException("Tên loại độc giả không được để trống.");
+        }
+
+        if (await dbService.DbContext.DsLoaiDocGia.AnyAsync(ldg => ldg.TenLoaiDocGia.ToLower() == loaiDocGia.TenLoaiDocGia.ToLower() && ldg.MaLoaiDocGia != loaiDocGia.MaLoaiDocGia))
+        {
+            throw new InvalidOperationException($"Loại độc giả với tên {loaiDocGia.TenLoaiDocGia} đã tồn tại.");
         }
 
         var existingLoaiDocGia = await dbService.DbContext.DsLoaiDocGia.FindAsync(loaiDocGia.MaLoaiDocGia);
 
         if (existingLoaiDocGia == null)
         {
-            throw new KeyNotFoundException($"Không tìm thấy loại độc giả với ID {loaiDocGia.MaLoaiDocGia}.");
-        }
-
-        if (await dbService.DbContext.DsLoaiDocGia.AnyAsync(ldg => ldg.TenLoaiDocGia == loaiDocGia.TenLoaiDocGia && ldg.MaLoaiDocGia != loaiDocGia.MaLoaiDocGia))
-        {
-            throw new InvalidOperationException($"Loại độc giả với tên {loaiDocGia.TenLoaiDocGia} đã tồn tại.");
+            throw new KeyNotFoundException($"Không tìm thấy loại độc giả với mã LDG{loaiDocGia.MaLoaiDocGia}.");
         }
 
         existingLoaiDocGia.TenLoaiDocGia = loaiDocGia.TenLoaiDocGia;

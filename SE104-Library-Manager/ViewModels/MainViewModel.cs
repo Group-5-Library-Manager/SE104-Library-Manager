@@ -8,17 +8,30 @@ namespace SE104_Library_Manager.ViewModels
 {
     public partial class MainViewModel : ObservableObject
     {
-        private readonly IUserSessionManager _userSessionManager;
+        private readonly IStaffSessionManager _staffSessionManager;
+
+        [ObservableProperty]
+        private Visibility _showAdminItems = Visibility.Collapsed; // Ẩn/Hiển các mục cần quyền quản trị viên (Nhân viên, Quy định, ...)
 
         [ObservableProperty]
         private object? _currentView;
 
-        public MainViewModel(IUserSessionManager userSessionManager)
+        public MainViewModel(IStaffSessionManager staffSessionManager)
         {
-            _userSessionManager = userSessionManager;
+            _staffSessionManager = staffSessionManager;
 
             // Mặc định hiển thị trang Sách khi khởi động
             NavigateCommand.Execute("Account");
+
+            // Kiểm tra quyền của nhân viên hiện tại
+            if (_staffSessionManager.GetCurrentStaffRole() == "Quản trị viên")
+            {
+                ShowAdminItems = Visibility.Visible; // Hiển thị các mục quản trị viên
+            }
+            else
+            {
+                ShowAdminItems = Visibility.Collapsed; // Ẩn các mục quản trị viên
+            }
         }
 
         [RelayCommand]
@@ -64,7 +77,7 @@ namespace SE104_Library_Manager.ViewModels
         private void Logout()
         {
             // Đăng xuất người dùng
-            _userSessionManager.ClearCurrentUserProfile();
+            _staffSessionManager.ClearCurrentStaffId();
 
             // Hiển thị cửa sổ đăng nhập
             if (Application.Current.MainWindow != null)

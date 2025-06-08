@@ -13,22 +13,22 @@ public partial class AddReaderTypeViewModel(ILoaiDocGiaRepository loaiDocGiaRepo
     private string readerTypeName = string.Empty;
 
     [RelayCommand]
-    public void Add(AddReaderTypeWindow window)
+    public async Task AddAsync(AddReaderTypeWindow window)
     {
-        ReaderTypeName = ReaderTypeName.Trim();
-        LoaiDocGia loaiDocGia = new LoaiDocGia { TenLoaiDocGia = ReaderTypeName };
+        LoaiDocGia loaiDocGia = new LoaiDocGia { TenLoaiDocGia = ReaderTypeName.Trim() };
 
         try
         {
-            loaiDocGiaRepo.AddAsync(loaiDocGia).GetAwaiter().GetResult();
+            await loaiDocGiaRepo.AddAsync(loaiDocGia);
+
             MessageBox.Show("Thêm loại độc giả thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+            window.Close();
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Lỗi khi thêm loại độc giả: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(ex.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
-        window.Close();
     }
 
     [RelayCommand]

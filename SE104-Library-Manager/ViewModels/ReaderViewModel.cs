@@ -9,7 +9,7 @@ using System.Windows.Controls;
 
 namespace SE104_Library_Manager.ViewModels;
 
-public partial class ReaderViewModel : ObservableObject
+public partial class ReaderViewModel(IDocGiaRepository docGiaRepo, ILoaiDocGiaRepository loaiDocGiaRepo, IQuyDinhRepository quyDinhRepo) : ObservableObject
 {
     [ObservableProperty]
     private TabItem selectedTab = null!;
@@ -44,17 +44,6 @@ public partial class ReaderViewModel : ObservableObject
     private List<DocGia> originalDsDocGia = new List<DocGia>();
     private List<LoaiDocGia> originalDsLoaiDocGia = new List<LoaiDocGia>();
 
-    private IDocGiaRepository docGiaRepo;
-    private ILoaiDocGiaRepository loaiDocGiaRepo;
-    private IQuyDinhRepository quyDinhRepo;
-
-    public ReaderViewModel(IDocGiaRepository docGiaRepository, ILoaiDocGiaRepository loaiDocGiaRepository, IQuyDinhRepository quyDinhRepository)
-    {
-        docGiaRepo = docGiaRepository;
-        loaiDocGiaRepo = loaiDocGiaRepository;
-        quyDinhRepo = quyDinhRepository;
-    }
-
     private async Task LoadDataAsync()
     {
         originalDsDocGia = await docGiaRepo.GetAllAsync();
@@ -76,6 +65,7 @@ public partial class ReaderViewModel : ObservableObject
     public async Task AddReader()
     {
         var w = App.ServiceProvider?.GetService(typeof(AddReaderWindow)) as AddReaderWindow;
+        if (w == null) return;
         w.Owner = Application.Current.MainWindow;
         w.ShowDialog();
 
@@ -110,7 +100,7 @@ public partial class ReaderViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Lỗi khi cập nhật thông tin độc giả: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(ex.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -134,7 +124,7 @@ public partial class ReaderViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Lỗi khi xóa độc giả: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(ex.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -169,7 +159,7 @@ public partial class ReaderViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Lỗi khi gia hạn thẻ độc giả: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(ex.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -197,6 +187,7 @@ public partial class ReaderViewModel : ObservableObject
     public async Task AddReaderType()
     {
         var w = App.ServiceProvider?.GetService(typeof(AddReaderTypeWindow)) as AddReaderTypeWindow;
+        if (w == null) return;
         w.Owner = Application.Current.MainWindow;
         w.ShowDialog();
 
@@ -209,12 +200,6 @@ public partial class ReaderViewModel : ObservableObject
         if (SelectedReaderType == null || SelectedReaderTypeForEdit == null) return;
 
         SelectedReaderTypeForEdit.TenLoaiDocGia = SelectedReaderTypeForEdit.TenLoaiDocGia.Trim();
-
-        if (SelectedReaderTypeForEdit.TenLoaiDocGia == string.Empty)
-        {
-            MessageBox.Show("Tên loại độc giả không được để trống.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
-            return;
-        }
 
         try
         {
@@ -235,7 +220,7 @@ public partial class ReaderViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Lỗi khi cập nhật thông tin loại độc giả: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(ex.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -258,7 +243,7 @@ public partial class ReaderViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Lỗi khi xóa loại độc giả: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(ex.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -328,8 +313,6 @@ public partial class ReaderViewModel : ObservableObject
 
     partial void OnSelectedTabChanged(TabItem value)
     {
-        if (value == null) return;
-
         if (value.Header.ToString() == "Độc giả")
         {
             LoadDataAsync().ConfigureAwait(false);

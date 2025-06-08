@@ -24,10 +24,11 @@ public class DocGiaRepository(DatabaseService dbService, IQuyDinhRepository quyD
 
     public async Task DeleteAsync(int id)
     {
-        var docGia = await GetByIdAsync(id);
+        var docGia = await dbService.DbContext.DsDocGia.FindAsync(id);
+
         if (docGia == null)
         {
-            throw new KeyNotFoundException($"Không tìm thấy độc giả với ID {id}.");
+            throw new KeyNotFoundException($"Không tìm thấy độc giả với mã DG{id}.");
         }
 
         docGia.DaXoa = true;
@@ -39,7 +40,7 @@ public class DocGiaRepository(DatabaseService dbService, IQuyDinhRepository quyD
 
     public async Task<bool> ExistsByEmailAsync(string email)
     {
-        return await dbService.DbContext.DsDocGia.AnyAsync(dg => dg.Email == email && !dg.DaXoa);
+        return await dbService.DbContext.DsDocGia.AnyAsync(dg => dg.Email.ToLower() == email.ToLower());
     }
 
     public async Task<List<DocGia>> GetAllAsync()
@@ -69,10 +70,10 @@ public class DocGiaRepository(DatabaseService dbService, IQuyDinhRepository quyD
 
         if (existingDocGia == null)
         {
-            throw new KeyNotFoundException($"Không tìm thấy độc giả với ID {docGia.MaDocGia}.");
+            throw new KeyNotFoundException($"Không tìm thấy độc giả với mã DG{docGia.MaDocGia}.");
         }
 
-        if (await ExistsByEmailAsync(docGia.Email) && docGia.Email != existingDocGia.Email)
+        if (await ExistsByEmailAsync(docGia.Email) && docGia.Email.ToLower() != existingDocGia.Email.ToLower())
         {
             throw new InvalidOperationException($"Độc giả với email {docGia.Email} đã tồn tại.");
         }
@@ -93,7 +94,7 @@ public class DocGiaRepository(DatabaseService dbService, IQuyDinhRepository quyD
     {
         QuyDinh quyDinh = await quyDinhRepo.GetQuyDinhAsync();
 
-        if (docGia == null) throw new ArgumentNullException(nameof(docGia), "Độc giả không được là null");
+        if (docGia == null) throw new ArgumentNullException("Độc giả không được là null");
 
         if (string.IsNullOrWhiteSpace(docGia.TenDocGia))
         {

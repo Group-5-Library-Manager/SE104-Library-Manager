@@ -2,23 +2,24 @@
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using SE104_Library_Manager.Interfaces;
-using SE104_Library_Manager.Models;
 using SE104_Library_Manager.Views;
 using System.Windows;
 using System.Windows.Controls;
 
 namespace SE104_Library_Manager.ViewModels;
 
-public partial class LoginViewModel(IUserSessionManager userSessionManager, IAuthService authService) : ObservableObject
+public partial class LoginViewModel(IStaffSessionManager staffSessionManager, IAuthService authService) : ObservableObject
 {
     [ObservableProperty]
-    private string username = String.Empty;
+    private string username = string.Empty;
 
     [ObservableProperty]
-    private string errorMessage = String.Empty;
+    private string errorMessage = string.Empty;
 
     [ObservableProperty]
     private Visibility showErrorMessage = Visibility.Hidden;
+
+    private CancellationTokenSource? errorMessageCts;
 
     [RelayCommand]
     public async Task Login(PasswordBox passwordBox)
@@ -28,42 +29,59 @@ public partial class LoginViewModel(IUserSessionManager userSessionManager, IAut
         if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(password))
         {
             ErrorMessage = "Tên đăng nhập và mật khẩu không được để trống.";
-            await ShowErrorMessageAsync(3);
+            ShowErrorMessageAsync(3);
             return;
         }
 
         try
         {
-            UserProfile userProfile = await authService.AuthenticateAsync(Username, password);
-            userSessionManager.SetCurrentUserProfile(userProfile);
+            int staffId = await authService.AuthenticateAsync(Username, password);
+            staffSessionManager.SetCurrentStaffId(staffId);
 
-            if (userProfile != null)
+            var mainWindow = App.ServiceProvider?.GetRequiredService<MainWindow>();
+            if (mainWindow != null)
             {
-                var mainWindow = App.ServiceProvider?.GetRequiredService<MainWindow>();
-                if (mainWindow != null)
-                {
-                    Window currentWindow = Application.Current.MainWindow;
+                Window currentWindow = Application.Current.MainWindow;
 
-                    Application.Current.MainWindow = mainWindow;
-                    mainWindow.Show();
+                Application.Current.MainWindow = mainWindow;
+                mainWindow.Show();
 
-                    currentWindow?.Close();
-                }
-            }   
+                currentWindow?.Close();
+            }
         }
         catch (Exception ex)
         {
             ErrorMessage = ex.Message;
-            await ShowErrorMessageAsync(3);
+            ShowErrorMessageAsync(3);
         }
     }
 
-    private async Task ShowErrorMessageAsync(int second)
+    private void ShowErrorMessageAsync(int second)
     {
+        errorMessageCts?.Cancel();
+        errorMessageCts = new CancellationTokenSource();
+        var token = errorMessageCts.Token;
+
         ShowErrorMessage = Visibility.Visible;
 
-        await Task.Delay(second * 1000);
-
-        ShowErrorMessage = Visibility.Hidden;
+        Task.Run(async () =>
+        { 
+            try
+            {
+                await Task.Delay(second * 1000);
+                if (!token.IsCancellationRequested)
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        ShowErrorMessage = Visibility.Hidden;
+                        ErrorMessage = string.Empty;
+                    });
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                // Task was canceled, do nothing
+            }
+        });
     }
 }

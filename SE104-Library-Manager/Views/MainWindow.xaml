@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:SE104_Library_Manager.Views"
         xmlns:viewmodel="clr-namespace:SE104_Library_Manager.ViewModels"
         mc:Ignorable="d"
-        Title="Quản lý thư viện" Height="800" Width="1200"
+        Title="Quản lý thư viện" Height="900" Width="1200"
         WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.ColumnDefinitions>
@@ -77,7 +77,8 @@
                                  Command="{Binding NavigateCommand}"
                                  CommandParameter="Staff"
                                  Content="Nhân viên"
-                                 Cursor="Hand">
+                                 Cursor="Hand"
+                                 Visibility="{Binding ShowAdminItems}">
                         <RadioButton.Tag>
                             <BitmapImage UriSource="/Assets/icon_staff.png" />
                         </RadioButton.Tag>
@@ -125,7 +126,8 @@
                                  Command="{Binding NavigateCommand}"
                                  CommandParameter="Policy"
                                  Content="Quy định"
-                                 Cursor="Hand">
+                                 Cursor="Hand"
+                                 Visibility="{Binding ShowAdminItems}">
                         <RadioButton.Tag>
                             <BitmapImage UriSource="/Assets/icon_policy.png" />
                         </RadioButton.Tag>

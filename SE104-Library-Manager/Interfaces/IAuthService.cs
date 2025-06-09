@@ -1,8 +1,6 @@
-﻿using SE104_Library_Manager.Models;
-
-namespace SE104_Library_Manager.Interfaces;
+﻿namespace SE104_Library_Manager.Interfaces;
 
 public interface IAuthService
 {
-    public Task<UserProfile> AuthenticateAsync(string username, string password);
+    public Task<int> AuthenticateAsync(string username, string password);
 }

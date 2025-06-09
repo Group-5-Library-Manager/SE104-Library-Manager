@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SE104_Library_Manager.Data;
 using SE104_Library_Manager.Entities;
+using System.Threading.Tasks;
 
 namespace SE104_Library_Manager.Services;
 
@@ -40,17 +41,19 @@ public class DatabaseService
         DatabaseContext context = GetDatabaseContext();
 
         await EnsureCreateQuyDinhAsync(context);
-        await EnsureCreateVaiTro(context);
-        await EnsureCreateBangCap(context);
-        await EnsureCreateBoPhan(context);
-        await EnsureCreateChucVu(context);
+        await EnsureCreateVaiTroAsync(context);
+        await EnsureCreateBangCapAsync(context);
+        await EnsureCreateBoPhanAsync(context);
+        await EnsureCreateChucVuAsync(context);
+        await EnsureCreateLoaiDocGiaAsync(context);
+        await EnsureCreateTheLoaiAsync(context);
         await context.SaveChangesAsync(); // Ensure the above entities are saved before creating employees
 
 
-        await EnsureCreateNhanVien(context);
+        await EnsureCreateNhanVienAsync(context);
         await context.SaveChangesAsync();
 
-        await EnsureCreateAdminAccount(context);
+        await EnsureCreateAdminAccountAsync(context);
         await context.SaveChangesAsync();
     }
 
@@ -62,16 +65,16 @@ public class DatabaseService
         }
     }
 
-    private async Task EnsureCreateVaiTro(DatabaseContext context)
+    private async Task EnsureCreateVaiTroAsync(DatabaseContext context)
     {
         if (!await context.DsVaiTro.AnyAsync())
         {
-            context.DsVaiTro.Add(new VaiTro { TenVaiTro = "ADMIN" });
-            context.DsVaiTro.Add(new VaiTro { TenVaiTro = "LIBRARIAN" });
+            context.DsVaiTro.Add(new VaiTro { TenVaiTro = "Quản trị viên" });
+            context.DsVaiTro.Add(new VaiTro { TenVaiTro = "Thủ thư" });
         }
     }
 
-    private async Task EnsureCreateBangCap(DatabaseContext context)
+    private async Task EnsureCreateBangCapAsync(DatabaseContext context)
     {
         if (!await context.DsBangCap.AnyAsync())
         {
@@ -84,7 +87,7 @@ public class DatabaseService
         }
     }
 
-    private async Task EnsureCreateBoPhan(DatabaseContext context)
+    private async Task EnsureCreateBoPhanAsync(DatabaseContext context)
     {
         if (!await context.DsBoPhan.AnyAsync())
         {
@@ -95,7 +98,7 @@ public class DatabaseService
         }
     }
 
-    private async Task EnsureCreateChucVu(DatabaseContext context)
+    private async Task EnsureCreateChucVuAsync(DatabaseContext context)
     {
         if (!await context.DsChucVu.AnyAsync())
         {
@@ -107,7 +110,7 @@ public class DatabaseService
         }
     }
 
-    private async Task EnsureCreateNhanVien(DatabaseContext context)
+    private async Task EnsureCreateNhanVienAsync(DatabaseContext context)
     {
         if (!await context.DsNhanVien.AnyAsync())
         {
@@ -124,7 +127,7 @@ public class DatabaseService
         }
     }
 
-    private async Task EnsureCreateAdminAccount(DatabaseContext context)
+    private async Task EnsureCreateAdminAccountAsync(DatabaseContext context)
     {
         if (!await context.DsTaiKhoan.AnyAsync())
         {
@@ -136,6 +139,25 @@ public class DatabaseService
                 MaVaiTro = 1 // Assuming the first role is ADMIN
             };
             context.DsTaiKhoan.Add(adminAccount);
+        }
+    }
+
+    private async Task EnsureCreateLoaiDocGiaAsync(DatabaseContext context)
+    {
+        if (!await context.DsLoaiDocGia.AnyAsync())
+        {
+            await context.DsLoaiDocGia.AddAsync(new LoaiDocGia { TenLoaiDocGia = "X" });
+            await context.DsLoaiDocGia.AddAsync(new LoaiDocGia { TenLoaiDocGia = "Y" });
+        }
+    }
+
+    private async Task EnsureCreateTheLoaiAsync(DatabaseContext context)
+    {
+        if (!await context.DsTheLoai.AnyAsync())
+        {
+            await context.DsTheLoai.AddAsync(new TheLoai { TenTheLoai = "A" });
+            await context.DsTheLoai.AddAsync(new TheLoai { TenTheLoai = "B" });
+            await context.DsTheLoai.AddAsync(new TheLoai { TenTheLoai = "C" });
         }
     }
 }

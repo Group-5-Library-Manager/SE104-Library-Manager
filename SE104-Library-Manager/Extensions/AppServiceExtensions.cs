@@ -4,7 +4,11 @@ using SE104_Library_Manager.Interfaces.Repositories;
 using SE104_Library_Manager.Repositories;
 using SE104_Library_Manager.Services;
 using SE104_Library_Manager.ViewModels;
+using SE104_Library_Manager.ViewModels.Borrow;
+using SE104_Library_Manager.ViewModels.Statistic;
 using SE104_Library_Manager.Views;
+using SE104_Library_Manager.Views.Borrow;
+using SE104_Library_Manager.Views.Statistic;
 
 namespace SE104_Library_Manager.Extensions;
 
@@ -27,6 +31,7 @@ public static class AppServiceExtensions
         services.AddScoped<IBoPhanRepository, BoPhanRepository>();
         services.AddScoped<IVaiTroRepository, VaiTroRepository>();
         services.AddScoped<IQuyDinhRepository, QuyDinhRepository>();
+        services.AddScoped<IPhieuMuonRepository, PhieuMuonRepository>();
         services.AddScoped<IAuthService, AuthService>();
 
         services.AddTransient<LoginWindow>();
@@ -54,6 +59,21 @@ public static class AppServiceExtensions
         services.AddTransient<AddDepartmentWindow>();
         services.AddTransient<AddDepartmentViewModel>();
 
+        services.AddTransient<BorrowView>();
+        services.AddTransient<BorrowViewModel>();
+        services.AddTransient<AddBorrowWindow>();
+        services.AddTransient<AddBorrowViewModel>();
+        services.AddTransient<UpdateBorrowWindow>();
+        services.AddTransient<UpdateBorrowViewModel>();
+
+        services.AddTransient<StatisticView>();
+        services.AddTransient<StatisticViewModel>();
+        services.AddTransient<RevenueStatisticView>();
+        services.AddTransient<RevenueStatisticViewModel>();
+        services.AddTransient<BorrowingStatisticView>();
+        services.AddTransient<BorrowingStatisticViewModel>();
+        services.AddTransient<LateReturnStatisticView>();
+        services.AddTransient<LateReturnStatisticViewModel>();
         return services;
     }
 }

@@ -62,6 +62,17 @@ public class DatabaseService
 
         await EnsureCreateSachAsync(context);
         await context.SaveChangesAsync();
+        await EnsureCreatePhieuMuonAsync(context);
+        await context.SaveChangesAsync();
+
+        await EnsureCreateChiTietPhieuMuonAsync(context);
+        await context.SaveChangesAsync();
+
+        await EnsureCreatePhieuTraAsync(context);
+        await context.SaveChangesAsync();
+
+        await EnsureCreateChiTietPhieuTraAsync(context);
+        await context.SaveChangesAsync();
     }
 
     private async Task EnsureCreateQuyDinhAsync(DatabaseContext context)
@@ -170,7 +181,7 @@ public class DatabaseService
                     Email = "hung@example.com",
                     MaLoaiDocGia = 1, // Loại X
                     NgaySinh = new DateOnly(2000, 5, 20),
-                    NgayLapThe = new DateOnly(2024, 6, 1),
+                    NgayLapThe = new DateOnly(2025, 6, 1),
                     TongNo = 0
                 },
                 new DocGia
@@ -180,7 +191,7 @@ public class DatabaseService
                     Email = "mai@example.com",
                     MaLoaiDocGia = 2, // Loại Y
                     NgaySinh = new DateOnly(1998, 9, 10),
-                    NgayLapThe = new DateOnly(2024, 6, 2),
+                    NgayLapThe = new DateOnly(2025, 6, 2),
                     TongNo = 5000
                 },
                 new DocGia
@@ -190,7 +201,7 @@ public class DatabaseService
                     Email = "tuan@example.com",
                     MaLoaiDocGia = 1,
                     NgaySinh = new DateOnly(2001, 2, 15),
-                    NgayLapThe = new DateOnly(2024, 6, 3),
+                    NgayLapThe = new DateOnly(2025, 6, 3),
                     TongNo = 0
                 }
             );
@@ -256,5 +267,155 @@ public class DatabaseService
         }
     }
 
+    private async Task EnsureCreatePhieuMuonAsync(DatabaseContext context)
+    {
+        if (!await context.DsPhieuMuon.AnyAsync())
+        {
+            var phieuMuonList = new List<PhieuMuon>
+        {
+            // Recent borrowing records (last 3 months)
+            new PhieuMuon { MaDocGia = 1, MaNhanVien = 1, NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-190)), DaXoa = false },
+                new PhieuMuon { MaDocGia = 2, MaNhanVien = 1, NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-185)), DaXoa = false },
+                new PhieuMuon { MaDocGia = 3, MaNhanVien = 1, NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-180)), DaXoa = false },
+                new PhieuMuon { MaDocGia = 1, MaNhanVien = 1, NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-175)), DaXoa = false },
+                new PhieuMuon { MaDocGia = 2, MaNhanVien = 1, NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-170)), DaXoa = false },
+                new PhieuMuon { MaDocGia = 3, MaNhanVien = 1, NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-165)), DaXoa = false },
+                new PhieuMuon { MaDocGia = 1, MaNhanVien = 1, NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-60)), DaXoa = false },
+                new PhieuMuon { MaDocGia = 2, MaNhanVien = 1, NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-55)), DaXoa = false },
+                new PhieuMuon { MaDocGia = 3, MaNhanVien = 1, NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-150)), DaXoa = false },
+                new PhieuMuon { MaDocGia = 1, MaNhanVien = 1, NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-45)), DaXoa = false },
+                new PhieuMuon { MaDocGia = 2, MaNhanVien = 1, NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-40)), DaXoa = false },
+                new PhieuMuon { MaDocGia = 3, MaNhanVien = 1, NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-135)), DaXoa = false },
+                new PhieuMuon { MaDocGia = 1, MaNhanVien = 1, NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-30)), DaXoa = false },
+                new PhieuMuon { MaDocGia = 2, MaNhanVien = 1, NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-25)), DaXoa = false },
+                new PhieuMuon { MaDocGia = 3, MaNhanVien = 1, NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-120)), DaXoa = false },
+                new PhieuMuon { MaDocGia = 1, MaNhanVien = 1, NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-15)), DaXoa = false },
+                new PhieuMuon { MaDocGia = 2, MaNhanVien = 1, NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-10)), DaXoa = false },
+                new PhieuMuon { MaDocGia = 3, MaNhanVien = 1, NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-15)), DaXoa = false },
+        };
 
+            context.DsPhieuMuon.AddRange(phieuMuonList);
+        }
+    }
+
+    private async Task EnsureCreateChiTietPhieuMuonAsync(DatabaseContext context)
+    {
+        if (!await context.DsChiTietPhieuMuon.AnyAsync())
+        {
+            var chiTietPhieuMuonList = new List<ChiTietPhieuMuon>
+        {
+            // Details for PhieuMuon 1 - Mix of genres to show borrowing statistics
+            new ChiTietPhieuMuon { MaPhieuMuon = 1, MaSach = 1 }, // Genre A
+            new ChiTietPhieuMuon { MaPhieuMuon = 1, MaSach = 4 }, // Genre A
+            
+            // Details for PhieuMuon 2
+            new ChiTietPhieuMuon { MaPhieuMuon = 2, MaSach = 2 }, // Genre B
+            new ChiTietPhieuMuon { MaPhieuMuon = 2, MaSach = 5 }, // Genre B
+            
+            // Details for PhieuMuon 3
+            new ChiTietPhieuMuon { MaPhieuMuon = 3, MaSach = 3 }, // Genre C
+            new ChiTietPhieuMuon { MaPhieuMuon = 3, MaSach = 6 }, // Genre C
+            
+            // Details for PhieuMuon 4
+            new ChiTietPhieuMuon { MaPhieuMuon = 4, MaSach = 7 }, // Genre A
+            new ChiTietPhieuMuon { MaPhieuMuon = 4, MaSach = 10 }, // Genre A
+            
+            // Details for PhieuMuon 5
+            new ChiTietPhieuMuon { MaPhieuMuon = 5, MaSach = 8 }, // Genre B
+            new ChiTietPhieuMuon { MaPhieuMuon = 5, MaSach = 11 }, // Genre B
+            
+            // Details for PhieuMuon 6
+            new ChiTietPhieuMuon { MaPhieuMuon = 6, MaSach = 9 }, // Genre C
+            new ChiTietPhieuMuon { MaPhieuMuon = 6, MaSach = 12 }, // Genre C
+            
+            // Details for PhieuMuon 7
+            new ChiTietPhieuMuon { MaPhieuMuon = 7, MaSach = 13 }, // Genre A
+            new ChiTietPhieuMuon { MaPhieuMuon = 7, MaSach = 1 }, // Genre A
+            
+            // Details for PhieuMuon 8
+            new ChiTietPhieuMuon { MaPhieuMuon = 8, MaSach = 14 }, // Genre B
+            new ChiTietPhieuMuon { MaPhieuMuon = 8, MaSach = 2 }, // Genre B
+            
+            // Details for PhieuMuon 9
+            new ChiTietPhieuMuon { MaPhieuMuon = 9, MaSach = 15 }, // Genre C
+            new ChiTietPhieuMuon { MaPhieuMuon = 9, MaSach = 3 }, // Genre C
+            
+            // Details for remaining PhieuMuon records
+            new ChiTietPhieuMuon { MaPhieuMuon = 10, MaSach = 4 }, // Genre A
+            new ChiTietPhieuMuon { MaPhieuMuon = 11, MaSach = 5 }, // Genre B
+            new ChiTietPhieuMuon { MaPhieuMuon = 12, MaSach = 6 }, // Genre C
+            new ChiTietPhieuMuon { MaPhieuMuon = 13, MaSach = 7 }, // Genre A
+            new ChiTietPhieuMuon { MaPhieuMuon = 14, MaSach = 8 }, // Genre B
+            new ChiTietPhieuMuon { MaPhieuMuon = 15, MaSach = 9 }, // Genre C
+            new ChiTietPhieuMuon { MaPhieuMuon = 16, MaSach = 10 }, // Genre A
+            new ChiTietPhieuMuon { MaPhieuMuon = 17, MaSach = 11 }, // Genre B
+            new ChiTietPhieuMuon { MaPhieuMuon = 18, MaSach = 12 }, // Genre C
+        };
+
+            context.DsChiTietPhieuMuon.AddRange(chiTietPhieuMuonList);
+        }
+    }
+
+    private async Task EnsureCreatePhieuTraAsync(DatabaseContext context)
+    {
+        if (!await context.DsPhieuTra.AnyAsync())
+        {
+            var phieuTraList = new List<PhieuTra>
+        {
+            // Some books returned on time (no fines)
+            new PhieuTra { MaDocGia = 1, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-75)), TienPhatKyNay = 0, DaXoa = false },
+            new PhieuTra {MaDocGia = 2, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-70)), TienPhatKyNay = 0, DaXoa = false },
+            new PhieuTra {MaDocGia = 3, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-65)), TienPhatKyNay = 0, DaXoa = false },
+            
+            // Some books returned late (with fines) - for revenue statistics
+            new PhieuTra {MaDocGia = 3, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-60)), TienPhatKyNay = 15000, DaXoa = false },
+            new PhieuTra {MaDocGia = 1, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-55)), TienPhatKyNay = 25000, DaXoa = false },
+            new PhieuTra {MaDocGia = 2, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-50)), TienPhatKyNay = 10000, DaXoa = false },
+            new PhieuTra {MaDocGia = 1, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-45)), TienPhatKyNay = 30000, DaXoa = false },
+            new PhieuTra {MaDocGia = 2, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-40)), TienPhatKyNay = 20000, DaXoa = false },
+            new PhieuTra {MaDocGia = 3, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-35)), TienPhatKyNay = 12000, DaXoa = false },
+            new PhieuTra {MaDocGia = 2, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-30)), TienPhatKyNay = 18000, DaXoa = false },
+            new PhieuTra { MaDocGia = 1,NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-25)), TienPhatKyNay = 22000, DaXoa = false },
+            new PhieuTra {MaDocGia = 3, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-20)), TienPhatKyNay = 8000, DaXoa = false },
+            new PhieuTra { MaDocGia = 1,NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-15)), TienPhatKyNay = 35000, DaXoa = false },
+            new PhieuTra { MaDocGia = 3,NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-10)), TienPhatKyNay = 16000, DaXoa = false },
+            new PhieuTra {MaDocGia = 2, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-5)), TienPhatKyNay = 28000, DaXoa = false },
+        };
+
+            context.DsPhieuTra.AddRange(phieuTraList);
+        }
+    }
+
+    private async Task EnsureCreateChiTietPhieuTraAsync(DatabaseContext context)
+    {
+        if (!await context.DsChiTietPhieuTra.AnyAsync())
+        {
+            var chiTietPhieuTraList = new List<ChiTietPhieuTra>
+        {
+            // Returns with no fines (returned on time)
+            new ChiTietPhieuTra { MaPhieuTra = 1, MaPhieuMuon = 1, MaSach = 1, TienPhat = 0, DaXoa = false },
+            new ChiTietPhieuTra { MaPhieuTra = 1, MaPhieuMuon = 1, MaSach = 4, TienPhat = 0, DaXoa = false },
+            new ChiTietPhieuTra { MaPhieuTra = 2, MaPhieuMuon = 2, MaSach = 2, TienPhat = 0, DaXoa = false },
+            new ChiTietPhieuTra { MaPhieuTra = 2, MaPhieuMuon = 2, MaSach = 5, TienPhat = 0, DaXoa = false },
+            new ChiTietPhieuTra { MaPhieuTra = 3, MaPhieuMuon = 3, MaSach = 3, TienPhat = 0, DaXoa = false },
+            new ChiTietPhieuTra { MaPhieuTra = 3, MaPhieuMuon = 3, MaSach = 6, TienPhat = 0, DaXoa = false },
+            
+            // Returns with fines (returned late) - for late return statistics
+            new ChiTietPhieuTra { MaPhieuTra = 4, MaPhieuMuon = 4, MaSach = 7, TienPhat = 15000, DaXoa = false },
+            new ChiTietPhieuTra { MaPhieuTra = 5, MaPhieuMuon = 5, MaSach = 8, TienPhat = 25000, DaXoa = false },
+            new ChiTietPhieuTra { MaPhieuTra = 6, MaPhieuMuon = 6, MaSach = 9, TienPhat = 10000, DaXoa = false },
+            new ChiTietPhieuTra { MaPhieuTra = 7, MaPhieuMuon = 7, MaSach = 13, TienPhat = 30000, DaXoa = false },
+            new ChiTietPhieuTra { MaPhieuTra = 8, MaPhieuMuon = 8, MaSach = 14, TienPhat = 20000, DaXoa = false },
+            new ChiTietPhieuTra { MaPhieuTra = 9, MaPhieuMuon = 9, MaSach = 15, TienPhat = 12000, DaXoa = false },
+            new ChiTietPhieuTra { MaPhieuTra = 10, MaPhieuMuon = 10, MaSach = 4, TienPhat = 18000, DaXoa = false },
+            new ChiTietPhieuTra { MaPhieuTra = 11, MaPhieuMuon = 11, MaSach = 5, TienPhat = 22000, DaXoa = false },
+            new ChiTietPhieuTra { MaPhieuTra = 12, MaPhieuMuon = 12, MaSach = 6, TienPhat = 8000, DaXoa = false },
+            new ChiTietPhieuTra { MaPhieuTra = 13, MaPhieuMuon = 13, MaSach = 7, TienPhat = 35000, DaXoa = false },
+            new ChiTietPhieuTra { MaPhieuTra = 14, MaPhieuMuon = 14, MaSach = 8, TienPhat = 16000, DaXoa = false },
+            new ChiTietPhieuTra { MaPhieuTra = 15, MaPhieuMuon = 15, MaSach = 9, TienPhat = 28000, DaXoa = false },
+        };
+
+            context.DsChiTietPhieuTra.AddRange(chiTietPhieuTraList);
+        }
+    }
 }

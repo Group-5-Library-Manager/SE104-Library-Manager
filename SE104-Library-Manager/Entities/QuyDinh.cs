@@ -14,7 +14,7 @@ public class QuyDinh
     public int SoNamXuatBanToiDa { get; set; } = 8; // Years
     public int SoNgayMuonToiDa { get; set; } = 30; // Days
     public int SoSachMuonToiDa { get; set; } = 5;
-    public int TienPhatQuaHanMoiNgay { get; set; } = 1_000; // VND
+    public int TienPhatQuaHanMoiNgay { get; set; } = 1000; // VND
     public int SoTheLoaiToiDa { get; set; } = 100;
     public int SoBoPhanToiDa { get; set; } = 4;
     public int SoBangCapToiDa { get; set; } = 5;

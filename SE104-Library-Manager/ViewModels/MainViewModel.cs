@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using SE104_Library_Manager.Interfaces;
 using SE104_Library_Manager.Views;
+using SE104_Library_Manager.Views.Return;
 using System.Windows;
 
 namespace SE104_Library_Manager.ViewModels
@@ -56,7 +57,7 @@ namespace SE104_Library_Manager.ViewModels
                     // CurrentView = new BorrowViewModel();
                     break;
                 case "Return":
-                    // CurrentView = new ReturnViewModel();
+                    CurrentView = App.ServiceProvider?.GetService(typeof(ReturnView)) as ReturnView;
                     break;
                 case "Statistic":
                     // CurrentView = new StatisticsViewModel();

@@ -12,6 +12,8 @@
                 <ResourceDictionary Source="Styles/PrimaryButtonStyle.xaml" />
                 <ResourceDictionary Source="Styles/SecondaryButtonStyle.xaml" />
                 <ResourceDictionary Source="Styles/AddButtonDarkIconStyle.xaml" />
+                <ResourceDictionary Source="Styles/MinusButtonStyle.xaml" />
+                <ResourceDictionary Source="Styles/GroupBoxStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

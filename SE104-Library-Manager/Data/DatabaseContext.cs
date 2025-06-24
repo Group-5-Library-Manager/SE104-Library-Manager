@@ -17,6 +17,7 @@ public class DatabaseContext(DbContextOptions options) : DbContext(options)
     public DbSet<NhaXuatBan> DsNhaXuatBan { get; set; } = null!;
     public DbSet<PhieuMuon> DsPhieuMuon { get; set; } = null!;
     public DbSet<PhieuTra> DsPhieuTra { get; set; } = null!;
+    public DbSet<PhieuPhat> DsPhieuPhat { get; set; } = null!;
     public DbSet<QuyDinh> DsQuyDinh { get; set; } = null!;
     public DbSet<Sach> DsSach { get; set; } = null!;
     public DbSet<TacGia> DsTacGia { get; set; } = null!;
@@ -102,6 +103,14 @@ public class DatabaseContext(DbContextOptions options) : DbContext(options)
             .HasForeignKey(pm => pm.MaNhanVien)
             .IsRequired() // Ensure foreign key is required
             .OnDelete(DeleteBehavior.Restrict);
+
+        // PhieuTra -> NhanVien
+        modelBuilder.Entity<NhanVien>()
+            .HasMany(nv => nv.DsPhieuTra)
+            .WithOne(pt => pt.NhanVien)
+            .HasForeignKey(pt => pt.MaNhanVien)
+            .IsRequired() // Ensure foreign key is required
+            .OnDelete(DeleteBehavior.Restrict);
     }
 
     private static void ConfigureReaderRestrictions(ModelBuilder modelBuilder)
@@ -125,6 +134,14 @@ public class DatabaseContext(DbContextOptions options) : DbContext(options)
         // PhieuTra -> DocGia
         modelBuilder.Entity<DocGia>()
             .HasMany(dg => dg.DsPhieuTra)
+            .WithOne(pt => pt.DocGia)
+            .HasForeignKey(pt => pt.MaDocGia)
+            .IsRequired() // Ensure foreign key is required
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // PhieuPhat -> DocGia
+        modelBuilder.Entity<DocGia>()
+            .HasMany(dg => dg.DsPhieuPhat)
             .WithOne(pt => pt.DocGia)
             .HasForeignKey(pt => pt.MaDocGia)
             .IsRequired() // Ensure foreign key is required

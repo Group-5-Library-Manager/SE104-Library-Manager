@@ -2,8 +2,10 @@
 using CommunityToolkit.Mvvm.Input;
 using SE104_Library_Manager.Interfaces;
 using SE104_Library_Manager.Views;
+using SE104_Library_Manager.Views.Borrow;
 using SE104_Library_Manager.Views.Policy;
 using SE104_Library_Manager.Views.Return;
+using SE104_Library_Manager.Views.Statistic;
 using System.Windows;
 
 namespace SE104_Library_Manager.ViewModels
@@ -55,13 +57,13 @@ namespace SE104_Library_Manager.ViewModels
                     CurrentView = App.ServiceProvider?.GetService(typeof(StaffView)) as StaffView;
                     break;
                 case "Borrow":
-                    // CurrentView = new BorrowViewModel();
+                    CurrentView = App.ServiceProvider?.GetService(typeof(BorrowView)) as BorrowView;
                     break;
                 case "Return":
                     CurrentView = App.ServiceProvider?.GetService(typeof(ReturnView)) as ReturnView;
                     break;
                 case "Statistic":
-                    // CurrentView = new StatisticsViewModel();
+                    CurrentView = App.ServiceProvider?.GetService(typeof(StatisticView)) as StatisticView;
                     break;
                 case "Policy":
                     CurrentView = App.ServiceProvider?.GetService(typeof(PolicyView)) as PolicyView;

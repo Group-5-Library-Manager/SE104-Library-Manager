@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using SE104_Library_Manager.Entities;
 using SE104_Library_Manager.Interfaces.Repositories;
+using SE104_Library_Manager.Views.Return;
 using System.Collections.ObjectModel;
 using System.Windows;
 
@@ -213,6 +214,12 @@ public partial class UpdateReturnReceiptViewModel : ObservableObject
         Application.Current.Windows
             .OfType<Window>()
             .FirstOrDefault(w => w.DataContext == this)?.Close();
+    }
+
+    [RelayCommand]
+    public void Cancel(UpdateReturnReceiptWindow w)
+    {
+        w.Close();
     }
 
     private void SyncAvailableBooks(BookReturnItem item, List<SelectableBook> newList)

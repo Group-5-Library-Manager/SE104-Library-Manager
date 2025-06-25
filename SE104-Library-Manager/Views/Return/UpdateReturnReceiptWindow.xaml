@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:SE104_Library_Manager.Views.Return"
         xmlns:converters="clr-namespace:SE104_Library_Manager.Converters"
         mc:Ignorable="d"
+        x:Name="window" ResizeMode="NoResize"
         Title="UpdateReturnReceiptWindow"
         Height="600" Width="800"  WindowStartupLocation="CenterScreen">
     <Window.Resources>
@@ -145,7 +146,7 @@
             <!-- Thao tác -->
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,10">
                 <Button Content="Cập nhật" FontSize="14" Width="100" Margin="0,0,10,0" Command="{Binding UpdateReturnCommand}" Style="{StaticResource PrimaryButtonStyle}"/>
-                <Button Content="Hủy" FontSize="14" Width="100" Style="{StaticResource SecondaryButtonStyle}"/>
+                <Button Content="Hủy" FontSize="14" Width="100" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding CancelCommand}" CommandParameter="{Binding ElementName=window}"/>
             </StackPanel>
         </StackPanel>
     </Grid>

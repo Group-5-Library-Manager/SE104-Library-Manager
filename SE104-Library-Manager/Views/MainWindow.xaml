@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:SE104_Library_Manager.Views"
         xmlns:viewmodel="clr-namespace:SE104_Library_Manager.ViewModels"
         mc:Ignorable="d"
-        Title="Quản lý thư viện" Height="900" Width="1200"
+        Title="Quản lý thư viện" Height="800" Width="1200"
         WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.ColumnDefinitions>
@@ -89,7 +89,7 @@
                                  Style="{StaticResource MenuButtonTheme}"                             
                                  Command="{Binding NavigateCommand}"
                                  CommandParameter="Borrow"
-                                 Content="Mượn trả"
+                                 Content="Mượn sách"
                                  Cursor="Hand">
                         <RadioButton.Tag>
                             <BitmapImage UriSource="/Assets/icon_borrow.png" />

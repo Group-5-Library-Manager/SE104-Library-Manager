@@ -27,9 +27,18 @@
                        FontWeight="SemiBold"/>
             <ComboBox ItemsSource="{Binding ReadersWithDebt}"
                       SelectedItem="{Binding SelectedReader}"
-                      DisplayMemberPath="TenDocGia"
                       BorderThickness="0" Padding="8 4"
-                      Margin="0,10,0,15" FontSize="14"/>
+                      Margin="0,10,0,15" FontSize="14">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock>
+                            <Run Text="{Binding MaDocGia, StringFormat='DG{0}'}"/>
+                            <Run Text=" - "/>
+                            <Run Text="{Binding TenDocGia}"/>
+                        </TextBlock>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
 
             <!-- Tổng nợ -->
             <StackPanel Orientation="Horizontal" Margin="0 0 0 15">

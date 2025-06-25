@@ -1,0 +1,255 @@
+﻿<UserControl x:Class="SE104_Library_Manager.Views.Borrow.BorrowView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:SE104_Library_Manager.Views.Borrow"
+             xmlns:converters="clr-namespace:SE104_Library_Manager.Converters" 
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             Background="White">
+    <UserControl.Resources>
+        <converters:PrefixConverter x:Key="PrefixConverter"/>
+        <converters:DateOnlyFormattedConverter x:Key="DateOnlyFormattedConverter"/>
+    </UserControl.Resources>
+    
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border BorderThickness="1"
+                BorderBrush="Black"
+                CornerRadius="5"
+                Padding="20"
+                Grid.Row="0">
+            <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Horizontal"
+                            Margin="0 10 0 0">
+                    <TextBlock Text="Mã phiếu: "
+                               FontSize="14" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding SelectedBorrow.MaPhieuMuon, Converter={StaticResource PrefixConverter}, ConverterParameter=PM}"
+                               FontSize="14"/>
+                    <TextBlock Text="Ngày mượn: "
+                               FontSize="14" FontWeight="SemiBold"
+                               Margin="20 0 0 0"/>
+                    <TextBlock Text="{Binding SelectedBorrow.NgayMuon, Converter={StaticResource DateOnlyFormattedConverter}}"
+                               FontSize="14"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal"
+                            Margin="0 10 0 0">
+                    <TextBlock Text="Mã nhân viên: "
+                               FontSize="14" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding SelectedBorrow.NhanVien.MaNhanVien, Converter={StaticResource PrefixConverter}, ConverterParameter=NV}"
+                               FontSize="14"/>
+                    <TextBlock Text="Tên nhân viên: "
+                               FontSize="14" FontWeight="SemiBold"
+                               Margin="20 0 0 0"/>
+                    <TextBlock Text="{Binding SelectedBorrow.NhanVien.TenNhanVien}"
+                               FontSize="14"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal"
+                            Margin="0 10 0 0">
+                    <TextBlock Text="Mã độc giả: "
+                               FontSize="14" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding SelectedBorrow.DocGia.MaDocGia, Converter={StaticResource PrefixConverter}, ConverterParameter=DG}"
+                               FontSize="14"/>
+                    <TextBlock Text="Tên độc giả: "
+                               FontSize="14" FontWeight="SemiBold"
+                               Margin="20 0 0 0"/>
+                    <TextBlock Text="{Binding SelectedBorrow.DocGia.TenDocGia}"
+                               FontSize="14"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal"
+                            Margin="0 20 0 0">
+                    <Button Content="Cập nhật"
+                            Width="100"
+                            FontSize="14"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Command="{Binding UpdateBorrowCommand}"
+                            Margin="0 0 20 0"/>
+                    <Button Content="Xóa"
+                            Width="100"
+                            FontSize="14"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Command="{Binding DeleteBorrowCommand}"
+                            Margin="20 0 20 0"/>
+                </StackPanel>
+                
+            </StackPanel>
+        </Border>
+
+        <Border BorderThickness="0"
+                 CornerRadius="10"
+                 Margin="0, 30, 0, 0"
+                 Padding="20"
+                 Grid.Row="1">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#FF536FB5" Offset="0"/>
+                    <GradientStop Color="#FF24304F" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <StackPanel Orientation="Horizontal" Grid.Row="0">
+                    <Border BorderThickness="0"
+                            CornerRadius="15"
+                            Background="White"
+                            Height="40"
+                            Width="350"
+                            Padding="10, 0, 10, 0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Grid Grid.Column="0">
+                                <Grid>
+                                    <TextBox x:Name="searchTextBox"
+                                             Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                             VerticalAlignment="Center" 
+                                             HorizontalAlignment="Stretch" 
+                                             Margin="5"
+                                             Padding="5,0"
+                                             BorderThickness="0" FontSize="14"
+                                             VerticalContentAlignment="Center">
+                                        <TextBox.InputBindings>
+                                            <KeyBinding Key="Enter" Command="{Binding SearchCommand}" />
+                                        </TextBox.InputBindings>
+                                    </TextBox>
+                                    <TextBlock Text="Tìm kiếm"
+                                               IsHitTestVisible="False"
+                                               VerticalAlignment="Center"
+                                               Margin="15,0,0,0" FontSize="14"
+                                               Foreground="DarkGray"
+                                               HorizontalAlignment="Left">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Text, ElementName=searchTextBox}" Value="">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                            </Grid>
+                            <Button Grid.Column="1"
+                                    Command="{Binding SearchCommand}">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Grid>
+                                            <Ellipse x:Name="ellipse"
+                                                     Width="40"
+                                                     Height="40"
+                                                     Fill="Transparent"
+                                                     Stroke="Transparent"
+                                                     StrokeThickness="0" />
+
+                                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                        </Grid>
+
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="ellipse" Property="Fill" Value="#EEE" />
+                                            </Trigger>
+
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="ellipse" Property="Fill" Value="#CCC" />
+                                            </Trigger>
+
+                                            <Trigger Property="IsEnabled" Value="False">
+                                                <Setter TargetName="ellipse" Property="Opacity" Value="0.5" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+
+                                <Image Source="/Assets/icon_search.png" Stretch="Uniform" Width="30" Height="30" />
+                            </Button>
+
+                        </Grid>
+                    </Border>
+                    <Button Content="Lập phiếu mượn"
+                            Command="{Binding AddBorrowCommand}"
+                            Margin="40, 0, 0, 0" FontSize="14"
+                            Style="{StaticResource AddButtonDarkIconStyle}" />
+                </StackPanel>
+
+                <Grid Background="White"
+                      Grid.Row="1"
+                      Margin="0 20 0 0">
+                    <DataGrid SelectionMode="Single"
+                                AutoGenerateColumns="False"
+                                Background="Transparent"
+                                CanUserReorderColumns="False"
+                                CanUserResizeRows="False"
+                                CanUserAddRows="False"
+                                CanUserDeleteRows="False"
+                                BorderThickness="0"
+                                IsReadOnly="True"
+                                FontSize="14"
+                                HeadersVisibility="Column"
+                                HorizontalScrollBarVisibility="Hidden"
+                                VerticalScrollBarVisibility="Hidden"
+                                ItemsSource="{Binding DsPhieuMuon}"
+                                SelectedItem="{Binding SelectedBorrow}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Mã phiếu mượn" Width="*" Binding="{Binding MaPhieuMuon, Converter={StaticResource PrefixConverter}, ConverterParameter=PM}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader">
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                        <Setter Property="FontSize" Value="14"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Mã nhân viên" Width="*" Binding="{Binding NhanVien.MaNhanVien,Converter={StaticResource PrefixConverter}, ConverterParameter=NV}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader">
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                        <Setter Property="FontSize" Value="14"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Mã độc giả" Width="*" Binding="{Binding DocGia.MaDocGia, Converter={StaticResource PrefixConverter}, ConverterParameter=DG}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader">
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                        <Setter Property="FontSize" Value="14"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Tên độc giả" Width="*" Binding="{Binding DocGia.TenDocGia}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader">
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                        <Setter Property="FontSize" Value="14"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Ngày mượn" Width="*" Binding="{Binding NgayMuon, Converter={StaticResource DateOnlyFormattedConverter}}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader">
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                        <Setter Property="FontSize" Value="14"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

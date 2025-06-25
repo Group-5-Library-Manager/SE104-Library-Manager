@@ -87,10 +87,7 @@
                                                 <Button Grid.Column="1" Content="−" Width="25" Height="25"
                                                         Command="{Binding DataContext.RemoveBookFromSelectedCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                         CommandParameter="{Binding}"
-                                                        Style="{StaticResource SecondaryButtonStyle}"
-                                                        Foreground="White" Background="#253251"
-                                                        VerticalAlignment="Center" HorizontalAlignment="Center"
-                                                        FontSize="16" FontWeight="Bold"/>
+                                                        Style="{StaticResource MinusButtonStyle}"/>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>

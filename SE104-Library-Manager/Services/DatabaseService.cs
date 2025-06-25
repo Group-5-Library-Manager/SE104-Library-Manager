@@ -26,7 +26,7 @@ public class DatabaseService
         var options = new DbContextOptionsBuilder<DatabaseContext>()
             .UseSqlite(connectionString)
             .Options;
-        
+
         _dbContext = new DatabaseContext(options);
 
         bool isNewlyCreated = await _dbContext.Database.EnsureCreatedAsync();
@@ -62,6 +62,7 @@ public class DatabaseService
 
         await EnsureCreateSachAsync(context);
         await context.SaveChangesAsync();
+
         await EnsureCreatePhieuMuonAsync(context);
         await context.SaveChangesAsync();
 
@@ -363,23 +364,23 @@ public class DatabaseService
             var phieuTraList = new List<PhieuTra>
         {
             // Some books returned on time (no fines)
-            new PhieuTra { MaDocGia = 1, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-75)), TienPhatKyNay = 0, DaXoa = false },
-            new PhieuTra {MaDocGia = 2, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-70)), TienPhatKyNay = 0, DaXoa = false },
-            new PhieuTra {MaDocGia = 3, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-65)), TienPhatKyNay = 0, DaXoa = false },
+            new PhieuTra { MaDocGia = 1, MaNhanVien = 1, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-75)), TienPhatKyNay = 0, DaXoa = false },
+            new PhieuTra {MaDocGia = 2,MaNhanVien = 1, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-70)), TienPhatKyNay = 0, DaXoa = false },
+            new PhieuTra {MaDocGia = 3, MaNhanVien = 1,NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-65)), TienPhatKyNay = 0, DaXoa = false },
             
             // Some books returned late (with fines) - for revenue statistics
-            new PhieuTra {MaDocGia = 3, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-60)), TienPhatKyNay = 15000, DaXoa = false },
-            new PhieuTra {MaDocGia = 1, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-55)), TienPhatKyNay = 25000, DaXoa = false },
-            new PhieuTra {MaDocGia = 2, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-50)), TienPhatKyNay = 10000, DaXoa = false },
-            new PhieuTra {MaDocGia = 1, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-45)), TienPhatKyNay = 30000, DaXoa = false },
-            new PhieuTra {MaDocGia = 2, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-40)), TienPhatKyNay = 20000, DaXoa = false },
-            new PhieuTra {MaDocGia = 3, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-35)), TienPhatKyNay = 12000, DaXoa = false },
-            new PhieuTra {MaDocGia = 2, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-30)), TienPhatKyNay = 18000, DaXoa = false },
-            new PhieuTra { MaDocGia = 1,NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-25)), TienPhatKyNay = 22000, DaXoa = false },
-            new PhieuTra {MaDocGia = 3, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-20)), TienPhatKyNay = 8000, DaXoa = false },
-            new PhieuTra { MaDocGia = 1,NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-15)), TienPhatKyNay = 35000, DaXoa = false },
-            new PhieuTra { MaDocGia = 3,NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-10)), TienPhatKyNay = 16000, DaXoa = false },
-            new PhieuTra {MaDocGia = 2, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-5)), TienPhatKyNay = 28000, DaXoa = false },
+            new PhieuTra {MaDocGia = 3, MaNhanVien = 1, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-60)), TienPhatKyNay = 15000, DaXoa = false },
+            new PhieuTra {MaDocGia = 1,MaNhanVien = 1, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-55)), TienPhatKyNay = 25000, DaXoa = false },
+            new PhieuTra {MaDocGia = 2,MaNhanVien = 1, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-50)), TienPhatKyNay = 10000, DaXoa = false },
+            new PhieuTra {MaDocGia = 1,MaNhanVien = 1, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-45)), TienPhatKyNay = 30000, DaXoa = false },
+            new PhieuTra {MaDocGia = 2,MaNhanVien = 1, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-40)), TienPhatKyNay = 20000, DaXoa = false },
+            new PhieuTra {MaDocGia = 3,MaNhanVien = 1, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-35)), TienPhatKyNay = 12000, DaXoa = false },
+            new PhieuTra {MaDocGia = 2,MaNhanVien = 1, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-30)), TienPhatKyNay = 18000, DaXoa = false },
+            new PhieuTra { MaDocGia = 1,MaNhanVien = 1,NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-25)), TienPhatKyNay = 22000, DaXoa = false },
+            new PhieuTra {MaDocGia = 3,MaNhanVien = 1, NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-20)), TienPhatKyNay = 8000, DaXoa = false },
+            new PhieuTra { MaDocGia = 1,MaNhanVien = 1,NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-15)), TienPhatKyNay = 35000, DaXoa = false },
+            new PhieuTra { MaDocGia = 3,MaNhanVien = 1,NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-10)), TienPhatKyNay = 16000, DaXoa = false },
+            new PhieuTra {MaDocGia = 2, MaNhanVien = 1,NgayTra = DateOnly.FromDateTime(DateTime.Now.AddDays(-5)), TienPhatKyNay = 28000, DaXoa = false },
         };
 
             context.DsPhieuTra.AddRange(phieuTraList);

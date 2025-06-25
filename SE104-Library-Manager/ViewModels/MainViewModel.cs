@@ -2,8 +2,10 @@
 using CommunityToolkit.Mvvm.Input;
 using SE104_Library_Manager.Interfaces;
 using SE104_Library_Manager.Views;
+using SE104_Library_Manager.Views.Borrow;
 using SE104_Library_Manager.Views.Policy;
 using SE104_Library_Manager.Views.Return;
+using SE104_Library_Manager.Views.Statistic;
 using System.Windows;
 
 namespace SE104_Library_Manager.ViewModels

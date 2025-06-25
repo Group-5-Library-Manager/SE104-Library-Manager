@@ -54,14 +54,15 @@ namespace SE104_Library_Manager.Repositories
 
                 // Mark the borrow receipt as deleted
                 phieuMuon.DaXoa = true;
+                var chiTietPMs = phieuMuon.DsChiTietPhieuMuon;
 
                 // Update all borrowed books back to available status
-                foreach (var chiTiet in phieuMuon.DsChiTietPhieuMuon)
+                foreach (var chiTiet in chiTietPMs)
                 {
                     await this.UpdateBookStatusAsync(chiTiet.MaSach, "Có sẵn");
                 }
 
-                dbService.DbContext.Update(phieuMuon);
+                dbService.DbContext.DsChiTietPhieuMuon.RemoveRange(chiTietPMs);
                 await dbService.DbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
             }

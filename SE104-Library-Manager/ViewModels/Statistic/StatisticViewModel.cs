@@ -13,7 +13,7 @@ namespace SE104_Library_Manager.ViewModels.Statistic
         // Child ViewModels
         public BorrowingStatisticViewModel BorrowingStatisticViewModel { get; }
         public LateReturnStatisticViewModel LateReturnStatisticViewModel { get; }
-        public RevenueStatisticViewModel RevenueStatisticViewModel { get; }
+        public PenaltyStatisticViewModel PenaltyStatisticViewModel { get; }
 
         public StatisticViewModel(
             DatabaseService dbService,
@@ -22,7 +22,7 @@ namespace SE104_Library_Manager.ViewModels.Statistic
             // Initialize child ViewModels
             BorrowingStatisticViewModel = new BorrowingStatisticViewModel(dbService);
             LateReturnStatisticViewModel = new LateReturnStatisticViewModel(dbService, quyDinhRepo);
-            RevenueStatisticViewModel = new RevenueStatisticViewModel(dbService);
+            PenaltyStatisticViewModel = new PenaltyStatisticViewModel(dbService);
         }
 
         partial void OnSelectedTabChanged(TabItem? value)
@@ -42,7 +42,7 @@ namespace SE104_Library_Manager.ViewModels.Statistic
                         // LateReturnStatisticViewModel operations if needed
                         break;
                     case "Tiền thu phạt":
-                        // RevenueStatisticViewModel operations if needed
+                        // PenaltyStatisticViewModel operations if needed
                         break;
                 }
             }

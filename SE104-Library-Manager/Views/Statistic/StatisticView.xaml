@@ -16,7 +16,7 @@
                 <local:LateReturnStatisticView DataContext="{Binding LateReturnStatisticViewModel}"/>
             </TabItem>
             <TabItem Header="Tiền thu phạt">
-                <local:RevenueStatisticView DataContext="{Binding RevenueStatisticViewModel}"/>
+                <local:PenaltyStatisticView DataContext="{Binding PenaltyStatisticViewModel}"/>
             </TabItem>
         </TabControl>
     </Grid>

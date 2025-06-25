@@ -16,11 +16,11 @@ using System.Windows.Shapes;
 namespace SE104_Library_Manager.Views.Statistic
 {
     /// <summary>
-    /// Interaction logic for RevenueStatisticView.xaml
+    /// Interaction logic for PenaltyStatisticView.xaml
     /// </summary>
-    public partial class RevenueStatisticView : UserControl
+    public partial class PenaltyStatisticView : UserControl
     {
-        public RevenueStatisticView()
+        public PenaltyStatisticView()
         {
             InitializeComponent();
         }

@@ -17,7 +17,7 @@ using System.Drawing;
 
 namespace SE104_Library_Manager.ViewModels.Statistic
 {
-    public partial class RevenueStatisticViewModel : ObservableObject
+    public partial class PenaltyStatisticViewModel : ObservableObject
     {
         private readonly DatabaseService _dbService;
 
@@ -28,10 +28,10 @@ namespace SE104_Library_Manager.ViewModels.Statistic
         private DateTime _toDate = DateTime.Now;
 
         [ObservableProperty]
-        private ObservableCollection<RevenueStatisticItem> _revenueItems = new();
+        private ObservableCollection<PenaltyStatisticItem> _penaltyItems = new();
 
         [ObservableProperty]
-        private int _totalRevenue = 0;
+        private int _totalPenalty = 0;
 
         [ObservableProperty]
         private ISeries[] _series = Array.Empty<ISeries>();
@@ -39,7 +39,7 @@ namespace SE104_Library_Manager.ViewModels.Statistic
         [ObservableProperty]
         private PointF[] _chartPoints = Array.Empty<PointF>();
 
-        public RevenueStatisticViewModel(DatabaseService dbService)
+        public PenaltyStatisticViewModel(DatabaseService dbService)
         {
             _dbService = dbService;
         }
@@ -54,14 +54,14 @@ namespace SE104_Library_Manager.ViewModels.Statistic
                 DateOnly toDateOnly = DateOnly.FromDateTime(ToDate);
 
                 // Query the database for revenue data
-                var revenueData = await GetRevenueDataAsync(fromDateOnly, toDateOnly);
+                var penaltyData = await GetPenaltyDataAsync(fromDateOnly, toDateOnly);
 
                 // Update the UI with the results
-                RevenueItems = new ObservableCollection<RevenueStatisticItem>(revenueData);
-                TotalRevenue = revenueData.Sum(item => item.Revenue);
+                PenaltyItems = new ObservableCollection<PenaltyStatisticItem>(penaltyData);
+                TotalPenalty = penaltyData.Sum(item => item.Penalty);
 
                 // Update the chart
-                UpdateChart(revenueData);
+                UpdateChart(penaltyData);
             }
             catch (Exception ex)
             {
@@ -69,7 +69,7 @@ namespace SE104_Library_Manager.ViewModels.Statistic
             }
         }
 
-        private async Task<List<RevenueStatisticItem>> GetRevenueDataAsync(DateOnly fromDate, DateOnly toDate)
+        private async Task<List<PenaltyStatisticItem>> GetPenaltyDataAsync(DateOnly fromDate, DateOnly toDate)
         {
             // Query the database for PhieuTra records within the date range
             var phieuTraList = await _dbService.DbContext.DsPhieuTra
@@ -77,27 +77,27 @@ namespace SE104_Library_Manager.ViewModels.Statistic
                 .ToListAsync();
 
             // Group by date and calculate revenue for each day
-            var revenueByDate = phieuTraList
+            var penaltyByDate = phieuTraList
                 .GroupBy(pt => pt.NgayTra)
-                .Select((group, index) => new RevenueStatisticItem
+                .Select((group, index) => new PenaltyStatisticItem
                 {
                     Index = index + 1,
                     Date = group.Key,
-                    Revenue = group.Sum(pt => pt.TienPhatKyNay),
+                    Penalty = group.Sum(pt => pt.TienPhatKyNay),
                     FormattedDate = group.Key.ToString("dd/MM/yyyy")
                 })
                 .OrderBy(item => item.Date)
                 .ToList();
 
-            return revenueByDate;
+            return penaltyByDate;
         }
 
-        private void UpdateChart(List<RevenueStatisticItem> revenueData)
+        private void UpdateChart(List<PenaltyStatisticItem> revenueData)
         {
             // Create chart series
             Series = new ISeries[]
             {
-                new LineSeries<RevenueStatisticItem>
+                new LineSeries<PenaltyStatisticItem>
                 {
                     Values = revenueData,
                     GeometrySize = 10,
@@ -106,7 +106,7 @@ namespace SE104_Library_Manager.ViewModels.Statistic
                     GeometryFill = new SolidColorPaint(SKColors.White),
                     GeometryStroke = new SolidColorPaint(SKColors.Blue, 2),
                     LineSmoothness = 0.5,
-                    Mapping = (item, index) => new LiveChartsCore.Kernel.Coordinate(index, item.Revenue)
+                    Mapping = (item, index) => new LiveChartsCore.Kernel.Coordinate(index, item.Penalty)
                 }
             };
 
@@ -115,7 +115,7 @@ namespace SE104_Library_Manager.ViewModels.Statistic
             if (revenueData.Count > 0)
             {
                 float xScale = 700f / Math.Max(1, revenueData.Count - 1); // Width of chart area is 700
-                int maxRevenue = revenueData.Max(item => item.Revenue);
+                int maxRevenue = revenueData.Max(item => item.Penalty);
                 float yScale = maxRevenue > 0 ? 300f / maxRevenue : 1f; // Height of chart area is 300
 
                 // Add bottom-left point
@@ -125,7 +125,7 @@ namespace SE104_Library_Manager.ViewModels.Statistic
                 for (int i = 0; i < revenueData.Count; i++)
                 {
                     float x = 50 + i * xScale;
-                    float y = 300 - revenueData[i].Revenue * yScale;
+                    float y = 300 - revenueData[i].Penalty * yScale;
                     points.Add(new PointF(x, y));
                 }
 
@@ -137,11 +137,11 @@ namespace SE104_Library_Manager.ViewModels.Statistic
         }
     }
 
-    public class RevenueStatisticItem
+    public class PenaltyStatisticItem
     {
         public int Index { get; set; }
         public DateOnly Date { get; set; }
-        public int Revenue { get; set; }
+        public int Penalty { get; set; }
         public string FormattedDate { get; set; } = string.Empty;
     }
 }

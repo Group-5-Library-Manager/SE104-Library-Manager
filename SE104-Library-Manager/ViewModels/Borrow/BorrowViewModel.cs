@@ -19,36 +19,14 @@ namespace SE104_Library_Manager.ViewModels.Borrow
     {
         [ObservableProperty]
         private ObservableCollection<PhieuMuon> dsPhieuMuon = new ObservableCollection<PhieuMuon>();
+        [ObservableProperty]
+        private ObservableCollection<PhieuMuon> dsPhieuMuonFiltered = new ObservableCollection<PhieuMuon>();
 
         [ObservableProperty]
         private PhieuMuon? selectedBorrow;
 
+        [ObservableProperty]
         private string searchQuery = string.Empty;
-        private DispatcherTimer searchTimer;
-
-        // Property with debounced search
-        public string SearchQuery
-        {
-            get => searchQuery;
-            set
-            {
-                if (SetProperty(ref searchQuery, value))
-                {
-                    // Reset timer on each keystroke
-                    searchTimer?.Stop();
-                    searchTimer = new DispatcherTimer
-                    {
-                        Interval = TimeSpan.FromMilliseconds(300) // 300ms delay
-                    };
-                    searchTimer.Tick += (s, e) =>
-                    {
-                        searchTimer.Stop();
-                        Search();
-                    };
-                    searchTimer.Start();
-                }
-            }
-        }
 
         private List<PhieuMuon> originalDsPhieuMuon = new List<PhieuMuon>();
         private readonly IPhieuMuonRepository phieuMuonRepo;
@@ -73,12 +51,18 @@ namespace SE104_Library_Manager.ViewModels.Borrow
             {
                 originalDsPhieuMuon = await phieuMuonRepo.GetAllAsync();
                 DsPhieuMuon = new ObservableCollection<PhieuMuon>(originalDsPhieuMuon);
+                SelectedBorrow = null;
                 SearchQuery = string.Empty;
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Lỗi khi tải dữ liệu: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        partial void OnSearchQueryChanged(string value)
+        {
+            Search();
         }
 
         [RelayCommand]
@@ -92,6 +76,9 @@ namespace SE104_Library_Manager.ViewModels.Borrow
 
             var lowerValue = SearchQuery.ToLower();
             var filteredList = originalDsPhieuMuon.Where(pm =>
+                $"pm{pm.MaPhieuMuon}".ToLower().Contains(lowerValue) ||
+                $"dg{pm.DocGia?.MaDocGia}".ToLower().Contains(lowerValue) ||
+                $"nv{pm.NhanVien?.MaNhanVien}".ToLower().Contains(lowerValue) ||
                 pm.MaPhieuMuon.ToString().Contains(lowerValue) ||
                 (pm.DocGia?.TenDocGia?.ToLower().Contains(lowerValue) ?? false) ||
                 (pm.NhanVien?.TenNhanVien?.ToLower().Contains(lowerValue) ?? false) ||

@@ -4,11 +4,11 @@ using SE104_Library_Manager.Interfaces.Repositories;
 using SE104_Library_Manager.Repositories;
 using SE104_Library_Manager.Services;
 using SE104_Library_Manager.ViewModels;
-using SE104_Library_Manager.ViewModels.Borrow;
-using SE104_Library_Manager.ViewModels.Statistic;
+using SE104_Library_Manager.ViewModels.Policy;
+using SE104_Library_Manager.ViewModels.Return;
 using SE104_Library_Manager.Views;
-using SE104_Library_Manager.Views.Borrow;
-using SE104_Library_Manager.Views.Statistic;
+using SE104_Library_Manager.Views.Policy;
+using SE104_Library_Manager.Views.Return;
 
 namespace SE104_Library_Manager.Extensions;
 
@@ -31,7 +31,9 @@ public static class AppServiceExtensions
         services.AddScoped<IBoPhanRepository, BoPhanRepository>();
         services.AddScoped<IVaiTroRepository, VaiTroRepository>();
         services.AddScoped<IQuyDinhRepository, QuyDinhRepository>();
-        services.AddScoped<IPhieuMuonRepository, PhieuMuonRepository>();
+        services.AddScoped<IPhieuTraRepository, PhieuTraRepository>();
+        services.AddScoped<IChiTietPhieuTraRepository, ChiTietPhieuTraRepository>();
+        services.AddScoped<IPhieuPhatRepository, PhieuPhatRepository>();
         services.AddScoped<IAuthService, AuthService>();
 
         services.AddTransient<LoginWindow>();
@@ -59,21 +61,19 @@ public static class AppServiceExtensions
         services.AddTransient<AddDepartmentWindow>();
         services.AddTransient<AddDepartmentViewModel>();
 
-        services.AddTransient<BorrowView>();
-        services.AddTransient<BorrowViewModel>();
-        services.AddTransient<AddBorrowWindow>();
-        services.AddTransient<AddBorrowViewModel>();
-        services.AddTransient<UpdateBorrowWindow>();
-        services.AddTransient<UpdateBorrowViewModel>();
 
-        services.AddTransient<StatisticView>();
-        services.AddTransient<StatisticViewModel>();
-        services.AddTransient<RevenueStatisticView>();
-        services.AddTransient<RevenueStatisticViewModel>();
-        services.AddTransient<BorrowingStatisticView>();
-        services.AddTransient<BorrowingStatisticViewModel>();
-        services.AddTransient<LateReturnStatisticView>();
-        services.AddTransient<LateReturnStatisticViewModel>();
+        services.AddTransient<ReturnView>();
+        services.AddTransient<ReturnViewModel>();
+        services.AddTransient<AddReturnReceiptWindow>();
+        services.AddTransient<AddReturnReceiptViewModel>();
+        services.AddTransient<UpdateReturnReceiptWindow>();
+        services.AddTransient<UpdateReturnReceiptViewModel>();
+        services.AddTransient<AddPenaltyReceiptWindow>();
+        services.AddTransient<AddPenaltyReceiptViewModel>();
+
+        services.AddTransient<PolicyView>();
+        services.AddTransient<PolicyViewModel>();
+
         return services;
     }
 }

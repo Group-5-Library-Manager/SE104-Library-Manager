@@ -7,4 +7,5 @@ namespace SE104_Library_Manager.Interfaces.Repositories;
 public interface IQuyDinhRepository
 {
     public Task<QuyDinh> GetQuyDinhAsync();
+    Task UpdateAsync(QuyDinh quyDinh);
 }

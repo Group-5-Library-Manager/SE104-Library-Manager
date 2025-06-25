@@ -84,6 +84,7 @@ public class DocGiaRepository(DatabaseService dbService, IQuyDinhRepository quyD
         existingDocGia.MaLoaiDocGia = docGia.MaLoaiDocGia;
         existingDocGia.NgaySinh = docGia.NgaySinh;
         existingDocGia.NgayLapThe = docGia.NgayLapThe;
+        existingDocGia.TongNo = docGia.TongNo;
 
         dbService.DbContext.DsDocGia.Update(existingDocGia);
         await dbService.DbContext.SaveChangesAsync();

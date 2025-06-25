@@ -29,4 +29,5 @@ public class NhanVien
     public TaiKhoan TaiKhoan { get; set; } = null!;
 
     public ICollection<PhieuMuon> DsPhieuMuon { get; set; } = new List<PhieuMuon>();
+    public ICollection<PhieuTra> DsPhieuTra { get; set; } = new List<PhieuTra>();
 }

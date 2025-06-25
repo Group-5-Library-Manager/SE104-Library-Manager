@@ -23,4 +23,6 @@ public class DocGia
     public ICollection<PhieuMuon> DsPhieuMuon { get; set; } = new List<PhieuMuon>();
 
     public ICollection<PhieuTra> DsPhieuTra { get; set; } = new List<PhieuTra>();
+    
+    public ICollection<PhieuPhat> DsPhieuPhat { get; set; } = new List<PhieuPhat>();
 }

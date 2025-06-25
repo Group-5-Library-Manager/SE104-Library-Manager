@@ -13,4 +13,14 @@ public class QuyDinhRepository(DatabaseService dbService) : IQuyDinhRepository
             .AsNoTracking()
             .FirstAsync(q => q.MaQuyDinh == 1);
     }
+
+    public async Task UpdateAsync(QuyDinh quyDinh)
+    {
+        var existing = await dbService.DbContext.DsQuyDinh.FindAsync(quyDinh.MaQuyDinh);
+        if (existing != null)
+        {
+            dbService.DbContext.Entry(existing).CurrentValues.SetValues(quyDinh);
+            await dbService.DbContext.SaveChangesAsync();
+        }
+    }
 }

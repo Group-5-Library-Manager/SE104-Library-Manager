@@ -19,8 +19,6 @@ namespace SE104_Library_Manager.ViewModels.Borrow
     {
         [ObservableProperty]
         private ObservableCollection<PhieuMuon> dsPhieuMuon = new ObservableCollection<PhieuMuon>();
-        [ObservableProperty]
-        private ObservableCollection<PhieuMuon> dsPhieuMuonFiltered = new ObservableCollection<PhieuMuon>();
 
         [ObservableProperty]
         private PhieuMuon? selectedBorrow;

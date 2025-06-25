@@ -1,0 +1,164 @@
+﻿<UserControl x:Class="SE104_Library_Manager.Views.Policy.PolicyView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="900" d:DesignWidth="800"
+             Background="White">
+    <Grid Margin="20" >
+        <StackPanel Margin="16,16,16,0" VerticalAlignment="Top">
+            <!-- Quy định về độc giả -->
+            <Border BorderBrush="Black" BorderThickness="1" CornerRadius="4" Padding="16" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Quy định về độc giả" FontWeight="Bold" FontSize="20" 
+                               Foreground="#333333" Margin="0,0,0,16" />
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="80" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Row 0 -->
+                        <TextBlock Text="Thời hạn thẻ độc giả:" Grid.Row="0" Grid.Column="0" 
+                                   VerticalAlignment="Center" Margin="0,0,16,8" FontSize="14" FontWeight="SemiBold" />
+                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding CurrentQuyDinh.ThoiHanTheDocGia, ValidatesOnExceptions=True, NotifyOnValidationError=True}" 
+                                 Height="30" Margin="0,0,8,8" Padding="8,5" BorderBrush="#CCCCCC" />
+                        <TextBlock Text="(tháng)" Grid.Row="0" Grid.Column="2" FontSize="14" FontWeight="SemiBold"
+                                   VerticalAlignment="Center" Margin="0,0,0,8" Foreground="#666666" />
+
+                        <!-- Row 1 -->
+                        <TextBlock Text="Tuổi tối thiểu:" Grid.Row="1" Grid.Column="0" 
+                                   VerticalAlignment="Center" Margin="0,0,16,8" FontSize="14" FontWeight="SemiBold"/>
+                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding CurrentQuyDinh.TuoiDocGiaToiThieu, ValidatesOnExceptions=True, NotifyOnValidationError=True}" 
+                                 Height="30" Margin="0,0,8,8" Padding="8,5" BorderBrush="#CCCCCC" />
+
+                        <!-- Row 2 -->
+                        <TextBlock Text="Tuổi tối đa:" Grid.Row="2" Grid.Column="0" 
+                                   VerticalAlignment="Center" Margin="0,0,16,8" FontSize="14" FontWeight="SemiBold"/>
+                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding CurrentQuyDinh.TuoiDocGiaToiDa, ValidatesOnExceptions=True, NotifyOnValidationError=True}" 
+                                 Height="30" Margin="0,0,8,8" Padding="8,5" BorderBrush="#CCCCCC" />
+
+                        <!-- Row 3 -->
+                        <TextBlock Text="Số loại độc giả tối đa:" Grid.Row="3" Grid.Column="0" 
+                                   VerticalAlignment="Center" Margin="0,0,16,0" FontSize="14" FontWeight="SemiBold"/>
+                        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding CurrentQuyDinh.SoLoaiDocGiaToiDa, ValidatesOnExceptions=True, NotifyOnValidationError=True}" 
+                                 Height="30" Margin="0,0,8,0" Padding="8,5" BorderBrush="#CCCCCC" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Quy định về nhân viên -->
+            <Border BorderBrush="Black" BorderThickness="1" CornerRadius="4" Padding="16" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Quy định về nhân viên" FontWeight="Bold" FontSize="20" 
+                               Foreground="#333333" Margin="0,0,0,16" />
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="80" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Row 0 -->
+                        <TextBlock Text="Số chức vụ tối đa:" Grid.Row="0" Grid.Column="0" 
+                                   VerticalAlignment="Center" Margin="0,0,16,8" FontSize="14" FontWeight="SemiBold"/>
+                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding CurrentQuyDinh.SoChucVuToiDa, ValidatesOnExceptions=True, NotifyOnValidationError=True}" 
+                                 Height="30" Margin="0,0,8,8" Padding="8,5" BorderBrush="#CCCCCC" />
+
+                        <!-- Row 1 -->
+                        <TextBlock Text="Số bộ phận tối đa:" Grid.Row="1" Grid.Column="0" 
+                                   VerticalAlignment="Center" Margin="0,0,16,8" FontSize="14" FontWeight="SemiBold"/>
+                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding CurrentQuyDinh.SoBoPhanToiDa, ValidatesOnExceptions=True, NotifyOnValidationError=True}" 
+                                 Height="30" Margin="0,0,8,8" Padding="8,5" BorderBrush="#CCCCCC" />
+
+                        <!-- Row 2 -->
+                        <TextBlock Text="Số bằng cấp tối đa:" Grid.Row="2" Grid.Column="0" 
+                                   VerticalAlignment="Center" Margin="0,0,16,0" FontSize="14" FontWeight="SemiBold"/>
+                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding CurrentQuyDinh.SoBangCapToiDa, ValidatesOnExceptions=True, NotifyOnValidationError=True}" 
+                                 Height="30" Margin="0,0,8,0" Padding="8,5" BorderBrush="#CCCCCC" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Quy định về sách và mượn trả -->
+            <Border BorderBrush="Black" BorderThickness="1" CornerRadius="4" Padding="16" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Quy định về sách và mượn trả" FontWeight="Bold" FontSize="20" 
+                               Foreground="#333333" Margin="0,0,0,16" />
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="80" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Row 0 -->
+                        <TextBlock Text="Số năm xuất bản tối đa:" Grid.Row="0" Grid.Column="0" 
+                                   VerticalAlignment="Center" Margin="0,0,16,8" FontSize="14" FontWeight="SemiBold"/>
+                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding CurrentQuyDinh.SoNamXuatBanToiDa, ValidatesOnExceptions=True, NotifyOnValidationError=True}" 
+                                 Height="30" Margin="0,0,8,8" Padding="8,5" BorderBrush="#CCCCCC" />
+
+                        <!-- Row 1 -->
+                        <TextBlock Text="Số thể loại tối đa:" Grid.Row="1" Grid.Column="0" 
+                                   VerticalAlignment="Center" Margin="0,0,16,8" FontSize="14" FontWeight="SemiBold"/>
+                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding CurrentQuyDinh.SoTheLoaiToiDa, ValidatesOnExceptions=True, NotifyOnValidationError=True}" 
+                                 Height="30" Margin="0,0,8,8" Padding="8,5" BorderBrush="#CCCCCC" />
+
+                        <!-- Row 2 -->
+                        <TextBlock Text="Số lượng mượn tối đa:" Grid.Row="2" Grid.Column="0" 
+                                   VerticalAlignment="Center" Margin="0,0,16,8" FontSize="14" FontWeight="SemiBold"/>
+                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding CurrentQuyDinh.SoSachMuonToiDa, ValidatesOnExceptions=True, NotifyOnValidationError=True}" 
+                                 Height="30" Margin="0,0,8,8" Padding="8,5" BorderBrush="#CCCCCC" />
+                        <TextBlock Text="(cuốn)" Grid.Row="2" Grid.Column="2" FontSize="14" FontWeight="SemiBold"
+                                   VerticalAlignment="Center" Margin="0,0,0,8" Foreground="#666666" />
+
+                        <!-- Row 3 -->
+                        <TextBlock Text="Số ngày mượn tối đa:" Grid.Row="3" Grid.Column="0" 
+                                   VerticalAlignment="Center" Margin="0,0,16,8" FontSize="14" FontWeight="SemiBold"/>
+                        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding CurrentQuyDinh.SoNgayMuonToiDa, ValidatesOnExceptions=True, NotifyOnValidationError=True}" 
+                                 Height="30" Margin="0,0,8,8" Padding="8,5" BorderBrush="#CCCCCC" />
+                        <TextBlock Text="(ngày)" Grid.Row="3" Grid.Column="2" FontSize="14" FontWeight="SemiBold"
+                                   VerticalAlignment="Center" Margin="0,0,0,8" Foreground="#666666" />
+
+                        <!-- Row 4 -->
+                        <TextBlock Text="Tiền phạt trễ:" Grid.Row="4" Grid.Column="0" 
+                                   VerticalAlignment="Center" Margin="0,0,16,0" FontSize="14" FontWeight="SemiBold"/>
+                        <TextBox Grid.Row="4" Grid.Column="1" 
+                                 Text="{Binding CurrentQuyDinh.TienPhatQuaHanMoiNgay, UpdateSourceTrigger=PropertyChanged, StringFormat='{}{0:N0}', ValidatesOnExceptions=True, NotifyOnValidationError=True}"
+                                 Height="30" Margin="0,0,8,0" Padding="8,5" BorderBrush="#CCCCCC" />
+                        <TextBlock Text="(vnd/ngày)" Grid.Row="4" Grid.Column="2" FontSize="14" FontWeight="SemiBold"
+                                   VerticalAlignment="Center" Foreground="#666666" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Nút cập nhật -->
+            <Button Content="Cập nhật" Command="{Binding SaveCommand}"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                    HorizontalAlignment="Right" Margin="0,16,0,0" 
+                    FontSize="14"
+                    Height="35" Width="100" />
+        </StackPanel>
+    </Grid>
+</UserControl>

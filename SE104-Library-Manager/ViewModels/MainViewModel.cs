@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using SE104_Library_Manager.Interfaces;
 using SE104_Library_Manager.Views;
+using SE104_Library_Manager.Views.Policy;
 using SE104_Library_Manager.Views.Return;
 using System.Windows;
 
@@ -63,7 +64,7 @@ namespace SE104_Library_Manager.ViewModels
                     // CurrentView = new StatisticsViewModel();
                     break;
                 case "Policy":
-                    // CurrentView = new RulesViewModel();
+                    CurrentView = App.ServiceProvider?.GetService(typeof(PolicyView)) as PolicyView;
                     break;
                 default:
                     // CurrentView = new AccountViewModel();

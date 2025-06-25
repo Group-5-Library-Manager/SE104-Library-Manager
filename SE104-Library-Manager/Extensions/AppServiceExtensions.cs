@@ -4,8 +4,10 @@ using SE104_Library_Manager.Interfaces.Repositories;
 using SE104_Library_Manager.Repositories;
 using SE104_Library_Manager.Services;
 using SE104_Library_Manager.ViewModels;
+using SE104_Library_Manager.ViewModels.Policy;
 using SE104_Library_Manager.ViewModels.Return;
 using SE104_Library_Manager.Views;
+using SE104_Library_Manager.Views.Policy;
 using SE104_Library_Manager.Views.Return;
 
 namespace SE104_Library_Manager.Extensions;
@@ -68,6 +70,9 @@ public static class AppServiceExtensions
         services.AddTransient<UpdateReturnReceiptViewModel>();
         services.AddTransient<AddPenaltyReceiptWindow>();
         services.AddTransient<AddPenaltyReceiptViewModel>();
+
+        services.AddTransient<PolicyView>();
+        services.AddTransient<PolicyViewModel>();
 
         return services;
     }

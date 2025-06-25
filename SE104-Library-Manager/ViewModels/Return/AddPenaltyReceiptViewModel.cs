@@ -5,6 +5,8 @@ using SE104_Library_Manager.Interfaces.Repositories;
 using SE104_Library_Manager.Views.Return;
 using System.Collections.ObjectModel;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace SE104_Library_Manager.ViewModels.Return;
 
@@ -62,6 +64,15 @@ public partial class AddPenaltyReceiptViewModel : ObservableObject
         if (SelectedReader == null) return;
 
         // Kiểm tra số tiền thu
+        if (HasValidationError(w))
+        {
+            MessageBox.Show("Tiền thu phải đúng định dạng số.",
+                "Lỗi nhập liệu",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            return;
+        }
+
         if (ReceivedAmount > TotalDebt)
         {
             MessageBox.Show($"Tiền thu không được lớn hơn tổng nợ.",
@@ -93,5 +104,18 @@ public partial class AddPenaltyReceiptViewModel : ObservableObject
     public void Cancel(AddPenaltyReceiptWindow w)
     {
         w.Close();
+    }
+    public static bool HasValidationError(DependencyObject parent)
+    {
+        if (Validation.GetHasError(parent))
+            return true;
+
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if (HasValidationError(child))
+                return true;
+        }
+        return false;
     }
 }

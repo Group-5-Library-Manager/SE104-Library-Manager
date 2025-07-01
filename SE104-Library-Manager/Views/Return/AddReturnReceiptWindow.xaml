@@ -39,8 +39,17 @@
                         <ComboBox Grid.Column="1" Width="300" HorizontalAlignment="Left"
                                   FontSize="14" Margin="20 0 0 0" BorderThickness="0" Padding="8 4"
                                   ItemsSource="{Binding Readers}"
-                                  SelectedItem="{Binding SelectedReader}"
-                                  DisplayMemberPath="TenDocGia" />
+                                  SelectedItem="{Binding SelectedReader}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock>
+                                        <Run Text="{Binding MaDocGia, StringFormat='DG{0}'}"/>
+                                        <Run Text=" - "/>
+                                        <Run Text="{Binding TenDocGia}"/>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                     </StackPanel>
 
 

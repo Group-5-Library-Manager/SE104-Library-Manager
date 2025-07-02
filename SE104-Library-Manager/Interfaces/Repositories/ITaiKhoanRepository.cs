@@ -5,6 +5,7 @@ namespace SE104_Library_Manager.Interfaces.Repositories;
 public interface ITaiKhoanRepository
 {
     public Task<TaiKhoan?> GetByCredentialsAsync(string tenDangNhap);
+    public Task<TaiKhoan?> GetByStaffIdAsync(int maNhanVien);
 
     public Task<string> GetRoleAsync(int maNhanVien);
     public Task AddAsync(TaiKhoan taiKhoan);

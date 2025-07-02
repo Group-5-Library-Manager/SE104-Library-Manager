@@ -1,0 +1,231 @@
+﻿<Window x:Class="SE104_Library_Manager.Views.Book.AddBookWindow"
+        x:Name="Window"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SE104_Library_Manager.Views.Book"
+        WindowStartupLocation="CenterOwner"
+        FontSize="16"
+        mc:Ignorable="d"
+        Title="Nhập sách mới" Height="525" Width="450">
+    <StackPanel Orientation="Vertical" Margin="20">
+        <TextBlock Text="Nhập sách mới"
+                   FontSize="28"
+                   FontWeight="Bold"
+                   HorizontalAlignment="Center"/>
+
+        <TextBlock Text="Tên sách:"
+                   FontWeight="SemiBold" />
+        <Border BorderThickness="0"
+                CornerRadius="5"
+                Background="#EEEEEE"
+                HorizontalAlignment="Stretch"
+                Margin="0, 10, 0, 0">
+            <TextBox BorderThickness="0"
+                     Background="Transparent"
+                     Text="{Binding BookName}"
+                     Padding="8, 4"
+                     VerticalContentAlignment="Center"/>
+        </Border>
+
+        <Grid Margin="0, 10, 0, 0">
+
+            <StackPanel Orientation="Vertical"
+                        Grid.Column="1"
+                        Margin="0, 0, 0, 0">
+
+                <TextBlock Text="Tác giả: "
+                            FontWeight="SemiBold" />
+
+                <Grid Margin="0, 10, 0, 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border BorderThickness="0"
+                            CornerRadius="5"
+                            Background="#EEEEEE"
+                            Padding="2"
+                            Grid.Column="0">
+                        <ComboBox BorderThickness="0"
+                                  Padding="8,4"
+                                  SelectedItem="{Binding SelectedAuthor}"
+                                  ItemsSource="{Binding Authors}"
+                                  SelectedValuePath="MaTacGia"
+                                  DisplayMemberPath="TenTacGia"
+                                  VerticalContentAlignment="Center"/>
+                    </Border>
+
+                    <Button Grid.Column="1" Width="30"
+                            Margin="10, 0, 0, 0"
+                            Command="{Binding AddAuthorCommand}">
+                        <Image Source="/Assets/icon_add_dark.png"
+                               Width="16" Height="16"/>
+                    </Button>
+                </Grid>
+            </StackPanel>
+        </Grid>
+
+        <Grid Margin="0, 10, 0, 0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Vertical"
+                        Grid.Column="0"
+                        Margin="0, 0, 0, 0">
+
+                <TextBlock Text="Thể loại: "
+                            FontWeight="SemiBold" />
+
+                <Grid Margin="0, 10, 0, 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border BorderThickness="0"
+                            CornerRadius="5"
+                            Background="#EEEEEE"
+                            Padding="2"
+                            Grid.Column="0">
+                        <ComboBox BorderThickness="0"
+                                  Padding="8,4"
+                                  SelectedItem="{Binding SelectedGenre}"
+                                  ItemsSource="{Binding Genres}"
+                                  SelectedValuePath="MaTheLoai"
+                                  DisplayMemberPath="TenTheLoai"
+                                  VerticalContentAlignment="Center"/>
+                    </Border>
+
+                    <Button Grid.Column="1" Width="30"
+                            Margin="10, 0, 0, 0"
+                            Command="{Binding AddGenreCommand}">
+                        <Image Source="/Assets/icon_add_dark.png"
+                               Width="16" Height="16"/>
+                    </Button>
+                </Grid>
+            </StackPanel>
+
+            <StackPanel Orientation="Vertical"
+                        Grid.Column="1"
+                        Margin="10, 0, 0, 0">
+                
+                <TextBlock Text="Trị giá: "
+                            FontWeight="SemiBold" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="50"/>
+                    </Grid.ColumnDefinitions>
+                    <Border BorderThickness="0"
+                            CornerRadius="5"
+                            Background="#EEEEEE"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            Margin="0, 10, 0, 0">
+                        <TextBox BorderThickness="0"
+                                     Background="Transparent"
+                                     Text="{Binding Price}"
+                                     Padding="8, 4"
+                                     VerticalContentAlignment="Center"/>
+                    </Border>
+                    <TextBlock Grid.Column="1" Text="VNĐ"
+                               Margin="10, 10, 0, 0"
+                               VerticalAlignment="Center"/>
+                </Grid>
+            </StackPanel>
+
+        </Grid>
+
+        <Grid Margin="0, 10, 0, 0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Vertical"
+                        Grid.Column="0"
+                        Margin="0, 0, 0, 0">
+
+                <TextBlock Text="NXB: "
+                            FontWeight="SemiBold" />
+
+                <Grid Margin="0, 10, 0, 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border BorderThickness="0"
+                            CornerRadius="5"
+                            Background="#EEEEEE"
+                            Padding="2"
+                            Grid.Column="0">
+                        <ComboBox BorderThickness="0"
+                                  Padding="8,4"
+                                  SelectedItem="{Binding SelectedPublisher}"
+                                  ItemsSource="{Binding Publishers}"
+                                  SelectedValuePath="MaNhaXuatBan"
+                                  DisplayMemberPath="TenNhaXuatBan"
+                                  VerticalContentAlignment="Center"/>
+                    </Border>
+
+                    <Button Grid.Column="1" Width="30"
+                            Margin="10, 0, 0, 0"
+                            Command="{Binding AddPublisherCommand}">
+                        <Image Source="/Assets/icon_add_dark.png"
+                               Width="16" Height="16"/>
+                    </Button>
+                </Grid>
+            </StackPanel>
+
+            <StackPanel Orientation="Vertical"
+                        Grid.Column="1"
+                        Margin="10, 0, 0, 0">
+
+                <TextBlock Text="Năm xuất bản: "
+                            FontWeight="SemiBold" />
+                <Border BorderThickness="0"
+                            CornerRadius="5"
+                            Background="#EEEEEE"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            Margin="0, 10, 0, 0">
+                    <TextBox BorderThickness="0"
+                                     Background="Transparent"
+                                     Text="{Binding PublishYear}"
+                                     Padding="8, 4"
+                                     VerticalContentAlignment="Center"/>
+                </Border>
+            </StackPanel>
+
+        </Grid>
+        <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0">
+            <TextBlock Text="Ngày nhập: "
+                       FontWeight="SemiBold" />
+            <TextBlock Text="{Binding TodayDate}"
+                       FontWeight="SemiBold" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" 
+                    Margin="0, 20, 0, 0"
+                    HorizontalAlignment="Center">
+            <Button Content="Thêm"
+                    Width="100"
+                    Command="{Binding AddCommand}"
+                    CommandParameter="{Binding ElementName=Window}"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    Margin="0, 0, 10, 0" />
+            <Button Content="Hủy"
+                    Width="100"
+                    Command="{Binding CancelCommand}"
+                    CommandParameter="{Binding ElementName=Window}"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Margin="10, 0, 0, 0" />
+        </StackPanel>
+    </StackPanel>
+</Window>

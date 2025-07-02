@@ -107,6 +107,20 @@ public class TaiKhoanRepository(DatabaseService dbService) : ITaiKhoanRepository
             .FirstOrDefaultAsync(tk => tk.TenDangNhap == tenDangNhap.Trim().ToLower() && !tk.DaXoa);
     }
 
+    public async Task<TaiKhoan?> GetByStaffIdAsync(int maNhanVien)
+    {
+        var taiKhoan = await dbService.DbContext.DsTaiKhoan
+            .Include(tk => tk.NhanVien)
+            .Include(tk => tk.VaiTro)
+            .FirstOrDefaultAsync(tk => tk.MaNhanVien == maNhanVien && !tk.DaXoa);
+        if (taiKhoan == null)
+        {
+            throw new KeyNotFoundException($"Không tìm thấy tài khoản của nhân viên có mã NV{maNhanVien}.");
+        }
+
+        return taiKhoan;
+    }
+
     public async Task<string> GetRoleAsync(int maNhanVien)
     {
         var staffSessionReader = App.ServiceProvider?.GetService(typeof(IStaffSessionReader)) as IStaffSessionReader;

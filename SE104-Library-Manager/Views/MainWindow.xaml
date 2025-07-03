@@ -39,7 +39,7 @@
                                  Style="{StaticResource MenuButtonTheme}"                             
                                  Command="{Binding NavigateCommand}"
                                  CommandParameter="Account"
-                                 Content="Trang chủ"
+                                 Content="Tài khoản"
                                  Cursor="Hand"
                                  IsChecked="True">
                         <RadioButton.Tag>

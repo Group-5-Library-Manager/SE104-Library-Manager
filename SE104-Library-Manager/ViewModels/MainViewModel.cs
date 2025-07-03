@@ -6,6 +6,8 @@ using SE104_Library_Manager.Views.Borrow;
 using SE104_Library_Manager.Views.Policy;
 using SE104_Library_Manager.Views.Return;
 using SE104_Library_Manager.Views.Statistic;
+using SE104_Library_Manager.Views.Account;
+using SE104_Library_Manager.Views.Book;
 using System.Windows;
 
 namespace SE104_Library_Manager.ViewModels
@@ -45,10 +47,10 @@ namespace SE104_Library_Manager.ViewModels
             switch (destination)
             {
                 case "Account":
-                    // CurrentView = new AccountViewModel();
+                    CurrentView = App.ServiceProvider?.GetService(typeof(AccountView)) as AccountView;
                     break;
                 case "Book":
-                    // CurrentView = new BooksViewModel();
+                    CurrentView = App.ServiceProvider?.GetService(typeof(BookView)) as BookView;
                     break;
                 case "Reader":
                     CurrentView = App.ServiceProvider?.GetService(typeof(ReaderView)) as ReaderView;

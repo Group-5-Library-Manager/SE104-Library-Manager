@@ -12,7 +12,7 @@ public class Sach
     public required string TenSach { get; set; }
     public required int MaTheLoai { get; set; }
     public required int MaTacGia { get; set; }
-    public required string NamXuatBan { get; set; }
+    public required int NamXuatBan { get; set; }
     public required int MaNhaXuatBan { get; set; }
     public required DateOnly NgayNhap { get; set; }
     public required int TriGia { get; set; }

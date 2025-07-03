@@ -237,21 +237,21 @@ public class DatabaseService
         if (!await context.DsSach.AnyAsync())
         {
             context.DsSach.AddRange(
-                new Sach { TenSach = "Lập Trình C# Cơ Bản", MaTheLoai = 1, MaTacGia = 1, NamXuatBan = "2020", MaNhaXuatBan = 1, NgayNhap = new DateOnly(2024, 6, 1), TriGia = 120000, TrangThai = "Có sẵn" },
-                new Sach { TenSach = "Giải Tích 1", MaTheLoai = 2, MaTacGia = 2, NamXuatBan = "2019", MaNhaXuatBan = 2, NgayNhap = new DateOnly(2024, 6, 2), TriGia = 95000, TrangThai = "Có sẵn" },
-                new Sach { TenSach = "Kỹ Năng Sống", MaTheLoai = 3, MaTacGia = 3, NamXuatBan = "2021", MaNhaXuatBan = 3, NgayNhap = new DateOnly(2024, 6, 3), TriGia = 75000, TrangThai = "Có sẵn" },
-                new Sach { TenSach = "Toán Cao Cấp", MaTheLoai = 1, MaTacGia = 1, NamXuatBan = "2018", MaNhaXuatBan = 1, NgayNhap = new DateOnly(2024, 6, 4), TriGia = 110000, TrangThai = "Có sẵn" },
-                new Sach { TenSach = "Hóa Đại Cương", MaTheLoai = 2, MaTacGia = 2, NamXuatBan = "2022", MaNhaXuatBan = 2, NgayNhap = new DateOnly(2024, 6, 5), TriGia = 89000, TrangThai = "Có sẵn" },
-                new Sach { TenSach = "Văn Học Việt Nam", MaTheLoai = 3, MaTacGia = 3, NamXuatBan = "2020", MaNhaXuatBan = 3, NgayNhap = new DateOnly(2024, 6, 6), TriGia = 78000, TrangThai = "Có sẵn" },
-                new Sach { TenSach = "Lịch Sử Thế Giới", MaTheLoai = 1, MaTacGia = 2, NamXuatBan = "2017", MaNhaXuatBan = 1, NgayNhap = new DateOnly(2024, 6, 7), TriGia = 67000, TrangThai = "Có sẵn" },
-                new Sach { TenSach = "Kinh Tế Vĩ Mô", MaTheLoai = 2, MaTacGia = 1, NamXuatBan = "2023", MaNhaXuatBan = 2, NgayNhap = new DateOnly(2024, 6, 8), TriGia = 112000, TrangThai = "Có sẵn" },
-                new Sach { TenSach = "Kỹ Thuật Lập Trình", MaTheLoai = 3, MaTacGia = 3, NamXuatBan = "2021", MaNhaXuatBan = 3, NgayNhap = new DateOnly(2024, 6, 9), TriGia = 134000, TrangThai = "Có sẵn" },
-                new Sach { TenSach = "Giáo Dục Công Dân", MaTheLoai = 1, MaTacGia = 2, NamXuatBan = "2019", MaNhaXuatBan = 1, NgayNhap = new DateOnly(2024, 6, 10), TriGia = 56000, TrangThai = "Có sẵn" },
-                new Sach { TenSach = "Sinh Học 12", MaTheLoai = 2, MaTacGia = 1, NamXuatBan = "2020", MaNhaXuatBan = 2, NgayNhap = new DateOnly(2024, 6, 11), TriGia = 87000, TrangThai = "Có sẵn" },
-                new Sach { TenSach = "Cấu Trúc Dữ Liệu", MaTheLoai = 3, MaTacGia = 3, NamXuatBan = "2022", MaNhaXuatBan = 3, NgayNhap = new DateOnly(2024, 6, 12), TriGia = 125000, TrangThai = "Có sẵn" },
-                new Sach { TenSach = "Lập Trình Java", MaTheLoai = 1, MaTacGia = 1, NamXuatBan = "2021", MaNhaXuatBan = 1, NgayNhap = new DateOnly(2024, 6, 13), TriGia = 132000, TrangThai = "Có sẵn" },
-                new Sach { TenSach = "Kỹ Năng Mềm", MaTheLoai = 2, MaTacGia = 2, NamXuatBan = "2018", MaNhaXuatBan = 2, NgayNhap = new DateOnly(2024, 6, 14), TriGia = 49000, TrangThai = "Có sẵn" },
-                new Sach { TenSach = "Tâm Lý Học Đại Cương", MaTheLoai = 3, MaTacGia = 3, NamXuatBan = "2020", MaNhaXuatBan = 3, NgayNhap = new DateOnly(2024, 6, 15), TriGia = 99000, TrangThai = "Có sẵn" }
+                new Sach { TenSach = "Lập Trình C# Cơ Bản", MaTheLoai = 1, MaTacGia = 1, NamXuatBan = 2020, MaNhaXuatBan = 1, NgayNhap = new DateOnly(2024, 6, 1), TriGia = 120000, TrangThai = "Có sẵn" },
+                new Sach { TenSach = "Giải Tích 1", MaTheLoai = 2, MaTacGia = 2, NamXuatBan = 2019, MaNhaXuatBan = 2, NgayNhap = new DateOnly(2024, 6, 2), TriGia = 95000, TrangThai = "Có sẵn" },
+                new Sach { TenSach = "Kỹ Năng Sống", MaTheLoai = 3, MaTacGia = 3, NamXuatBan = 2021, MaNhaXuatBan = 3, NgayNhap = new DateOnly(2024, 6, 3), TriGia = 75000, TrangThai = "Có sẵn" },
+                new Sach { TenSach = "Toán Cao Cấp", MaTheLoai = 1, MaTacGia = 1, NamXuatBan = 2018, MaNhaXuatBan = 1, NgayNhap = new DateOnly(2024, 6, 4), TriGia = 110000, TrangThai = "Có sẵn" },
+                new Sach { TenSach = "Hóa Đại Cương", MaTheLoai = 2, MaTacGia = 2, NamXuatBan = 2022, MaNhaXuatBan = 2, NgayNhap = new DateOnly(2024, 6, 5), TriGia = 89000, TrangThai = "Có sẵn" },
+                new Sach { TenSach = "Văn Học Việt Nam", MaTheLoai = 3, MaTacGia = 3, NamXuatBan = 2020, MaNhaXuatBan = 3, NgayNhap = new DateOnly(2024, 6, 6), TriGia = 78000, TrangThai = "Có sẵn" },
+                new Sach { TenSach = "Lịch Sử Thế Giới", MaTheLoai = 1, MaTacGia = 2, NamXuatBan = 2017, MaNhaXuatBan = 1, NgayNhap = new DateOnly(2024, 6, 7), TriGia = 67000, TrangThai = "Có sẵn" },
+                new Sach { TenSach = "Kinh Tế Vĩ Mô", MaTheLoai = 2, MaTacGia = 1, NamXuatBan = 2023, MaNhaXuatBan = 2, NgayNhap = new DateOnly(2024, 6, 8), TriGia = 112000, TrangThai = "Có sẵn" },
+                new Sach { TenSach = "Kỹ Thuật Lập Trình", MaTheLoai = 3, MaTacGia = 3, NamXuatBan = 2021, MaNhaXuatBan = 3, NgayNhap = new DateOnly(2024, 6, 9), TriGia = 134000, TrangThai = "Có sẵn" },
+                new Sach { TenSach = "Giáo Dục Công Dân", MaTheLoai = 1, MaTacGia = 2, NamXuatBan = 2019, MaNhaXuatBan = 1, NgayNhap = new DateOnly(2024, 6, 10), TriGia = 56000, TrangThai = "Có sẵn" },
+                new Sach { TenSach = "Sinh Học 12", MaTheLoai = 2, MaTacGia = 1, NamXuatBan = 2020, MaNhaXuatBan = 2, NgayNhap = new DateOnly(2024, 6, 11), TriGia = 87000, TrangThai = "Có sẵn" },
+                new Sach { TenSach = "Cấu Trúc Dữ Liệu", MaTheLoai = 3, MaTacGia = 3, NamXuatBan = 2022, MaNhaXuatBan = 3, NgayNhap = new DateOnly(2024, 6, 12), TriGia = 125000, TrangThai = "Có sẵn" },
+                new Sach { TenSach = "Lập Trình Java", MaTheLoai = 1, MaTacGia = 1, NamXuatBan = 2021, MaNhaXuatBan = 1, NgayNhap = new DateOnly(2024, 6, 13), TriGia = 132000, TrangThai = "Có sẵn" },
+                new Sach { TenSach = "Kỹ Năng Mềm", MaTheLoai = 2, MaTacGia = 2, NamXuatBan = 2018, MaNhaXuatBan = 2, NgayNhap = new DateOnly(2024, 6, 14), TriGia = 49000, TrangThai = "Có sẵn" },
+                new Sach { TenSach = "Tâm Lý Học Đại Cương", MaTheLoai = 3, MaTacGia = 3, NamXuatBan = 2020, MaNhaXuatBan = 3, NgayNhap = new DateOnly(2024, 6, 15), TriGia = 99000, TrangThai = "Có sẵn" }
             );
         }
     }

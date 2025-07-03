@@ -8,11 +8,15 @@ using SE104_Library_Manager.ViewModels.Borrow;
 using SE104_Library_Manager.ViewModels.Policy;
 using SE104_Library_Manager.ViewModels.Return;
 using SE104_Library_Manager.ViewModels.Statistic;
+using SE104_Library_Manager.ViewModels.Account;
+using SE104_Library_Manager.ViewModels.Book;
 using SE104_Library_Manager.Views;
 using SE104_Library_Manager.Views.Borrow;
 using SE104_Library_Manager.Views.Policy;
 using SE104_Library_Manager.Views.Return;
 using SE104_Library_Manager.Views.Statistic;
+using SE104_Library_Manager.Views.Account;
+using SE104_Library_Manager.Views.Book;
 
 namespace SE104_Library_Manager.Extensions;
 
@@ -40,12 +44,32 @@ public static class AppServiceExtensions
         services.AddScoped<IPhieuPhatRepository, PhieuPhatRepository>();
         services.AddScoped<IPhieuMuonRepository, PhieuMuonRepository>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<ISachRepository, SachRepository>();
+        services.AddScoped<ITheLoaiRepository, TheLoaiRepository>();
+        services.AddScoped<ITacGiaRepository, TacGiaRepository>();
+        services.AddScoped<INhaXuatBanRepository, NhaXuatBanRepository>();
 
         services.AddTransient<LoginWindow>();
         services.AddTransient<LoginViewModel>();
 
         services.AddTransient<MainWindow>();
         services.AddTransient<MainViewModel>();
+
+        services.AddTransient<AccountView>();
+        services.AddTransient<AccountViewModel>();
+        services.AddTransient<ChangePasswordWindow>();
+        services.AddTransient<ChangePasswordViewModel>();
+
+        services.AddTransient<BookView>();
+        services.AddTransient<BookViewModel>();
+        services.AddTransient<AddBookWindow>();
+        services.AddSingleton<AddBookViewModel>();
+        services.AddTransient<AddGenreWindow>();
+        services.AddTransient<AddGenreViewModel>();
+        services.AddTransient<AddAuthorWindow>();
+        services.AddTransient<AddAuthorViewModel>();
+        services.AddTransient<AddPublisherWindow>();
+        services.AddTransient<AddPublisherViewModel>();
 
         services.AddTransient<ReaderView>();
         services.AddTransient<ReaderViewModel>();

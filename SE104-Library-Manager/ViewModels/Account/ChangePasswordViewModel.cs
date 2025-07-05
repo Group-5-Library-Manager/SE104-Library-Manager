@@ -98,7 +98,6 @@ namespace SE104_Library_Manager.ViewModels.Account
             }
 
         }
-
         private void ShowErrorMessageAsync(int second)
         {
             errorMessageCts?.Cancel();

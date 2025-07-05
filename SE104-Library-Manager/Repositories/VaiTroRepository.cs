@@ -13,4 +13,10 @@ public class VaiTroRepository(DatabaseService dbService) : IVaiTroRepository
             .AsNoTracking()
             .ToListAsync();
     }
+    public Task<VaiTro?> GetByIdAsync(int id)
+    {
+        return dbService.DbContext.DsVaiTro
+            .AsNoTracking()
+            .FirstOrDefaultAsync(ldg => ldg.MaVaiTro == id);
+    }
 }

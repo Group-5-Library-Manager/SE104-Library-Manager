@@ -15,17 +15,20 @@ using System.Windows;
 
 namespace SE104_Library_Manager.ViewModels.Account
 {
-    public partial class AccountViewModel(IStaffSessionManager staffSessionManager, INhanVienRepository nhanVienRepository, ITaiKhoanRepository taiKhoanRepository) : ObservableObject
+    public partial class AccountViewModel(IStaffSessionManager staffSessionManager, INhanVienRepository nhanVienRepository, ITaiKhoanRepository taiKhoanRepository, IVaiTroRepository vaiTroRepository) : ObservableObject
     {
         [ObservableProperty]
-        private NhanVien currentNhanVien = null;
+        private NhanVien currentNhanVien;
 
         [ObservableProperty]
-        private TaiKhoan currentTaiKhoan = null;
+        private TaiKhoan currentTaiKhoan;
+        [ObservableProperty]
+        private VaiTro currentVaiTro;
         public async Task LoadCurrentStaffAccount()
         {
             CurrentNhanVien = await nhanVienRepository.GetByIdAsync(staffSessionManager.CurrentStaffId);
             CurrentTaiKhoan = await taiKhoanRepository.GetByStaffIdAsync(staffSessionManager.CurrentStaffId);
+            CurrentVaiTro = await vaiTroRepository.GetByIdAsync(CurrentTaiKhoan.MaVaiTro);
         }
 
         [RelayCommand]

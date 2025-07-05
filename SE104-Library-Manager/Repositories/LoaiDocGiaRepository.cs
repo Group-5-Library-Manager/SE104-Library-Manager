@@ -10,7 +10,7 @@ public class LoaiDocGiaRepository(DatabaseService dbService, IQuyDinhRepository 
     public async Task AddAsync(LoaiDocGia loaiDocGia)
     {
         QuyDinh quyDinh = await quyDinhRepo.GetQuyDinhAsync();
-        int count = await dbService.DbContext.DsLoaiDocGia.CountAsync();
+        int count = await dbService.DbContext.DsLoaiDocGia.CountAsync(ldg => !ldg.DaXoa);
 
         if (count >= quyDinh.SoLoaiDocGiaToiDa)
         {
@@ -23,7 +23,7 @@ public class LoaiDocGiaRepository(DatabaseService dbService, IQuyDinhRepository 
             throw new ArgumentException("Tên loại độc giả không được để trống.");
         }
 
-        var exists = await dbService.DbContext.DsLoaiDocGia.AnyAsync(ldg => ldg.TenLoaiDocGia.ToLower() == loaiDocGia.TenLoaiDocGia.ToLower());
+        var exists = await dbService.DbContext.DsLoaiDocGia.AnyAsync(ldg => ldg.TenLoaiDocGia.ToLower() == loaiDocGia.TenLoaiDocGia.ToLower() && !ldg.DaXoa);
 
         if (exists)
         {
@@ -44,12 +44,14 @@ public class LoaiDocGiaRepository(DatabaseService dbService, IQuyDinhRepository 
             throw new KeyNotFoundException($"Không tìm thấy loại độc giả với mã LDG{id}.");
         }
 
-        if (await dbService.DbContext.DsDocGia.AnyAsync(dg => dg.MaLoaiDocGia == id))
+        if (await dbService.DbContext.DsDocGia.AnyAsync(dg => dg.MaLoaiDocGia == id && !dg.DaXoa))
         {
             throw new InvalidOperationException($"Không thể xóa loại độc giả với mã LDG{id} vì có độc giả đang sử dụng loại này.");
         }
 
-        dbService.DbContext.DsLoaiDocGia.Remove(existingLoaiDocGia);
+        existingLoaiDocGia.DaXoa = true; // Mark as deleted instead of removing from database
+
+        dbService.DbContext.DsLoaiDocGia.Update(existingLoaiDocGia);
         await dbService.DbContext.SaveChangesAsync();
         dbService.DbContext.ChangeTracker.Clear();
     }
@@ -58,6 +60,7 @@ public class LoaiDocGiaRepository(DatabaseService dbService, IQuyDinhRepository 
     {
         return await dbService.DbContext.DsLoaiDocGia
             .AsNoTracking()
+            .Where(ldg => !ldg.DaXoa) // Only get non-deleted LoaiDocGia
             .ToListAsync();
     }
 
@@ -65,7 +68,7 @@ public class LoaiDocGiaRepository(DatabaseService dbService, IQuyDinhRepository 
     {
         return dbService.DbContext.DsLoaiDocGia
             .AsNoTracking()
-            .FirstOrDefaultAsync(ldg => ldg.MaLoaiDocGia == id);
+            .FirstOrDefaultAsync(ldg => ldg.MaLoaiDocGia == id && !ldg.DaXoa);
     }
 
     public async Task UpdateAsync(LoaiDocGia loaiDocGia)
@@ -76,7 +79,7 @@ public class LoaiDocGiaRepository(DatabaseService dbService, IQuyDinhRepository 
             throw new ArgumentException("Tên loại độc giả không được để trống.");
         }
 
-        if (await dbService.DbContext.DsLoaiDocGia.AnyAsync(ldg => ldg.TenLoaiDocGia.ToLower() == loaiDocGia.TenLoaiDocGia.ToLower() && ldg.MaLoaiDocGia != loaiDocGia.MaLoaiDocGia))
+        if (await dbService.DbContext.DsLoaiDocGia.AnyAsync(ldg => ldg.TenLoaiDocGia.ToLower() == loaiDocGia.TenLoaiDocGia.ToLower() && ldg.MaLoaiDocGia != loaiDocGia.MaLoaiDocGia && !ldg.DaXoa))
         {
             throw new InvalidOperationException($"Loại độc giả với tên {loaiDocGia.TenLoaiDocGia} đã tồn tại.");
         }
@@ -88,7 +91,7 @@ public class LoaiDocGiaRepository(DatabaseService dbService, IQuyDinhRepository 
             throw new KeyNotFoundException($"Không tìm thấy loại độc giả với mã LDG{loaiDocGia.MaLoaiDocGia}.");
         }
 
-        existingLoaiDocGia.TenLoaiDocGia = loaiDocGia.TenLoaiDocGia;
+        existingLoaiDocGia.TenLoaiDocGia = loaiDocGia.TenLoaiDocGia.Trim();
 
         dbService.DbContext.DsLoaiDocGia.Update(existingLoaiDocGia);
         await dbService.DbContext.SaveChangesAsync();

@@ -16,18 +16,19 @@ namespace SE104_Library_Manager.Repositories
         {
             return await dbService.DbContext.DsTheLoai
                 .AsNoTracking()
+                .Where(tl => !tl.DaXoa)
                 .ToListAsync();
         }
         public Task<TheLoai?> GetByIdAsync(int id)
         {
             return dbService.DbContext.DsTheLoai
                 .AsNoTracking()
-                .FirstOrDefaultAsync(ldg => ldg.MaTheLoai == id);
+                .FirstOrDefaultAsync(tl => tl.MaTheLoai == id && !tl.DaXoa);
         }
         public async Task AddAsync(TheLoai theLoai)
         {
             QuyDinh quyDinh = await quyDinhRepo.GetQuyDinhAsync();
-            int count = await dbService.DbContext.DsTheLoai.CountAsync();
+            int count = await dbService.DbContext.DsTheLoai.CountAsync(tl => !tl.DaXoa);
 
             if (count >= quyDinh.SoTheLoaiToiDa)
             {
@@ -40,7 +41,7 @@ namespace SE104_Library_Manager.Repositories
                 throw new ArgumentException("Tên thể loại không được để trống.");
             }
 
-            var exists = await dbService.DbContext.DsTheLoai.AnyAsync(ldg => ldg.TenTheLoai.ToLower() == theLoai.TenTheLoai.ToLower());
+            var exists = await dbService.DbContext.DsTheLoai.AnyAsync(tl => tl.TenTheLoai.ToLower() == theLoai.TenTheLoai.ToLower() && !tl.DaXoa);
 
             if (exists)
             {
@@ -61,12 +62,14 @@ namespace SE104_Library_Manager.Repositories
                 throw new KeyNotFoundException($"Không tìm thấy thể loại với mã TL{id}.");
             }
 
-            if (await dbService.DbContext.DsSach.AnyAsync(dg => dg.MaTheLoai == id))
+            if (await dbService.DbContext.DsSach.AnyAsync(tl => tl.MaTheLoai == id && !tl.DaXoa))
             {
                 throw new InvalidOperationException($"Không thể xóa thể loại với mã TL{id} vì có sách đang sử dụng loại này.");
             }
 
-            dbService.DbContext.DsTheLoai.Remove(existingTheLoai);
+            existingTheLoai.DaXoa = true; // Mark as deleted instead of removing from database
+
+            dbService.DbContext.DsTheLoai.Update(existingTheLoai);
             await dbService.DbContext.SaveChangesAsync();
             dbService.DbContext.ChangeTracker.Clear();
         }
@@ -79,7 +82,7 @@ namespace SE104_Library_Manager.Repositories
                 throw new ArgumentException("Tên thể loại không được để trống.");
             }
 
-            if (await dbService.DbContext.DsTheLoai.AnyAsync(ldg => ldg.TenTheLoai.ToLower() == theLoai.TenTheLoai.ToLower() && ldg.MaTheLoai != theLoai.MaTheLoai))
+            if (await dbService.DbContext.DsTheLoai.AnyAsync(tl => tl.TenTheLoai.ToLower() == theLoai.TenTheLoai.ToLower() && tl.MaTheLoai != theLoai.MaTheLoai && !tl.DaXoa))
             {
                 throw new InvalidOperationException($"Thể loại với tên {theLoai.TenTheLoai} đã tồn tại.");
             }
@@ -91,7 +94,7 @@ namespace SE104_Library_Manager.Repositories
                 throw new KeyNotFoundException($"Không tìm thấy thể loại với mã TL{theLoai.MaTheLoai}.");
             }
 
-            existingTheLoai.TenTheLoai = theLoai.TenTheLoai;
+            existingTheLoai.TenTheLoai = theLoai.TenTheLoai.Trim();
 
             dbService.DbContext.DsTheLoai.Update(existingTheLoai);
             await dbService.DbContext.SaveChangesAsync();

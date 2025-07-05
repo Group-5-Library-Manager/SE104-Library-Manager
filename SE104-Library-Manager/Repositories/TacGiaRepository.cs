@@ -16,18 +16,19 @@ namespace SE104_Library_Manager.Repositories
         {
             return await dbService.DbContext.DsTacGia
                 .AsNoTracking()
+                .Where(tg => !tg.DaXoa)
                 .ToListAsync();
         }
         public Task<TacGia?> GetByIdAsync(int id)
         {
             return dbService.DbContext.DsTacGia
                 .AsNoTracking()
-                .FirstOrDefaultAsync(ldg => ldg.MaTacGia == id);
+                .FirstOrDefaultAsync(tg => tg.MaTacGia == id && !tg.DaXoa);
         }
         public async Task AddAsync(TacGia tacGia)
         {
             QuyDinh quyDinh = await quyDinhRepo.GetQuyDinhAsync();
-            int count = await dbService.DbContext.DsTacGia.CountAsync();
+            int count = await dbService.DbContext.DsTacGia.CountAsync(tg => !tg.DaXoa);
 
             if (count >= quyDinh.SoTacGiaToiDa)
             {
@@ -54,12 +55,14 @@ namespace SE104_Library_Manager.Repositories
                 throw new KeyNotFoundException($"Không tìm thấy tác giả với mã TG{id}.");
             }
 
-            if (await dbService.DbContext.DsSach.AnyAsync(dg => dg.MaTacGia == id))
+            if (await dbService.DbContext.DsSach.AnyAsync(tg => tg.MaTacGia == id && !tg.DaXoa))
             {
                 throw new InvalidOperationException($"Không thể xóa tác giả với mã TG{id} vì có sách đang sử dụng tác giả này.");
             }
 
-            dbService.DbContext.DsTacGia.Remove(existingTacGia);
+            existingTacGia.DaXoa = true;
+
+            dbService.DbContext.DsTacGia.Update(existingTacGia);
             await dbService.DbContext.SaveChangesAsync();
             dbService.DbContext.ChangeTracker.Clear();
         }
@@ -79,7 +82,7 @@ namespace SE104_Library_Manager.Repositories
                 throw new KeyNotFoundException($"Không tìm thấy tác giả với mã TG{tacGia.MaTacGia}.");
             }
 
-            existingTacGia.TenTacGia = tacGia.TenTacGia;
+            existingTacGia.TenTacGia = tacGia.TenTacGia.Trim();
 
             dbService.DbContext.DsTacGia.Update(existingTacGia);
             await dbService.DbContext.SaveChangesAsync();

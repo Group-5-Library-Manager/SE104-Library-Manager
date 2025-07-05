@@ -9,6 +9,7 @@ public class TheLoai
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int MaTheLoai { get; set; }
     public required string TenTheLoai { get; set; }
+    public bool DaXoa { get; set; } = false;
 
     public ICollection<Sach> DsSach { get; set; } = new List<Sach>();
 }

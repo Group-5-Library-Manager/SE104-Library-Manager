@@ -16,7 +16,7 @@ public class BoPhanRepository(DatabaseService dbService, IQuyDinhRepository quyD
         }
 
         QuyDinh quyDinh = await quyDinhRepo.GetQuyDinhAsync();
-        int count = await dbService.DbContext.DsBoPhan.CountAsync();
+        int count = await dbService.DbContext.DsBoPhan.CountAsync(bp => !bp.DaXoa);
         if (count >= quyDinh.SoBoPhanToiDa)
         {
             throw new InvalidOperationException($"Số lượng bộ phận đã đạt giới hạn tối đa là {quyDinh.SoBoPhanToiDa}.");
@@ -32,7 +32,9 @@ public class BoPhanRepository(DatabaseService dbService, IQuyDinhRepository quyD
             throw new ArgumentException("Tên bộ phận không được để trống.");
         }
 
-        var exists = await dbService.DbContext.DsBoPhan.AnyAsync(bp => bp.TenBoPhan.ToLower() == boPhan.TenBoPhan.ToLower());
+        boPhan.TenBoPhan = boPhan.TenBoPhan.Trim();
+
+        var exists = await dbService.DbContext.DsBoPhan.AnyAsync(bp => bp.TenBoPhan.ToLower() == boPhan.TenBoPhan.ToLower() && !bp.DaXoa);
         if (exists)
         {
             throw new InvalidOperationException($"Bộ phận với tên {boPhan.TenBoPhan} đã tồn tại.");
@@ -56,12 +58,14 @@ public class BoPhanRepository(DatabaseService dbService, IQuyDinhRepository quyD
             throw new KeyNotFoundException($"Không tìm thấy bộ phận với mã BP{id}.");
         }
 
-        if (await dbService.DbContext.DsNhanVien.AnyAsync(nv => nv.MaBoPhan == id))
+        if (await dbService.DbContext.DsNhanVien.AnyAsync(nv => nv.MaBoPhan == id && !nv.DaXoa))
         {
             throw new InvalidOperationException($"Không thể xóa bộ phận với mã BP{id} vì có nhân viên đang sử dụng bộ phận này.");
         }
 
-        dbService.DbContext.DsBoPhan.Remove(existingBoPhan);
+        existingBoPhan.DaXoa = true;
+
+        dbService.DbContext.DsBoPhan.Update(existingBoPhan);
         await dbService.DbContext.SaveChangesAsync();
         dbService.DbContext.ChangeTracker.Clear();
     }
@@ -70,6 +74,7 @@ public class BoPhanRepository(DatabaseService dbService, IQuyDinhRepository quyD
     {
         return await dbService.DbContext.DsBoPhan
             .AsNoTracking()
+            .Where(bp => !bp.DaXoa) // Only include non-deleted BoPhan records
             .ToListAsync();
     }
 
@@ -77,7 +82,7 @@ public class BoPhanRepository(DatabaseService dbService, IQuyDinhRepository quyD
     {
         return await dbService.DbContext.DsBoPhan
             .AsNoTracking()
-            .FirstOrDefaultAsync(bp => bp.MaBoPhan == id);
+            .FirstOrDefaultAsync(bp => bp.MaBoPhan == id && !bp.DaXoa);
     }
 
     public async Task UpdateAsync(BoPhan boPhan)
@@ -97,7 +102,7 @@ public class BoPhanRepository(DatabaseService dbService, IQuyDinhRepository quyD
             throw new ArgumentException("Tên bộ phận không được để trống.");
         }
 
-        var exists = await dbService.DbContext.DsBoPhan.AnyAsync(bp => bp.TenBoPhan.ToLower() == boPhan.TenBoPhan.ToLower() && bp.MaBoPhan != boPhan.MaBoPhan);
+        var exists = await dbService.DbContext.DsBoPhan.AnyAsync(bp => bp.TenBoPhan.ToLower() == boPhan.TenBoPhan.ToLower() && bp.MaBoPhan != boPhan.MaBoPhan && !bp.DaXoa);
         if (exists)
         {
             throw new InvalidOperationException($"Bộ phận với tên {boPhan.TenBoPhan} đã tồn tại.");
@@ -109,7 +114,7 @@ public class BoPhanRepository(DatabaseService dbService, IQuyDinhRepository quyD
             throw new KeyNotFoundException($"Không tìm thấy bộ phận với mã BP{boPhan.MaBoPhan}.");
         }
 
-        existingBoPhan.TenBoPhan = boPhan.TenBoPhan;
+        existingBoPhan.TenBoPhan = boPhan.TenBoPhan.Trim();
 
         dbService.DbContext.DsBoPhan.Update(existingBoPhan);
         await dbService.DbContext.SaveChangesAsync();

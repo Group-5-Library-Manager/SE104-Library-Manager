@@ -16,7 +16,7 @@ public class ChucVuRepository(DatabaseService dbService, IQuyDinhRepository quyD
         }
 
         QuyDinh quyDinh = await quyDinhRepo.GetQuyDinhAsync();
-        int count = await dbService.DbContext.DsChucVu.CountAsync();
+        int count = await dbService.DbContext.DsChucVu.CountAsync(cv => !cv.DaXoa);
         if (count >= quyDinh.SoChucVuToiDa)
         {
             throw new InvalidOperationException($"Số lượng chức vụ đã đạt giới hạn tối đa là {quyDinh.SoChucVuToiDa}.");
@@ -32,7 +32,9 @@ public class ChucVuRepository(DatabaseService dbService, IQuyDinhRepository quyD
             throw new ArgumentException("Tên chức vụ không được để trống.");
         }
 
-        var exists = await dbService.DbContext.DsChucVu.AnyAsync(cv => cv.TenChucVu.ToLower() == chucVu.TenChucVu.ToLower());
+        chucVu.TenChucVu = chucVu.TenChucVu.Trim();
+
+        var exists = await dbService.DbContext.DsChucVu.AnyAsync(cv => cv.TenChucVu.ToLower() == chucVu.TenChucVu.ToLower() && !cv.DaXoa);
         if (exists)
         {
             throw new InvalidOperationException($"Chức vụ với tên {chucVu.TenChucVu} đã tồn tại.");
@@ -57,12 +59,14 @@ public class ChucVuRepository(DatabaseService dbService, IQuyDinhRepository quyD
             throw new KeyNotFoundException($"Không tìm thấy chức vụ với mã CV{id}.");
         }
 
-        if (await dbService.DbContext.DsNhanVien.AnyAsync(nv => nv.MaChucVu == id))
+        if (await dbService.DbContext.DsNhanVien.AnyAsync(nv => nv.MaChucVu == id && !nv.DaXoa))
         {
             throw new InvalidOperationException($"Không thể xóa chức vụ với mã CV{id} vì có nhân viên đang sử dụng chức vụ này.");
         }
 
-        dbService.DbContext.DsChucVu.Remove(existingChucVu);
+        existingChucVu.DaXoa = true;
+
+        dbService.DbContext.DsChucVu.Update(existingChucVu);
         await dbService.DbContext.SaveChangesAsync();
         dbService.DbContext.ChangeTracker.Clear();
     }
@@ -71,6 +75,7 @@ public class ChucVuRepository(DatabaseService dbService, IQuyDinhRepository quyD
     {
         return await dbService.DbContext.DsChucVu
             .AsNoTracking()
+            .Where(cv => !cv.DaXoa)
             .ToListAsync();
     }
 
@@ -78,7 +83,7 @@ public class ChucVuRepository(DatabaseService dbService, IQuyDinhRepository quyD
     {
         return await dbService.DbContext.DsChucVu
             .AsNoTracking()
-            .FirstOrDefaultAsync(cv => cv.MaChucVu == id);
+            .FirstOrDefaultAsync(cv => cv.MaChucVu == id && !cv.DaXoa);
     }
 
     public async Task UpdateAsync(ChucVu chucVu)
@@ -103,7 +108,7 @@ public class ChucVuRepository(DatabaseService dbService, IQuyDinhRepository quyD
             throw new ArgumentException("Tên chức vụ không được để trống.");
         }
 
-        var exists = await dbService.DbContext.DsChucVu.AnyAsync(cv => cv.TenChucVu.ToLower() == chucVu.TenChucVu.ToLower() && cv.MaChucVu != chucVu.MaChucVu);
+        var exists = await dbService.DbContext.DsChucVu.AnyAsync(cv => cv.TenChucVu.ToLower() == chucVu.TenChucVu.ToLower() && cv.MaChucVu != chucVu.MaChucVu && !cv.DaXoa);
         if (exists)
         {
             throw new InvalidOperationException($"Chức vụ với tên {chucVu.TenChucVu} đã tồn tại.");
@@ -116,7 +121,7 @@ public class ChucVuRepository(DatabaseService dbService, IQuyDinhRepository quyD
             throw new KeyNotFoundException($"Không tìm thấy chức vụ với mã CV{chucVu.MaChucVu}.");
         }
 
-        existingChucVu.TenChucVu = chucVu.TenChucVu;
+        existingChucVu.TenChucVu = chucVu.TenChucVu.Trim();
 
         dbService.DbContext.DsChucVu.Update(existingChucVu);
         await dbService.DbContext.SaveChangesAsync();

@@ -16,7 +16,7 @@ public class BangCapRepository(DatabaseService dbService, IQuyDinhRepository quy
         }
 
         QuyDinh quyDinh = await quyDinhRepo.GetQuyDinhAsync();
-        int count = await dbService.DbContext.DsBangCap.CountAsync();
+        int count = await dbService.DbContext.DsBangCap.CountAsync(bc => !bc.DaXoa); // Count only non-deleted BangCap records
         if (count >= quyDinh.SoBangCapToiDa)
         {
             throw new InvalidOperationException($"Số lượng bằng cấp đã đạt giới hạn tối đa là {quyDinh.SoBangCapToiDa}.");
@@ -32,13 +32,15 @@ public class BangCapRepository(DatabaseService dbService, IQuyDinhRepository quy
             throw new ArgumentException("Tên bằng cấp không được để trống.");
         }
 
-        var exists = await dbService.DbContext.DsBangCap.AnyAsync(bc => bc.TenBangCap.ToLower() == bangCap.TenBangCap.ToLower());
+        bangCap.TenBangCap = bangCap.TenBangCap.Trim();
+
+        var exists = await dbService.DbContext.DsBangCap.AnyAsync(bc => bc.TenBangCap.ToLower() == bangCap.TenBangCap.ToLower() && !bc.DaXoa);
         if (exists)
         {
             throw new InvalidOperationException($"Bằng cấp với tên {bangCap.TenBangCap} đã tồn tại.");
         }
 
-        await dbService.DbContext.DsBangCap.AddAsync(bangCap);
+        await dbService.DbContext.AddAsync(bangCap);
         await dbService.DbContext.SaveChangesAsync();
         dbService.DbContext.ChangeTracker.Clear();
     }
@@ -57,12 +59,14 @@ public class BangCapRepository(DatabaseService dbService, IQuyDinhRepository quy
             throw new KeyNotFoundException($"Không tìm thấy bằng cấp với mã BC{id}.");
         }
 
-        if (await dbService.DbContext.DsNhanVien.AnyAsync(nv => nv.MaBangCap == id))
+        if (await dbService.DbContext.DsNhanVien.AnyAsync(nv => nv.MaBangCap == id && !nv.DaXoa))
         {
             throw new InvalidOperationException($"Không thể xóa bằng cấp với mã BC{id} vì có nhân viên đang sử dụng bằng cấp này.");
         }
 
-        dbService.DbContext.DsBangCap.Remove(existingBangCap);
+        existingBangCap.DaXoa = true;
+
+        dbService.DbContext.DsBangCap.Update(existingBangCap);
         await dbService.DbContext.SaveChangesAsync();
         dbService.DbContext.ChangeTracker.Clear();
     }
@@ -71,6 +75,7 @@ public class BangCapRepository(DatabaseService dbService, IQuyDinhRepository quy
     {
         return await dbService.DbContext.DsBangCap
             .AsNoTracking()
+            .Where(bc => !bc.DaXoa) // Only include non-deleted BangCap records
             .ToListAsync();
     }
 
@@ -78,7 +83,7 @@ public class BangCapRepository(DatabaseService dbService, IQuyDinhRepository quy
     {
         return await dbService.DbContext.DsBangCap
             .AsNoTracking()
-            .FirstOrDefaultAsync(bc => bc.MaBangCap == id);
+            .FirstOrDefaultAsync(bc => bc.MaBangCap == id && !bc.DaXoa);
     }
 
     public async Task UpdateAsync(BangCap bangCap)
@@ -98,7 +103,7 @@ public class BangCapRepository(DatabaseService dbService, IQuyDinhRepository quy
             throw new ArgumentException("Tên bằng cấp không được để trống.");
         }
 
-        var exists = dbService.DbContext.DsBangCap.Any(bc => bc.TenBangCap.ToLower() == bangCap.TenBangCap.ToLower() && bc.MaBangCap != bangCap.MaBangCap);
+        var exists = dbService.DbContext.DsBangCap.Any(bc => bc.TenBangCap.ToLower() == bangCap.TenBangCap.ToLower() && bc.MaBangCap != bangCap.MaBangCap && !bc.DaXoa);
         if (exists)
         {
             throw new InvalidOperationException($"Bằng cấp với tên {bangCap.TenBangCap} đã tồn tại.");
@@ -110,7 +115,7 @@ public class BangCapRepository(DatabaseService dbService, IQuyDinhRepository quy
             throw new KeyNotFoundException($"Không tìm thấy bằng cấp với mã BC{bangCap.MaBangCap}.");
         }
 
-        existingBangCap.TenBangCap = bangCap.TenBangCap;
+        existingBangCap.TenBangCap = bangCap.TenBangCap.Trim();
 
         dbService.DbContext.DsBangCap.Update(existingBangCap);
         await dbService.DbContext.SaveChangesAsync();

@@ -9,6 +9,7 @@ public class BangCap
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int MaBangCap { get; set; }
     public required string TenBangCap { get; set; }
+    public bool DaXoa { get; set; } = false;
 
     public ICollection<NhanVien> DsNhanVien { get; set; } = new List<NhanVien>();
 }

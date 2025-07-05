@@ -9,6 +9,7 @@ public class LoaiDocGia
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int MaLoaiDocGia { get; set; }
     public required string TenLoaiDocGia { get; set; }
+    public bool DaXoa { get; set; } = false;
 
     public ICollection<DocGia> DsDocGia { get; set; } = new List<DocGia>();
 }

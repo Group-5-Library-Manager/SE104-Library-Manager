@@ -9,6 +9,7 @@ public class BoPhan
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int MaBoPhan { get; set; }
     public required string TenBoPhan { get; set; }
+    public bool DaXoa { get; set; } = false;
 
     public ICollection<NhanVien> DsNhanVien { get; set; } = new List<NhanVien>();
 }

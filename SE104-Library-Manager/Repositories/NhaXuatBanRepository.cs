@@ -2,11 +2,6 @@
 using SE104_Library_Manager.Entities;
 using SE104_Library_Manager.Interfaces.Repositories;
 using SE104_Library_Manager.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SE104_Library_Manager.Repositories
 {
@@ -16,18 +11,17 @@ namespace SE104_Library_Manager.Repositories
         {
             return await dbService.DbContext.DsNhaXuatBan
                 .AsNoTracking()
+                .Where(nxb => !nxb.DaXoa)
                 .ToListAsync();
         }
         public Task<NhaXuatBan?> GetByIdAsync(int id)
         {
             return dbService.DbContext.DsNhaXuatBan
                 .AsNoTracking()
-                .FirstOrDefaultAsync(ldg => ldg.MaNhaXuatBan == id);
+                .FirstOrDefaultAsync(nxb => nxb.MaNhaXuatBan == id && !nxb.DaXoa);
         }
         public async Task AddAsync(NhaXuatBan nhaXuatBan)
         {
-            QuyDinh quyDinh = await quyDinhRepo.GetQuyDinhAsync();
-
             if (nhaXuatBan == null) throw new ArgumentNullException("Nhà xuất bản không được là null");
             if (string.IsNullOrWhiteSpace(nhaXuatBan.TenNhaXuatBan))
             {
@@ -48,12 +42,14 @@ namespace SE104_Library_Manager.Repositories
                 throw new KeyNotFoundException($"Không tìm thấy nhà xuất bản với mã NXB{id}.");
             }
 
-            if (await dbService.DbContext.DsSach.AnyAsync(dg => dg.MaNhaXuatBan == id))
+            if (await dbService.DbContext.DsSach.AnyAsync(nxb => nxb.MaNhaXuatBan == id && !nxb.DaXoa))
             {
                 throw new InvalidOperationException($"Không thể xóa nhà xuất bản với mã NXB{id} vì có sách đang sử dụng nhà xuất bản này.");
             }
 
-            dbService.DbContext.DsNhaXuatBan.Remove(existingNhaXuatBan);
+            existingNhaXuatBan.DaXoa = true;
+
+            dbService.DbContext.DsNhaXuatBan.Update(existingNhaXuatBan);
             await dbService.DbContext.SaveChangesAsync();
             dbService.DbContext.ChangeTracker.Clear();
         }
@@ -73,7 +69,7 @@ namespace SE104_Library_Manager.Repositories
                 throw new KeyNotFoundException($"Không tìm thấy nhà xuất bản với mã NXB{nhaXuatBan.MaNhaXuatBan}.");
             }
 
-            existingNhaXuatBan.TenNhaXuatBan = nhaXuatBan.TenNhaXuatBan;
+            existingNhaXuatBan.TenNhaXuatBan = nhaXuatBan.TenNhaXuatBan.Trim();
 
             dbService.DbContext.DsNhaXuatBan.Update(existingNhaXuatBan);
             await dbService.DbContext.SaveChangesAsync();

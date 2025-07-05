@@ -9,6 +9,7 @@ public class NhaXuatBan
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int MaNhaXuatBan { get; set; }
     public required string TenNhaXuatBan { get; set; }
+    public bool DaXoa { get; set; } = false;
 
     public ICollection<Sach> DsSach { get; set; } = new List<Sach>();
 }

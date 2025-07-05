@@ -9,6 +9,7 @@ public class TacGia
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int MaTacGia { get; set; }
     public required string TenTacGia { get; set; }
+    public bool DaXoa { get; set; } = false;
 
     public ICollection<Sach> DsSach { get; set; } = new List<Sach>();
 }

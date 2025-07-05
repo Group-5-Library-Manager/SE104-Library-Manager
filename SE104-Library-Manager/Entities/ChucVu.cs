@@ -9,6 +9,7 @@ public class ChucVu
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int MaChucVu { get; set; }
     public required string TenChucVu { get; set; }
+    public bool DaXoa { get; set; } = false;
 
     public ICollection<NhanVien> DsNhanVien { get; set; } = new List<NhanVien>();
 }

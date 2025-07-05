@@ -25,5 +25,30 @@ namespace SE104_Library_Manager.Views.Account
             InitializeComponent();
             DataContext = vm;
         }
+
+        private void oldPasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            if(DataContext !=null && (DataContext as ChangePasswordViewModel) != null)
+            {
+                (DataContext as ChangePasswordViewModel).OldPassword = ((PasswordBox)sender).Password;
+            }
+            
+        }
+
+        private void newPasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            if (DataContext != null && (DataContext as ChangePasswordViewModel) != null)
+            {
+                (DataContext as ChangePasswordViewModel).NewPassword = ((PasswordBox)sender).Password;
+            }
+        }
+
+        private void confirmNewPasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            if (DataContext != null && (DataContext as ChangePasswordViewModel) != null)
+            {
+                (DataContext as ChangePasswordViewModel).ConfirmPassword = ((PasswordBox)sender).Password;
+            }
+        }
     }
 }

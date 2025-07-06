@@ -15,6 +15,7 @@ namespace SE104_Library_Manager.Interfaces.Repositories
         Task<bool> HasOverdueBooksAsync(int maDocGia, int? excludePhieuMuonId = null);
         Task<List<PhieuMuon>> GetOverdueBooksAsync(int maDocGia);
         Task<List<PhieuMuon>> GetAllOverdueBooksAsync();
+        Task<bool> HasReturnedBooksAsync(int maPhieuMuon);
 
         //temp for sach repo
         public Task<List<Sach>> GetAllBooksAsync();

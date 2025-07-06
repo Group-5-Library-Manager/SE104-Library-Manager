@@ -14,12 +14,14 @@ using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.EntityFrameworkCore;
 using System.Drawing;
+using Microsoft.Win32;
 
 namespace SE104_Library_Manager.ViewModels.Statistic
 {
     public partial class PenaltyStatisticViewModel : ObservableObject
     {
         private readonly DatabaseService _dbService;
+        private readonly ExcelExportService _excelExportService;
 
         [ObservableProperty]
         private DateTime _fromDate = DateTime.Now.AddMonths(-1);
@@ -42,6 +44,7 @@ namespace SE104_Library_Manager.ViewModels.Statistic
         public PenaltyStatisticViewModel(DatabaseService dbService)
         {
             _dbService = dbService;
+            _excelExportService = new ExcelExportService();
         }
 
         [RelayCommand]
@@ -134,6 +137,44 @@ namespace SE104_Library_Manager.ViewModels.Statistic
             }
 
             ChartPoints = points.ToArray();
+        }
+
+        [RelayCommand]
+        private async Task ExportToExcel()
+        {
+            try
+            {
+                if (PenaltyItems.Count == 0)
+                {
+                    MessageBox.Show("Không có dữ liệu để xuất!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var saveFileDialog = new SaveFileDialog
+                {
+                    Filter = "Excel files (*.xlsx)|*.xlsx",
+                    FileName = $"Thong_ke_tien_thu_phat_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
+                };
+
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    // Convert to export format
+                    var exportData = PenaltyItems.Select(item => new Services.PenaltyStatisticItem
+                    {
+                        Index = item.Index,
+                        Date = item.Date,
+                        Penalty = item.Penalty,
+                        FormattedDate = item.FormattedDate
+                    }).ToList();
+
+                    await _excelExportService.ExportPenaltyStatisticAsync(exportData, saveFileDialog.FileName);
+                    MessageBox.Show("Xuất file Excel thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi xuất file Excel: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 

@@ -35,7 +35,6 @@ public class DatabaseService
             await EnsureDatabaseSeededAsync();
         }
     }
-
     private async Task EnsureDatabaseSeededAsync()
     {
         DatabaseContext context = GetDatabaseContext();

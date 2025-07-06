@@ -32,7 +32,12 @@
                             Language="vi-VN"/>
                 <Button Content="Thống kê" 
                         Command="{Binding LoadStatisticCommand}"
-                        Style="{StaticResource PrimaryButtonStyle}"/>
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Margin="0 0 10 0"/>
+                
+                <Button Content="Xuất Excel" 
+                        Command="{Binding ExportToExcelCommand}"
+                        Style="{StaticResource SecondaryButtonStyle}"/>
             </StackPanel>
         </Border>
 

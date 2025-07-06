@@ -129,6 +129,13 @@ namespace SE104_Library_Manager.ViewModels.Borrow
 
             try
             {
+                // Kiểm tra xem phiếu mượn có sách đã trả hay không
+                var hasSachDaTra = await phieuMuonRepo.HasReturnedBooksAsync(SelectedBorrow.MaPhieuMuon);
+                if (hasSachDaTra)
+                {
+                    MessageBox.Show($"Không thể cập nhật phiếu mượn PM{SelectedBorrow.MaPhieuMuon} vì có sách đã được trả.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
                 var updateBorrowVM = App.ServiceProvider?.GetService(typeof(UpdateBorrowViewModel)) as UpdateBorrowViewModel;
                 if (updateBorrowVM == null)
                 {
@@ -163,19 +170,34 @@ namespace SE104_Library_Manager.ViewModels.Borrow
                 return;
             }
 
-            var result = MessageBox.Show($"Bạn có chắc chắn muốn xóa phiếu mượn {SelectedBorrow.MaPhieuMuon}?", "Xác nhận xóa", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (result == MessageBoxResult.Yes)
+            try
             {
-                try
+                // Kiểm tra xem phiếu mượn có sách đã trả hay không
+                var hasSachDaTra = await phieuMuonRepo.HasReturnedBooksAsync(SelectedBorrow.MaPhieuMuon);
+                if (hasSachDaTra)
                 {
-                    await phieuMuonRepo.DeleteAsync(SelectedBorrow.MaPhieuMuon);
-                    await LoadDataAsync();
-                    MessageBox.Show("Xóa phiếu mượn thành công", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show($"Không thể xóa phiếu mượn PM{SelectedBorrow.MaPhieuMuon} vì có sách đã được trả.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
                 }
-                catch (Exception ex)
+
+                var result = MessageBox.Show($"Bạn có chắc chắn muốn xóa phiếu mượn {SelectedBorrow.MaPhieuMuon}?", "Xác nhận xóa", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (result == MessageBoxResult.Yes)
                 {
-                    MessageBox.Show($"Lỗi khi xóa phiếu mượn: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    try
+                    {
+                        await phieuMuonRepo.DeleteAsync(SelectedBorrow.MaPhieuMuon);
+                        await LoadDataAsync();
+                        MessageBox.Show("Xóa phiếu mượn thành công", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Lỗi khi xóa phiếu mượn: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi kiểm tra phiếu mượn: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

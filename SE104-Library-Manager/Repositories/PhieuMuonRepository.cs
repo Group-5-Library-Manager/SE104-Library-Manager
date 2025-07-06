@@ -40,6 +40,12 @@ namespace SE104_Library_Manager.Repositories
 
         public async Task DeleteAsync(int id)
         {
+            // Kiểm tra xem phiếu mượn có sách đã trả hay không
+            var hasSachDaTra = await HasReturnedBooksAsync(id);
+            if (hasSachDaTra)
+            {
+                throw new InvalidOperationException($"Không thể xóa phiếu mượn PM{id} vì có sách đã được trả.");
+            }
             using var transaction = await dbService.DbContext.Database.BeginTransactionAsync();
             try
             {
@@ -148,23 +154,33 @@ namespace SE104_Library_Manager.Repositories
                 existingPhieuMuon.NgayMuon = phieuMuon.NgayMuon;
                 existingPhieuMuon.MaDocGia = phieuMuon.MaDocGia;
                 existingPhieuMuon.MaNhanVien = phieuMuon.MaNhanVien;
-
+                // Lấy danh sách sách đã trả
+                var sachDaTra = await dbService.DbContext.DsChiTietPhieuTra
+                    .Where(ct => ct.MaPhieuMuon == phieuMuon.MaPhieuMuon)
+                    .Select(ct => ct.MaSach)
+                    .ToListAsync();
                 // Get existing details to update book statuses
                 var existingDetails = await dbService.DbContext.DsChiTietPhieuMuon
                     .Where(ct => ct.MaPhieuMuon == phieuMuon.MaPhieuMuon)
                     .ToListAsync();
-
+                // Lọc ra các chi tiết phiếu mượn của sách chưa trả để xóa
+                var detailsToRemove = existingDetails
+                    .Where(detail => !sachDaTra.Contains(detail.MaSach))
+                    .ToList();
                 // Remove existing details
-                dbService.DbContext.DsChiTietPhieuMuon.RemoveRange(existingDetails);
+                dbService.DbContext.DsChiTietPhieuMuon.RemoveRange(detailsToRemove);
 
                 // Update book statuses for previously borrowed books (make them available again)
-                foreach (var existingDetail in existingDetails)
+                foreach (var existingDetail in detailsToRemove)
                 {
                     await this.UpdateBookStatusAsync(existingDetail.MaSach, "Có sẵn");
                 }
-
+                // Lọc ra các sách mới không phải sách đã trả
+                var newDetails = dsChiTietPhieuMuon
+                    .Where(detail => !sachDaTra.Contains(detail.MaSach))
+                    .ToList();
                 // Add new details
-                foreach (var chiTiet in dsChiTietPhieuMuon)
+                foreach (var chiTiet in newDetails)
                 {
                     chiTiet.MaPhieuMuon = phieuMuon.MaPhieuMuon;
                     await dbService.DbContext.DsChiTietPhieuMuon.AddAsync(chiTiet);
@@ -308,6 +324,26 @@ namespace SE104_Library_Manager.Repositories
                 .Where(ct => ct.MaPhieuMuon == phieuMuon.MaPhieuMuon)
                 .Select(ct => ct.MaSach)
                 .ToListAsync();
+            // Kiểm tra xem có sách nào đã được trả không
+            var sachDaTra = await dbService.DbContext.DsChiTietPhieuTra
+                .Where(ct => ct.MaPhieuMuon == phieuMuon.MaPhieuMuon)
+                .Select(ct => new { ct.MaSach, ct.MaPhieuTra })
+                .ToListAsync();
+
+            // Tạo danh sách mã sách đã trả
+            var dsMaSachDaTra = sachDaTra.Select(s => s.MaSach).ToList();
+
+            // Kiểm tra xem danh sách sách mới có bỏ sót sách đã trả không
+            var sachDaTraBiXoa = dsMaSachDaTra.Except(dsChiTietPhieuMuon.Select(ct => ct.MaSach)).ToList();
+            if (sachDaTraBiXoa.Any())
+            {
+                var sachInfo = await dbService.DbContext.DsSach
+                    .Where(s => sachDaTraBiXoa.Contains(s.MaSach))
+                    .Select(s => new { s.MaSach, s.TenSach })
+                    .FirstOrDefaultAsync();
+
+                throw new InvalidOperationException($"Sách {sachInfo?.TenSach} (mã S{sachInfo?.MaSach}) đã được trả. Không thể xóa thông tin mượn của sách này.");
+            }
 
             // Kiểm tra sách có tồn tại và có sẵn không (cho phép sách đang được mượn trong cùng phiếu mượn này)
             foreach (var chiTiet in dsChiTietPhieuMuon)
@@ -391,6 +427,12 @@ namespace SE104_Library_Manager.Repositories
                     .ThenInclude(ct => ct.Sach)
                 .Where(pm => !pm.DaXoa && pm.NgayMuon.AddDays(quyDinh.SoNgayMuonToiDa) < currentDate)
                 .ToListAsync();
+        }
+        public async Task<bool> HasReturnedBooksAsync(int maPhieuMuon)
+        {
+            // Kiểm tra xem phiếu mượn có sách đã trả hay không
+            return await dbService.DbContext.DsChiTietPhieuTra
+                .AnyAsync(ct => ct.MaPhieuMuon == maPhieuMuon);
         }
 
         #region temp for sach repo

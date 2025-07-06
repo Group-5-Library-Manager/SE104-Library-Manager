@@ -9,12 +9,14 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using Microsoft.Win32;
 
 namespace SE104_Library_Manager.ViewModels.Statistic
 {
     public partial class BorrowingStatisticViewModel : ObservableObject
     {
         private readonly DatabaseService _dbService;
+        private readonly ExcelExportService _excelExportService;
 
         [ObservableProperty]
         private DateTime _fromDate = DateTime.Now.AddMonths(-1);
@@ -31,6 +33,7 @@ namespace SE104_Library_Manager.ViewModels.Statistic
         public BorrowingStatisticViewModel(DatabaseService dbService)
         {
             _dbService = dbService;
+            _excelExportService = new ExcelExportService();
         }
 
         [RelayCommand]
@@ -90,6 +93,44 @@ namespace SE104_Library_Manager.ViewModels.Statistic
             }).ToList();
 
             return result;
+        }
+
+        [RelayCommand]
+        private async Task ExportToExcel()
+        {
+            try
+            {
+                if (BorrowingItems.Count == 0)
+                {
+                    MessageBox.Show("Không có dữ liệu để xuất!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var saveFileDialog = new SaveFileDialog
+                {
+                    Filter = "Excel files (*.xlsx)|*.xlsx",
+                    FileName = $"Thong_ke_muon_sach_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
+                };
+
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    // Convert to export format
+                    var exportData = BorrowingItems.Select(item => new Services.BorrowingStatisticItem
+                    {
+                        Index = item.Index,
+                        GenreName = item.GenreName,
+                        BorrowCount = item.BorrowCount,
+                        Percentage = item.Percentage
+                    }).ToList();
+
+                    await _excelExportService.ExportBorrowingStatisticAsync(exportData, saveFileDialog.FileName);
+                    MessageBox.Show("Xuất file Excel thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi xuất file Excel: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 

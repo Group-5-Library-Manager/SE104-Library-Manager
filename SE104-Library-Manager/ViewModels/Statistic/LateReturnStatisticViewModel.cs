@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using Microsoft.Win32;
 
 namespace SE104_Library_Manager.ViewModels.Statistic
 {
@@ -17,6 +18,7 @@ namespace SE104_Library_Manager.ViewModels.Statistic
     {
         private readonly DatabaseService _dbService;
         private readonly IQuyDinhRepository _quyDinhRepo;
+        private readonly ExcelExportService _excelExportService;
 
         [ObservableProperty]
         private DateTime _fromDate = DateTime.Now.AddMonths(-1);
@@ -31,6 +33,7 @@ namespace SE104_Library_Manager.ViewModels.Statistic
         {
             _dbService = dbService;
             _quyDinhRepo = quyDinhRepo;
+            _excelExportService = new ExcelExportService();
         }
 
         [RelayCommand]
@@ -110,6 +113,46 @@ namespace SE104_Library_Manager.ViewModels.Statistic
             }
 
             return 0;
+        }
+
+        [RelayCommand]
+        private async Task ExportToExcel()
+        {
+            try
+            {
+                if (LateReturnItems.Count == 0)
+                {
+                    MessageBox.Show("Không có dữ liệu để xuất!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var saveFileDialog = new SaveFileDialog
+                {
+                    Filter = "Excel files (*.xlsx)|*.xlsx",
+                    FileName = $"Thong_ke_sach_tra_tre_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
+                };
+
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    // Convert to export format
+                    var exportData = LateReturnItems.Select(item => new Services.LateReturnStatisticItem
+                    {
+                        Index = item.Index,
+                        BookName = item.BookName,
+                        BorrowDate = item.BorrowDate,
+                        ReturnDate = item.ReturnDate,
+                        DaysOverdue = item.DaysOverdue,
+                        Fine = item.Fine
+                    }).ToList();
+
+                    await _excelExportService.ExportLateReturnStatisticAsync(exportData, saveFileDialog.FileName);
+                    MessageBox.Show("Xuất file Excel thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi xuất file Excel: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 

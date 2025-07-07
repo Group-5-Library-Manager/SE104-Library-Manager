@@ -33,11 +33,15 @@ public partial class AddReaderViewModel : ObservableObject
 
     private IDocGiaRepository docGiaRepo;
     private ILoaiDocGiaRepository loaiDocGiaRepo;
+    private IQuyDinhRepository quyDinhRepo;
 
-    public AddReaderViewModel(IDocGiaRepository docGiaRepository, ILoaiDocGiaRepository loaiDocGiaRepository)
+    private QuyDinh quyDinh = null!;
+
+    public AddReaderViewModel(IDocGiaRepository docGiaRepository, ILoaiDocGiaRepository loaiDocGiaRepository, IQuyDinhRepository quyDinhRepository)
     {
         docGiaRepo = docGiaRepository;
         loaiDocGiaRepo = loaiDocGiaRepository;
+        quyDinhRepo = quyDinhRepository;
         LoadDataAsync().ConfigureAwait(false);
     }
 
@@ -47,11 +51,19 @@ public partial class AddReaderViewModel : ObservableObject
         if (dsLoaiDocGia == null) return;
 
         ReaderTypes = new ObservableCollection<LoaiDocGia>(await loaiDocGiaRepo.GetAllAsync());
+
+        quyDinh = await quyDinhRepo.GetQuyDinhAsync();
     }
 
     [RelayCommand]
     public async Task AddReaderType()
     {
+        if (ReaderTypes.Count >= quyDinh.SoLoaiDocGiaToiDa)
+        {
+            MessageBox.Show($"Số lượng loại độc giả đã đạt giới hạn tối đa là {quyDinh.SoLoaiDocGiaToiDa}.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+
         var w = App.ServiceProvider?.GetService(typeof(AddReaderTypeWindow)) as AddReaderTypeWindow;
         if (w == null) return;
 
@@ -99,5 +111,37 @@ public partial class AddReaderViewModel : ObservableObject
     public void Cancel(AddReaderWindow w)
     { 
         w.Close();
+    }
+
+    partial void OnBirthDateChanged(DateTime value)
+    {
+        int minAge = quyDinh.TuoiDocGiaToiThieu;
+        int maxAge = quyDinh.TuoiDocGiaToiDa;
+
+        // Birthday must in the past
+        if (value > DateTime.Now)
+        {
+            MessageBox.Show("Ngày sinh không thể lớn hơn ngày hiện tại.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            BirthDate = new DateTime(DateTime.Now.Year - minAge, DateTime.Now.Month, DateTime.Now.Day);
+            return;
+        }
+
+
+        int currentYear = DateTime.Now.Year;
+        int selectedYear = value.Year;
+        int readerAge = currentYear - selectedYear;
+
+        // If not yet had birthday this year, subtract one from age
+        if (DateTime.Now < new DateTime(currentYear, value.Month, value.Day))
+        {
+            readerAge--;
+        }
+
+        if (readerAge < minAge || readerAge > maxAge)
+        {
+            MessageBox.Show($"Độc giả phải từ {minAge} đến {maxAge} tuổi.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            BirthDate = new DateTime(currentYear - minAge, DateTime.Now.Month, DateTime.Now.Day);
+            return;
+        }
     }
 }

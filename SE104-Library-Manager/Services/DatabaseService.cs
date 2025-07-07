@@ -62,6 +62,10 @@ public class DatabaseService
         await EnsureCreateSachAsync(context);
         await context.SaveChangesAsync();
 
+        await EnsureCreatePhieuMuonAsync(context);
+        await context.SaveChangesAsync();
+
+        await EnsureCreatePhieuTraAsync(context);
         await EnsureCreatePhieuPhatAsync(context);
         await context.SaveChangesAsync();
     }
@@ -257,6 +261,109 @@ public class DatabaseService
             );
         }
     }
+
+    private async Task EnsureCreatePhieuMuonAsync(DatabaseContext context)
+    {
+        if (!await context.DsPhieuMuon.AnyAsync())
+        {
+            // Phiếu mượn cho độc giả 1
+            var phieuMuon1 = new PhieuMuon
+            {
+                NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-40)),
+                MaDocGia = 1,
+                MaNhanVien = 1
+            };
+            await context.DsPhieuMuon.AddAsync(phieuMuon1);
+            await context.SaveChangesAsync(); 
+
+            var dsChiTietMuon1 = new List<ChiTietPhieuMuon>
+            {
+            new ChiTietPhieuMuon { MaPhieuMuon = phieuMuon1.MaPhieuMuon, MaSach = 1 },
+            new ChiTietPhieuMuon { MaPhieuMuon = phieuMuon1.MaPhieuMuon, MaSach = 2 }
+            };
+
+            await context.DsChiTietPhieuMuon.AddRangeAsync(dsChiTietMuon1);
+
+            var dsSach1 = await context.DsSach.Where(s => new[] { 1, 2 }.Contains(s.MaSach)).ToListAsync();
+            foreach (var sach in dsSach1)
+            {
+                sach.TrangThai = "Đã mượn";
+            }
+
+            // Phiếu mượn cho độc giả 2
+            var phieuMuon2 = new PhieuMuon
+            {
+                NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-10)),
+                MaDocGia = 2,
+                MaNhanVien = 1
+            };
+            await context.DsPhieuMuon.AddAsync(phieuMuon2);
+            await context.SaveChangesAsync();
+
+            var dsChiTietMuon2 = new List<ChiTietPhieuMuon>
+            {
+            new ChiTietPhieuMuon { MaPhieuMuon = phieuMuon2.MaPhieuMuon, MaSach = 3 },
+            new ChiTietPhieuMuon { MaPhieuMuon = phieuMuon2.MaPhieuMuon, MaSach = 4 }
+            };
+            await context.DsChiTietPhieuMuon.AddRangeAsync(dsChiTietMuon2);
+
+            var dsSach2 = await context.DsSach.Where(s => new[] { 3, 4 }.Contains(s.MaSach)).ToListAsync();
+            foreach (var sach in dsSach2)
+            {
+                sach.TrangThai = "Đã mượn";
+            }
+        }
+    }
+
+
+    private async Task EnsureCreatePhieuTraAsync(DatabaseContext context)
+    {
+        if (!await context.DsPhieuTra.AnyAsync())
+        {
+            var phieuMuon1 = await context.DsPhieuMuon
+                .Include(pm => pm.DsChiTietPhieuMuon)
+                .FirstOrDefaultAsync(pm => pm.MaDocGia == 1);
+
+            if (phieuMuon1 != null && phieuMuon1.DsChiTietPhieuMuon.Any())
+            {
+                var sachMuon = phieuMuon1.DsChiTietPhieuMuon.First();
+
+                var phieuTra = new PhieuTra
+                {
+                    MaDocGia = phieuMuon1.MaDocGia,
+                    NgayTra = DateOnly.FromDateTime(DateTime.Now),
+                    MaNhanVien = 1,
+                    TienPhatKyNay = 10000,
+                    TongNo = 10000
+                };
+
+                await context.DsPhieuTra.AddAsync(phieuTra);
+                await context.SaveChangesAsync();
+
+                var chiTiet = new ChiTietPhieuTra
+                {
+                    MaPhieuTra = phieuTra.MaPhieuTra,
+                    MaPhieuMuon = phieuMuon1.MaPhieuMuon,
+                    MaSach = sachMuon.MaSach,
+                    TienPhat = 10000
+                };
+
+                await context.DsChiTietPhieuTra.AddAsync(chiTiet);
+
+                // Cập nhật nợ độc giả
+                var docGia = await context.DsDocGia.FindAsync(phieuMuon1.MaDocGia);
+                if (docGia != null)
+                {
+                    docGia.TongNo += chiTiet.TienPhat;
+                }
+
+                // Cập nhật trạng thái sách
+                var sach = await context.DsSach.FindAsync(sachMuon.MaSach);
+                if (sach != null)
+                {
+                    sach.TrangThai = "Có sẵn";
+                }
+            }
 
     private async Task EnsureCreatePhieuPhatAsync(DatabaseContext context)
     {

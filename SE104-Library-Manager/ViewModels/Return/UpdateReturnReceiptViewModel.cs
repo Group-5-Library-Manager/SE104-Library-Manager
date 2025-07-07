@@ -171,6 +171,22 @@ public partial class UpdateReturnReceiptViewModel : ObservableObject
             return;
         }
 
+        // Validate return quantities
+        var validItems = DsSachTra.Where(s => s.SelectedBook != null).ToList();
+        foreach (var item in validItems)
+        {
+            if (item.ReturnQuantity <= 0)
+            {
+                MessageBox.Show($"Số lượng trả cho sách '{item.TenSach}' phải lớn hơn 0.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (item.ReturnQuantity > item.BorrowedQuantity)
+            {
+                MessageBox.Show($"Số lượng trả cho sách '{item.TenSach}' không được vượt quá số lượng đã mượn ({item.BorrowedQuantity}).", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+        }
+
         var maDocGia = SelectedReturn.MaDocGia;
 
         var chiTietCu = await chiTietPhieuTraRepo.GetByPhieuTraAsync(SelectedReturn.MaPhieuTra);
@@ -193,6 +209,7 @@ public partial class UpdateReturnReceiptViewModel : ObservableObject
                 MaPhieuTra = SelectedReturn.MaPhieuTra,
                 MaSach = s.SelectedBook!.MaSach,
                 MaPhieuMuon = s.MaPhieuMuon,
+                SoLuongTra = s.ReturnQuantity,
                 TienPhat = s.TienPhat
             }).ToList();
 
@@ -280,6 +297,17 @@ public partial class UpdateReturnReceiptViewModel : ObservableObject
             if (chiTiet?.PhieuMuon != null)
             {
                 NgayMuon = chiTiet.PhieuMuon.NgayMuon;
+                BorrowedQuantity = chiTiet.SoLuongTra; // For update, this is the returned quantity
+                ReturnQuantity = chiTiet.SoLuongTra; // Default to the same quantity
+            }
+
+            // Get current book stock and status
+            var sach = vm.SelectedReturn?.DsChiTietPhieuTra
+                .FirstOrDefault(ct => ct.MaSach == MaSach)?.Sach;
+            if (sach != null)
+            {
+                CurrentStock = sach.SoLuongHienCo;
+                CurrentStatus = sach.TrangThai;
             }
 
             _ = UpdateFineAsync();
@@ -295,6 +323,33 @@ public partial class UpdateReturnReceiptViewModel : ObservableObject
 
         [ObservableProperty]
         private int tienPhat;
+
+        [ObservableProperty]
+        private int borrowedQuantity;
+
+        [ObservableProperty]
+        private int returnQuantity = 1;
+
+        [ObservableProperty]
+        private int currentStock;
+
+        [ObservableProperty]
+        private string currentStatus = "";
+
+        partial void OnReturnQuantityChanged(int value)
+        {
+            if (value > BorrowedQuantity)
+            {
+                ReturnQuantity = BorrowedQuantity;
+                MessageBox.Show($"Số lượng trả không được vượt quá số lượng đã mượn ({BorrowedQuantity}).", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            else if (value < 1)
+            {
+                ReturnQuantity = 1;
+                MessageBox.Show("Số lượng trả phải lớn hơn 0.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            _ = UpdateFineAsync();
+        }
 
         public async Task UpdateFineAsync()
         {

@@ -273,10 +273,12 @@ public partial class AddReturnReceiptViewModel : ObservableObject
             if (value > BorrowedQuantity)
             {
                 ReturnQuantity = BorrowedQuantity;
+                MessageBox.Show($"Số lượng trả không được vượt quá số lượng đã mượn ({BorrowedQuantity}).", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             else if (value < 1)
             {
                 ReturnQuantity = 1;
+                MessageBox.Show("Số lượng trả phải lớn hơn 0.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             _ = UpdateFineAsync();
         }

@@ -261,10 +261,12 @@ namespace SE104_Library_Manager.Repositories
                 }
             }
 
-            // Kiểm tra số sách đang mượn của độc giả
+            // Kiểm tra số sách đang mượn của độc giả (không tính sách đã trả)
             var soSachDangMuon = await dbService.DbContext.DsPhieuMuon
                 .Where(pm => pm.MaDocGia == phieuMuon.MaDocGia && !pm.DaXoa)
                 .SelectMany(pm => pm.DsChiTietPhieuMuon)
+                .Where(ct => !dbService.DbContext.DsChiTietPhieuTra
+                    .Any(tr => tr.MaPhieuMuon == ct.MaPhieuMuon && tr.MaSach == ct.MaSach))
                 .CountAsync();
 
             if (soSachDangMuon + dsChiTietPhieuMuon.Count > quyDinh.SoSachMuonToiDa)
@@ -361,10 +363,12 @@ namespace SE104_Library_Manager.Repositories
                 }
             }
 
-            // Kiểm tra số sách đang mượn của độc giả (excluding current borrow record)
+            // Kiểm tra số sách đang mượn của độc giả (excluding current borrow record and returned books)
             var soSachDangMuon = await dbService.DbContext.DsPhieuMuon
                 .Where(pm => pm.MaDocGia == phieuMuon.MaDocGia && !pm.DaXoa && pm.MaPhieuMuon != phieuMuon.MaPhieuMuon)
                 .SelectMany(pm => pm.DsChiTietPhieuMuon)
+                .Where(ct => !dbService.DbContext.DsChiTietPhieuTra
+                    .Any(tr => tr.MaPhieuMuon == ct.MaPhieuMuon && tr.MaSach == ct.MaSach))
                 .CountAsync();
 
             if (soSachDangMuon + dsChiTietPhieuMuon.Count > quyDinh.SoSachMuonToiDa)
@@ -388,12 +392,52 @@ namespace SE104_Library_Manager.Repositories
                 query = query.Where(pm => pm.MaPhieuMuon != excludePhieuMuonId.Value);
             }
 
-            var hasOverdueBooks = await query
+            // Get overdue phieu muon IDs first
+            var overduePhieuMuonIds = await query
                 .Where(pm => pm.NgayMuon.AddDays(quyDinh.SoNgayMuonToiDa) < currentDate)
-                .SelectMany(pm => pm.DsChiTietPhieuMuon)
-                .AnyAsync();
+                .Select(pm => pm.MaPhieuMuon)
+                .ToListAsync();
 
-            return hasOverdueBooks;
+            if (!overduePhieuMuonIds.Any())
+            {
+                return false;
+            }
+
+            // Get all borrowed books from overdue borrow receipts
+            var allOverdueBooks = await dbService.DbContext.DsChiTietPhieuMuon
+                .Where(ct => overduePhieuMuonIds.Contains(ct.MaPhieuMuon))
+                .Select(ct => new { ct.MaPhieuMuon, ct.MaSach })
+                .ToListAsync();
+
+            // Get all returned books for these borrow receipts
+            var returnedBooks = await dbService.DbContext.DsChiTietPhieuTra
+                .Where(ct => overduePhieuMuonIds.Contains(ct.MaPhieuMuon))
+                .Select(ct => new { ct.MaPhieuMuon, ct.MaSach })
+                .ToListAsync();
+
+            // Create a lookup for returned books
+            var returnedBooksLookup = returnedBooks
+                .GroupBy(rb => rb.MaPhieuMuon)
+                .ToDictionary(g => g.Key, g => g.Select(rb => rb.MaSach).ToHashSet());
+
+            // Check if there are any unreturned overdue books
+            foreach (var book in allOverdueBooks)
+            {
+                if (!returnedBooksLookup.TryGetValue(book.MaPhieuMuon, out var returnedBookIds))
+                {
+                    // No returned books for this borrow receipt, so this book is overdue
+                    return true;
+                }
+                
+                if (!returnedBookIds.Contains(book.MaSach))
+                {
+                    // This book is not in the returned books list, so it's overdue
+                    return true;
+                }
+            }
+
+            // All overdue books have been returned
+            return false;
         }
 
         // Lấy danh sách sách quá hạn của độc giả
@@ -402,7 +446,7 @@ namespace SE104_Library_Manager.Repositories
             var quyDinh = await quyDinhRepo.GetQuyDinhAsync();
             var currentDate = DateOnly.FromDateTime(DateTime.Now);
 
-            return await dbService.DbContext.DsPhieuMuon
+            var overduePhieuMuon = await dbService.DbContext.DsPhieuMuon
                 .AsNoTracking()
                 .Include(pm => pm.DocGia)
                 .Include(pm => pm.NhanVien)
@@ -411,6 +455,32 @@ namespace SE104_Library_Manager.Repositories
                 .Where(pm => pm.MaDocGia == maDocGia && !pm.DaXoa &&
                            pm.NgayMuon.AddDays(quyDinh.SoNgayMuonToiDa) < currentDate)
                 .ToListAsync();
+
+            // Get all returned books for these phieu muon in a single query
+            var phieuMuonIds = overduePhieuMuon.Select(pm => pm.MaPhieuMuon).ToList();
+            var returnedBooks = await dbService.DbContext.DsChiTietPhieuTra
+                .Where(ct => phieuMuonIds.Contains(ct.MaPhieuMuon))
+                .Select(ct => new { ct.MaPhieuMuon, ct.MaSach })
+                .ToListAsync();
+
+            // Create a lookup for returned books
+            var returnedBooksLookup = returnedBooks
+                .GroupBy(rb => rb.MaPhieuMuon)
+                .ToDictionary(g => g.Key, g => g.Select(rb => rb.MaSach).ToHashSet());
+
+            // Filter out books that have already been returned
+            foreach (var phieuMuon in overduePhieuMuon)
+            {
+                if (returnedBooksLookup.TryGetValue(phieuMuon.MaPhieuMuon, out var returnedBookIds))
+                {
+                    phieuMuon.DsChiTietPhieuMuon = phieuMuon.DsChiTietPhieuMuon
+                        .Where(ct => !returnedBookIds.Contains(ct.MaSach))
+                        .ToList();
+                }
+            }
+
+            // Return only phieu muon that still have unreturned books
+            return overduePhieuMuon.Where(pm => pm.DsChiTietPhieuMuon.Any()).ToList();
         }
 
         // Lấy tất cả sách quá hạn trong hệ thống
@@ -419,7 +489,7 @@ namespace SE104_Library_Manager.Repositories
             var quyDinh = await quyDinhRepo.GetQuyDinhAsync();
             var currentDate = DateOnly.FromDateTime(DateTime.Now);
 
-            return await dbService.DbContext.DsPhieuMuon
+            var overduePhieuMuon = await dbService.DbContext.DsPhieuMuon
                 .AsNoTracking()
                 .Include(pm => pm.DocGia)
                 .Include(pm => pm.NhanVien)
@@ -427,6 +497,32 @@ namespace SE104_Library_Manager.Repositories
                     .ThenInclude(ct => ct.Sach)
                 .Where(pm => !pm.DaXoa && pm.NgayMuon.AddDays(quyDinh.SoNgayMuonToiDa) < currentDate)
                 .ToListAsync();
+
+            // Get all returned books for these phieu muon in a single query
+            var phieuMuonIds = overduePhieuMuon.Select(pm => pm.MaPhieuMuon).ToList();
+            var returnedBooks = await dbService.DbContext.DsChiTietPhieuTra
+                .Where(ct => phieuMuonIds.Contains(ct.MaPhieuMuon))
+                .Select(ct => new { ct.MaPhieuMuon, ct.MaSach })
+                .ToListAsync();
+
+            // Create a lookup for returned books
+            var returnedBooksLookup = returnedBooks
+                .GroupBy(rb => rb.MaPhieuMuon)
+                .ToDictionary(g => g.Key, g => g.Select(rb => rb.MaSach).ToHashSet());
+
+            // Filter out books that have already been returned
+            foreach (var phieuMuon in overduePhieuMuon)
+            {
+                if (returnedBooksLookup.TryGetValue(phieuMuon.MaPhieuMuon, out var returnedBookIds))
+                {
+                    phieuMuon.DsChiTietPhieuMuon = phieuMuon.DsChiTietPhieuMuon
+                        .Where(ct => !returnedBookIds.Contains(ct.MaSach))
+                        .ToList();
+                }
+            }
+
+            // Return only phieu muon that still have unreturned books
+            return overduePhieuMuon.Where(pm => pm.DsChiTietPhieuMuon.Any()).ToList();
         }
         public async Task<bool> HasReturnedBooksAsync(int maPhieuMuon)
         {

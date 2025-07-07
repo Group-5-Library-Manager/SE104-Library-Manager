@@ -2,11 +2,6 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using SE104_Library_Manager.Entities;
 using SE104_Library_Manager.Interfaces.Repositories;
-using SE104_Library_Manager.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SE104_Library_Manager.Tests.Repositories
 {
@@ -434,6 +429,8 @@ namespace SE104_Library_Manager.Tests.Repositories
             result.Should().Contain(s => s.MaSach == sach2.MaSach);
             result.Should().NotContain(s => s.MaSach == sach1.MaSach);
         }
+
+        
 
         // Helper methods to create test data
         private async Task<DocGia> CreateTestDocGia()

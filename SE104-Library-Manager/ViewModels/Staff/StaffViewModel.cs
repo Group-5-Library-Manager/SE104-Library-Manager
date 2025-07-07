@@ -10,7 +10,7 @@ using System.Windows.Controls;
 
 namespace SE104_Library_Manager.ViewModels;
 
-public partial class StaffViewModel(INhanVienRepository nhanVienRepo, IChucVuRepository chucVuRepo, IBoPhanRepository boPhanRepo, IBangCapRepository bangCapRepo, IVaiTroRepository vaiTroRepo, ITaiKhoanRepository taiKhoanRepo, IStaffSessionReader staffSessionReader) : ObservableObject
+public partial class StaffViewModel(INhanVienRepository nhanVienRepo, IChucVuRepository chucVuRepo, IBoPhanRepository boPhanRepo, IBangCapRepository bangCapRepo, ITaiKhoanRepository taiKhoanRepo, IQuyDinhRepository quyDinhRepo) : ObservableObject
 {
     [ObservableProperty]
     private TabItem selectedTab = null!;
@@ -23,6 +23,9 @@ public partial class StaffViewModel(INhanVienRepository nhanVienRepo, IChucVuRep
 
     [ObservableProperty]
     private NhanVien? selectedStaffForEdit;
+
+    [ObservableProperty]
+    private DateTime? selectedStaffForEditBirthday;
 
     [ObservableProperty]
     private TaiKhoan? selectedAccountForEdit;
@@ -71,6 +74,7 @@ public partial class StaffViewModel(INhanVienRepository nhanVienRepo, IChucVuRep
     private List<BoPhan> originalBoPhan = new List<BoPhan>();
     private List<BangCap> originalBangCap = new List<BangCap>();
 
+    private QuyDinh quyDinh = null!;
     private bool loadDataFailed = false;
 
     private async Task LoadDataAsync()
@@ -88,6 +92,8 @@ public partial class StaffViewModel(INhanVienRepository nhanVienRepo, IChucVuRep
             DsChucVu = new ObservableCollection<ChucVu>(originalChucVu);
             DsBoPhan = new ObservableCollection<BoPhan>(originalBoPhan);
             DsBangCap = new ObservableCollection<BangCap>(originalBangCap);
+
+            quyDinh = await quyDinhRepo.GetQuyDinhAsync();
         }
         catch (Exception ex)
         {
@@ -230,6 +236,12 @@ public partial class StaffViewModel(INhanVienRepository nhanVienRepo, IChucVuRep
     [RelayCommand]
     public async Task AddPositionAsync()
     {
+        if (originalChucVu.Count >= quyDinh.SoChucVuToiDa)
+        {
+            MessageBox.Show($"Số lượng chức vụ đã đạt giới hạn tối đa là {quyDinh.SoChucVuToiDa}.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+
         var w = App.ServiceProvider?.GetService(typeof(AddPositionWindow)) as AddPositionWindow;
         if (w == null) return;
         w.Owner = App.Current.MainWindow;
@@ -274,8 +286,8 @@ public partial class StaffViewModel(INhanVienRepository nhanVienRepo, IChucVuRep
         try
         {
             await chucVuRepo.DeleteAsync(SelectedPosition.MaChucVu);
-            DsChucVu.Remove(SelectedPosition);
             originalChucVu.Remove(SelectedPosition);
+            DsChucVu.Remove(SelectedPosition);
             SelectedPosition = null;
             MessageBox.Show("Xóa chức vụ thành công", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
         }
@@ -288,6 +300,12 @@ public partial class StaffViewModel(INhanVienRepository nhanVienRepo, IChucVuRep
     [RelayCommand]
     public async Task AddDepartmentAsync()
     {
+        if (originalBoPhan.Count >= quyDinh.SoBoPhanToiDa)
+        {
+            MessageBox.Show($"Số lượng bộ phận đã đạt giới hạn tối đa là {quyDinh.SoBoPhanToiDa}.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+
         var w = App.ServiceProvider?.GetService(typeof(AddDepartmentWindow)) as AddDepartmentWindow;
         if (w == null) return;
         w.Owner = App.Current.MainWindow;
@@ -330,8 +348,8 @@ public partial class StaffViewModel(INhanVienRepository nhanVienRepo, IChucVuRep
         try
         {
             await boPhanRepo.DeleteAsync(SelectedDepartment.MaBoPhan);
-            DsBoPhan.Remove(SelectedDepartment);
             originalBoPhan.Remove(SelectedDepartment);
+            DsBoPhan.Remove(SelectedDepartment);
             SelectedDepartment = null;
             MessageBox.Show("Xóa bộ phận thành công", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
         }
@@ -344,6 +362,12 @@ public partial class StaffViewModel(INhanVienRepository nhanVienRepo, IChucVuRep
     [RelayCommand]
     public async Task AddDegreeAsync()
     {
+        if (originalBangCap.Count >= quyDinh.SoBangCapToiDa)
+        {
+            MessageBox.Show($"Số lượng bằng cấp đã đạt giới hạn tối đa là {quyDinh.SoBangCapToiDa}.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+
         var w = App.ServiceProvider?.GetService(typeof(AddDegreeWindow)) as AddDegreeWindow;
         if (w == null) return;
         w.Owner = App.Current.MainWindow;
@@ -386,8 +410,8 @@ public partial class StaffViewModel(INhanVienRepository nhanVienRepo, IChucVuRep
         try
         {
             await bangCapRepo.DeleteAsync(SelectedDegree.MaBangCap);
-            DsBangCap.Remove(SelectedDegree);
             originalBangCap.Remove(SelectedDegree);
+            DsBangCap.Remove(SelectedDegree);
             SelectedDegree = null;
             MessageBox.Show("Xóa bằng cấp thành công", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
         }
@@ -467,6 +491,7 @@ public partial class StaffViewModel(INhanVienRepository nhanVienRepo, IChucVuRep
         if (value == null)
         {
             SelectedStaffForEdit = null;
+            SelectedStaffForEditBirthday = null;
             SelectedAccountForEdit = null;
             return;
         }
@@ -482,6 +507,8 @@ public partial class StaffViewModel(INhanVienRepository nhanVienRepo, IChucVuRep
             MaBangCap = value.MaBangCap,
             MaBoPhan = value.MaBoPhan,
         };
+
+        SelectedStaffForEditBirthday = value.NgaySinh.ToDateTime(new TimeOnly(0, 0));
 
         SelectedAccountForEdit = new TaiKhoan
         {
@@ -560,5 +587,22 @@ public partial class StaffViewModel(INhanVienRepository nhanVienRepo, IChucVuRep
         {
             LoadDataAsync().ConfigureAwait(false);
         }
+    }
+
+    partial void OnSelectedStaffForEditBirthdayChanged(DateTime? value)
+    {
+        if (value == null || SelectedStaffForEdit == null || SelectedStaffForEdit.NgaySinh == DateOnly.FromDateTime(value.Value))
+        {
+            return;
+        }
+
+        if (value.Value > DateTime.Now)
+        {
+            MessageBox.Show("Ngày sinh không thể lớn hơn ngày hiện tại.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            SelectedStaffForEditBirthday = SelectedStaffForEdit.NgaySinh.ToDateTime(new TimeOnly(0, 0));
+            return;
+        }
+
+        SelectedStaffForEdit.NgaySinh = DateOnly.FromDateTime(value.Value);
     }
 }

@@ -24,6 +24,9 @@ public partial class ReaderViewModel(IDocGiaRepository docGiaRepo, ILoaiDocGiaRe
     private DocGia? selectedReaderForEdit;
 
     [ObservableProperty]
+    private DateTime? selectedReaderForEditBirthday;
+
+    [ObservableProperty]
     private LoaiDocGia? selectedReaderType;
 
     [ObservableProperty]
@@ -186,6 +189,12 @@ public partial class ReaderViewModel(IDocGiaRepository docGiaRepo, ILoaiDocGiaRe
     [RelayCommand]
     public async Task AddReaderType()
     {
+        if (originalDsLoaiDocGia != null && originalDsLoaiDocGia.Count >= QuyDinhHienTai.SoLoaiDocGiaToiDa)
+        {
+            MessageBox.Show($"Số lượng loại độc giả đã đạt giới hạn tối đa là {QuyDinhHienTai.SoLoaiDocGiaToiDa}.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+
         var w = App.ServiceProvider?.GetService(typeof(AddReaderTypeWindow)) as AddReaderTypeWindow;
         if (w == null) return;
         w.Owner = Application.Current.MainWindow;
@@ -235,8 +244,8 @@ public partial class ReaderViewModel(IDocGiaRepository docGiaRepo, ILoaiDocGiaRe
             if (result != MessageBoxResult.Yes) return;
 
             await loaiDocGiaRepo.DeleteAsync(SelectedReaderType.MaLoaiDocGia);
-            DsLoaiDocGia.Remove(SelectedReaderType);
             originalDsLoaiDocGia.Remove(SelectedReaderType);
+            DsLoaiDocGia.Remove(SelectedReaderType);
             SelectedReaderType = null;
             
             MessageBox.Show("Xóa loại độc giả thành công", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -269,6 +278,7 @@ public partial class ReaderViewModel(IDocGiaRepository docGiaRepo, ILoaiDocGiaRe
         if (value == null)
         {
             SelectedReaderForEdit = null;
+            SelectedReaderForEditBirthday = null;
         }
         else
         {
@@ -282,6 +292,8 @@ public partial class ReaderViewModel(IDocGiaRepository docGiaRepo, ILoaiDocGiaRe
                 NgaySinh = value.NgaySinh,
                 NgayLapThe = value.NgayLapThe
             };
+
+            SelectedReaderForEditBirthday = value.NgaySinh.ToDateTime(TimeOnly.MinValue);
         }
     }
 
@@ -317,5 +329,40 @@ public partial class ReaderViewModel(IDocGiaRepository docGiaRepo, ILoaiDocGiaRe
         {
             LoadDataAsync().ConfigureAwait(false);
         }
+    }
+
+    partial void OnSelectedReaderForEditBirthdayChanged(DateTime? value)
+    {
+        if (value == null || SelectedReaderForEdit == null || DateOnly.FromDateTime(value.Value) == SelectedReaderForEdit.NgaySinh) return;
+
+        int minAge = quyDinhHienTai.TuoiDocGiaToiThieu;
+        int maxAge = quyDinhHienTai.TuoiDocGiaToiDa;
+
+        if (value > DateTime.Now)
+        {
+            MessageBox.Show("Ngày sinh không được lớn hơn ngày hiện tại.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            SelectedReaderForEditBirthday = SelectedReaderForEdit.NgaySinh.ToDateTime(TimeOnly.MinValue); // Reset to old value
+            return;
+        }
+
+        int currentYear = DateTime.Now.Year;
+        int selectedYear = value.Value.Year;
+        int currentAge = currentYear - selectedYear;
+
+        // If not yet had birthday this year, subtract one from age
+        if (DateTime.Now < new DateTime(currentYear, value.Value.Month, value.Value.Day))
+        {
+            currentAge--;
+        }
+
+        if (currentAge < minAge || currentAge > maxAge)
+        {
+            MessageBox.Show($"Độc giả phải từ {minAge} đến {maxAge} tuổi.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            SelectedReaderForEditBirthday = SelectedReaderForEdit.NgaySinh.ToDateTime(TimeOnly.MinValue); // Reset to old value
+            return;
+        }
+
+        // Update the birthday in SelectedReaderForEdit
+        SelectedReaderForEdit.NgaySinh = DateOnly.FromDateTime(value.Value);
     }
 }

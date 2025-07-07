@@ -145,7 +145,7 @@ namespace SE104_Library_Manager.ViewModels.Book
                 NamXuatBan = PublishYear,
                 NgayNhap = DateOnly.FromDateTime(DateTime.Now),
                 TriGia = Price,
-                TrangThai = "Sẵn có"
+                TrangThai = "Có sẵn"
             };
 
             try

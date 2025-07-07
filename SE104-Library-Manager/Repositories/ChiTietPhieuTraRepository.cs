@@ -44,9 +44,19 @@ public class ChiTietPhieuTraRepository(DatabaseService db) : IChiTietPhieuTraRep
     public async Task AddRangeAsync(IEnumerable<ChiTietPhieuTra> dsChiTietPhieuTra)
     {
         await db.DbContext.DsChiTietPhieuTra.AddRangeAsync(dsChiTietPhieuTra);
+
+        var maSachList = dsChiTietPhieuTra.Select(c => c.MaSach).Distinct().ToList();
+        var sachList = await db.DbContext.DsSach.Where(s => maSachList.Contains(s.MaSach)).ToListAsync();
+
+        foreach (var sach in sachList)
+        {
+            sach.TrangThai = "Có sẵn";
+        }
+
         await db.DbContext.SaveChangesAsync();
         db.DbContext.ChangeTracker.Clear();
     }
+
 
     public async Task DeleteByPhieuTraAsync(int maPhieuTra)
     {

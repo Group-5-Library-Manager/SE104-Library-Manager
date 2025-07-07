@@ -61,7 +61,7 @@
                                            Margin="20, 0, 0, 0"/>
                                 <DatePicker Width="200"
                                             Language="vi-VN"
-                                            SelectedDate="{Binding SelectedReaderForEdit.NgaySinh, Converter={StaticResource DateOnlyConverter}}"/>
+                                            SelectedDate="{Binding SelectedReaderForEditBirthday}"/>
                             </StackPanel>
 
                             <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0">

@@ -78,7 +78,7 @@
                                  CommandParameter="Staff"
                                  Content="Nhân viên"
                                  Cursor="Hand"
-                                 Visibility="{Binding ShowAdminItems}">
+                                 Visibility="{Binding AdminItemsVisibility}">
                         <RadioButton.Tag>
                             <BitmapImage UriSource="/Assets/icon_staff.png" />
                         </RadioButton.Tag>
@@ -90,7 +90,8 @@
                                  Command="{Binding NavigateCommand}"
                                  CommandParameter="Borrow"
                                  Content="Mượn sách"
-                                 Cursor="Hand">
+                                 Cursor="Hand"
+                                 Visibility="{Binding BorrowReturnItemsVisibility}">
                         <RadioButton.Tag>
                             <BitmapImage UriSource="/Assets/icon_borrow.png" />
                         </RadioButton.Tag>
@@ -102,7 +103,8 @@
                                  Command="{Binding NavigateCommand}"
                                  CommandParameter="Return"
                                  Content="Trả sách"
-                                 Cursor="Hand">
+                                 Cursor="Hand"
+                                 Visibility="{Binding BorrowReturnItemsVisibility}">
                         <RadioButton.Tag>
                             <BitmapImage UriSource="/Assets/icon_return.png" />
                         </RadioButton.Tag>
@@ -127,7 +129,7 @@
                                  CommandParameter="Policy"
                                  Content="Quy định"
                                  Cursor="Hand"
-                                 Visibility="{Binding ShowAdminItems}">
+                                 Visibility="{Binding AdminItemsVisibility}">
                         <RadioButton.Tag>
                             <BitmapImage UriSource="/Assets/icon_policy.png" />
                         </RadioButton.Tag>

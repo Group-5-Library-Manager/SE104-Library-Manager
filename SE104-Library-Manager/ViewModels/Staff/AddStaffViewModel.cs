@@ -121,7 +121,7 @@ public partial class AddStaffViewModel : ObservableObject
 
         if (vaiTro == null)
         {
-            vaiTro = dsVaiTro.Last();
+            vaiTro = DsVaiTro.Last();
         }
 
         var account = new TaiKhoan
@@ -149,5 +149,14 @@ public partial class AddStaffViewModel : ObservableObject
     public void Cancel(AddStaffWindow window)
     {
         window.Close();
+    }
+
+    partial void OnNgaySinhChanged(DateTime value)
+    {
+        if (value > DateTime.Now)
+        {
+            MessageBox.Show("Ngày sinh không thể lớn hơn ngày hiện tại.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            NgaySinh = new DateTime(DateTime.Now.Year - 18, DateTime.Now.Month, DateTime.Now.Day); // Reset to a valid date
+        }
     }
 }

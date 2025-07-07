@@ -14,6 +14,7 @@
                 <ResourceDictionary Source="Styles/AddButtonDarkIconStyle.xaml" />
                 <ResourceDictionary Source="Styles/MinusButtonStyle.xaml" />
                 <ResourceDictionary Source="Styles/GroupBoxStyle.xaml" />
+                <ResourceDictionary Source="Styles/ReadOnlyDatePicker.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

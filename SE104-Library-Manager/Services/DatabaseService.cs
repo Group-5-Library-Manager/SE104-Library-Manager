@@ -381,32 +381,32 @@ public class DatabaseService
 
             // Giả sử chia ra 3 phiếu phạt lớn
             var phieuPhats = new List<PhieuPhat>
-        {
-            new PhieuPhat
             {
-                NgayLap = currentDate.AddDays(-10),
-                MaDocGia = targetDocGiaId,
-                TongNo = 5000000,
-                TienThu = 1000000,
-                ConLai = 4000000
-            },
-            new PhieuPhat
-            {
-                NgayLap = currentDate.AddDays(-5),
-                MaDocGia = targetDocGiaId,
-                TongNo = 4000000,
-                TienThu = 2500000,
-                ConLai = 1500000
-            },
-            new PhieuPhat
-            {
-                NgayLap = currentDate.AddDays(-2),
-                MaDocGia = targetDocGiaId,
-                TongNo = 1500000,
-                TienThu = 500000,
-                ConLai = 1000000
-            }
-        };
+                new PhieuPhat
+                {
+                    NgayLap = currentDate.AddDays(-10),
+                    MaDocGia = targetDocGiaId,
+                    TongNo = 50000,
+                    TienThu = 10000,
+                    ConLai = 40000
+                },
+                new PhieuPhat
+                {
+                    NgayLap = currentDate.AddDays(-5),
+                    MaDocGia = targetDocGiaId,
+                    TongNo = 40000,
+                    TienThu = 25000,
+                    ConLai = 15000
+                },
+                new PhieuPhat
+                {
+                    NgayLap = currentDate.AddDays(-2),
+                    MaDocGia = targetDocGiaId,
+                    TongNo = 15000,
+                    TienThu = 5000,
+                    ConLai = 10000
+                }
+            };
 
             context.DsPhieuPhat.AddRange(phieuPhats);
 

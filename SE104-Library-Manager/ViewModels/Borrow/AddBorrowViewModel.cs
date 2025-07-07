@@ -56,7 +56,15 @@ namespace SE104_Library_Manager.ViewModels.Borrow
             try
             {
                 var dsDocGia = await docGiaRepo.GetAllAsync();
-                Readers = new ObservableCollection<DocGia>(dsDocGia);
+                var validReaders = new List<DocGia>();
+                foreach (var reader in dsDocGia)
+                {
+                    if (!await phieuMuonRepo.HasOverdueBooksAsync(reader.MaDocGia))
+                    {
+                        validReaders.Add(reader);
+                    }
+                }
+                Readers = new ObservableCollection<DocGia>(validReaders);
 
                 var dsSach = await phieuMuonRepo.GetAvailableBooksAsync();
                 AllBooks = new ObservableCollection<Sach>(dsSach);
@@ -196,15 +204,29 @@ namespace SE104_Library_Manager.ViewModels.Borrow
                 return;
             }
 
-            var selectedBooksList = SelectedBooks
+            var selectedBookItems = SelectedBooks
                 .Where(item => item.SelectedBook != null)
-                .Select(item => item.SelectedBook!)
                 .ToList();
 
-            if (selectedBooksList.Count == 0)
+            if (selectedBookItems.Count == 0)
             {
                 MessageBox.Show("Vui lòng chọn ít nhất một sách để mượn", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
+            }
+
+            // Validation: check quantity
+            foreach (var item in selectedBookItems)
+            {
+                if (item.Quantity <= 0)
+                {
+                    MessageBox.Show($"Số lượng mượn của sách {item.SelectedBook!.TenSach} phải lớn hơn 0.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                if (item.Quantity > item.SelectedBook!.SoLuongHienCo)
+                {
+                    MessageBox.Show($"Số lượng mượn của sách {item.SelectedBook.TenSach} vượt quá số lượng còn lại.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
             }
 
             try
@@ -216,21 +238,22 @@ namespace SE104_Library_Manager.ViewModels.Borrow
                     MaNhanVien = staffSessionReader.CurrentStaffId
                 };
 
-                var dsChiTietPhieuMuon = selectedBooksList.Select(s => new ChiTietPhieuMuon
+                var dsChiTietPhieuMuon = selectedBookItems.Select(item => new ChiTietPhieuMuon
                 {
-                    MaPhieuMuon = 0, // Sẽ được cập nhật sau khi thêm phiếu mượn
-                    MaSach = s.MaSach
+                    MaPhieuMuon = phieuMuon.MaPhieuMuon, // This will be set after adding the main PhieuMuon
+                    MaSach = item.SelectedBook!.MaSach,
+                    SoLuongMuon = item.Quantity
                 }).ToList();
 
                 await phieuMuonRepo.AddAsync(phieuMuon, dsChiTietPhieuMuon);
 
-                MessageBox.Show("Thêm phiếu mượn thành công", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Tạo phiếu mượn thành công", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
                 window.DialogResult = true;
                 window.Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi khi thêm phiếu mượn: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Lỗi khi tạo phiếu mượn: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

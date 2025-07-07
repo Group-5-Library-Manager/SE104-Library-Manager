@@ -43,6 +43,7 @@ public static class AppServiceExtensions
         services.AddScoped<IChiTietPhieuTraRepository, ChiTietPhieuTraRepository>();
         services.AddScoped<IPhieuPhatRepository, PhieuPhatRepository>();
         services.AddScoped<IPhieuMuonRepository, PhieuMuonRepository>();
+        services.AddScoped<IPhieuNhapRepository, PhieuNhapRepository>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<ISachRepository, SachRepository>();
         services.AddScoped<ITheLoaiRepository, TheLoaiRepository>();
@@ -118,6 +119,8 @@ public static class AppServiceExtensions
         services.AddTransient<LateReturnStatisticViewModel>();
         services.AddTransient<PenaltyStatisticView>();
         services.AddTransient<PenaltyStatisticViewModel>();
+        services.AddTransient<AddBookImportWindow>();
+        services.AddTransient<AddBookImportViewModel>();
         return services;
     }
 }

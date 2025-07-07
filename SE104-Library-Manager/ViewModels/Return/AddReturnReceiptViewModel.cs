@@ -61,13 +61,13 @@ public partial class AddReturnReceiptViewModel : ObservableObject
         CurrentStaff = await nhanVienRepo.GetByIdAsync(currentStaffId);
     }
 
-    partial void OnSelectedReaderChanged(DocGia? reader)
+    partial void OnSelectedReaderChanged(DocGia? value)
     {
         SelectedBooks.Clear();
         TienPhatKyNay = 0;
-        if (reader != null)
+        if (value != null)
         {
-            tongNoBanDau = reader.TongNo;
+            tongNoBanDau = value.TongNo;
             AddBook();
         }
         else
@@ -142,6 +142,21 @@ public partial class AddReturnReceiptViewModel : ObservableObject
             return;
         }
 
+        // Kiểm tra số lượng trả hợp lệ
+        foreach (var item in validBooks)
+        {
+            if (item.ReturnQuantity <= 0)
+            {
+                MessageBox.Show($"Số lượng trả cho sách '{item.SelectedBook?.TenSach}' phải lớn hơn 0.");
+                return;
+            }
+            if (item.ReturnQuantity > item.BorrowedQuantity)
+            {
+                MessageBox.Show($"Số lượng trả cho sách '{item.SelectedBook?.TenSach}' không được vượt quá số lượng đã mượn ({item.BorrowedQuantity}).");
+                return;
+            }
+        }
+
         try
         {
             // Thêm phiếu trả mới
@@ -170,6 +185,7 @@ public partial class AddReturnReceiptViewModel : ObservableObject
                     MaPhieuTra = phieuTra.MaPhieuTra,
                     MaPhieuMuon = chiTietMuon.MaPhieuMuon,
                     MaSach = item.SelectedBook.MaSach,
+                    SoLuongTra = item.ReturnQuantity,
                     TienPhat = item.Fine
                 });
             }
@@ -210,6 +226,10 @@ public partial class AddReturnReceiptViewModel : ObservableObject
         [ObservableProperty] private Sach? selectedBook;
         [ObservableProperty] private DateOnly? borrowDate;
         [ObservableProperty] private int fine;
+        [ObservableProperty] private int borrowedQuantity;
+        [ObservableProperty] private int returnQuantity = 1;
+        [ObservableProperty] private int currentStock;
+        [ObservableProperty] private string currentStatus = "";
 
         public BookReturnItem(IPhieuTraRepository repo, IQuyDinhRepository quyDinh, int maDocGia, Action onChange)
         {
@@ -230,10 +250,35 @@ public partial class AddReturnReceiptViewModel : ObservableObject
                 BorrowedBooks.Add(b);
         }
 
-        partial void OnSelectedBookChanged(Sach? book)
+        partial void OnSelectedBookChanged(Sach? value)
         {
-            if (book != null)
+            if (value != null)
+            {
+                CurrentStock = value.SoLuongHienCo;
+                CurrentStatus = value.TrangThai;
+                ReturnQuantity = 1; // Reset to 1 when book changes
                 _ = UpdateFineAsync();
+            }
+            else
+            {
+                CurrentStock = 0;
+                CurrentStatus = "";
+                ReturnQuantity = 1;
+                BorrowedQuantity = 0;
+            }
+        }
+
+        partial void OnReturnQuantityChanged(int value)
+        {
+            if (value > BorrowedQuantity)
+            {
+                ReturnQuantity = BorrowedQuantity;
+            }
+            else if (value < 1)
+            {
+                ReturnQuantity = 1;
+            }
+            _ = UpdateFineAsync();
         }
 
         public async Task<int> CalculateFineAsync()
@@ -245,9 +290,18 @@ public partial class AddReturnReceiptViewModel : ObservableObject
             if (chiTiet?.PhieuMuon != null)
             {
                 BorrowDate = chiTiet.PhieuMuon.NgayMuon;
+                BorrowedQuantity = chiTiet.SoLuongMuon;
+                
+                // Ensure return quantity doesn't exceed borrowed quantity
+                if (ReturnQuantity > BorrowedQuantity)
+                {
+                    ReturnQuantity = BorrowedQuantity;
+                }
+                
                 var today = DateOnly.FromDateTime(DateTime.Now);
                 int soNgayTre = (today.DayNumber - BorrowDate.Value.DayNumber) - quyDinh.SoNgayMuonToiDa;
-                return soNgayTre > 0 ? soNgayTre * quyDinh.TienPhatQuaHanMoiNgay : 0;
+                int finePerBook = soNgayTre > 0 ? soNgayTre * quyDinh.TienPhatQuaHanMoiNgay : 0;
+                return finePerBook * ReturnQuantity;
             }
             return 0;
         }

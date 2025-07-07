@@ -17,6 +17,8 @@ public class Sach
     public required DateOnly NgayNhap { get; set; }
     public required int TriGia { get; set; }
     public required string TrangThai { get; set; }
+    public int SoLuongHienCo { get; set; } = 0;
+    public int SoLuongTong { get; set; } = 0;
     public bool DaXoa { get; set; } = false;
 
     [ForeignKey("MaTheLoai")]
@@ -31,4 +33,6 @@ public class Sach
     public ICollection<ChiTietPhieuMuon> DsChiTietPhieuMuon { get; set; } = new List<ChiTietPhieuMuon>();
 
     public ICollection<ChiTietPhieuTra> DsChiTietPhieuTra { get; set; } = new List<ChiTietPhieuTra>();
+
+    public ICollection<ChiTietPhieuNhap> DsChiTietPhieuNhap { get; set; } = new List<ChiTietPhieuNhap>();
 }

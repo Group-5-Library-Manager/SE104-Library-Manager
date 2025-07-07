@@ -1,0 +1,138 @@
+﻿<Window x:Class="SE104_Library_Manager.Views.Book.AddBookImportWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SE104_Library_Manager.Views.Book"
+        xmlns:converters="clr-namespace:SE104_Library_Manager.Converters"
+        mc:Ignorable="d" x:Name="window" WindowStartupLocation="CenterScreen"
+        Title="Phiếu Nhập sách" Height="450" Width="800">
+    <Window.Resources>
+        <converters:PrefixConverter x:Key="PrefixConverter" />
+    </Window.Resources>
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <!-- Header -->
+        <GroupBox Header="Phiếu nhập sách" Style="{StaticResource GroupBoxStyle}" Margin="0 0 0 15">
+            <Grid Margin="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="2*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="auto"/>
+                </Grid.RowDefinitions>
+                <!-- Mã nhân viên -->
+                <TextBlock Grid.Row="0" Grid.Column="0" Margin="0 0 10 0">
+                    <Run Text="Mã nhân viên: " FontWeight="SemiBold" FontSize="14"/>
+                    <Run Text="{Binding StaffCode}" FontSize="14"/>
+                </TextBlock>
+                <!-- Tên nhân viên -->
+                <TextBlock Grid.Row="0" Grid.Column="1" Margin="0 0 10 0">
+                    <Run Text="Tên nhân viên: " FontWeight="SemiBold" FontSize="14"/>
+                    <Run Text="{Binding StaffName}" FontSize="14"/>
+                </TextBlock>
+                <!-- Ngày nhập -->
+                <TextBlock Grid.Row="2" Grid.Column="0" Margin="0 10 10 0">
+                    <Run Text="Ngày nhập: " FontWeight="SemiBold" FontSize="14"/>
+                    <Run Text="{Binding ImportDate, StringFormat=dd/MM/yyyy}" FontSize="14"/>
+                </TextBlock>
+                <!-- Tổng sách nhập -->
+                <TextBlock Grid.Row="1" Grid.Column="0" Margin="0 10 10 0">
+                    <Run Text="Tổng sách nhập: " FontWeight="SemiBold" FontSize="14"/>
+                    <Run Text="{Binding TotalQuantity}" FontSize="14"/>
+                </TextBlock>
+                <!-- Tổng giá trị phiếu nhập -->
+                <TextBlock Grid.Row="1" Grid.Column="1" Margin="0 10 10 0">
+                    <Run Text="Tổng giá trị phiếu nhập: " FontWeight="SemiBold" FontSize="14"/>
+                    <Run Text="{Binding TotalValue, StringFormat=N0}" FontSize="14"/>
+                    <Run Text=" VND" FontWeight="SemiBold" FontSize="14"/>
+                </TextBlock>
+            </Grid>
+        </GroupBox>
+        <!-- Book List -->
+        <GroupBox Grid.Row="1" Header="" Style="{StaticResource GroupBoxStyle}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel>
+                    <ItemsControl ItemsSource="{Binding ImportDetails}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="5" Margin="10">
+                                    <Grid Margin="10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <!-- Book ComboBox -->
+                                        <ComboBox Grid.Column="0" Width="280" HorizontalAlignment="Left" VerticalAlignment="Center"
+                                                  ItemsSource="{Binding AvailableBooks}" SelectedItem="{Binding SelectedBook, Mode=TwoWay}" DisplayMemberPath="TenSach" Margin="0 0 10 0">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock>
+                                                        <Run Text="{Binding MaSach, Converter={StaticResource PrefixConverter}, ConverterParameter=S}"/>
+                                                        <Run Text=" - "/>
+                                                        <Run Text="{Binding TenSach}"/>
+                                                    </TextBlock>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                        <!-- Quantity -->
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Top" Margin="20 0 10 0">
+                                            <TextBlock Text="Số lượng:" FontWeight="SemiBold"/>
+                                            <TextBox Width="60" Text="{Binding Quantity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </StackPanel>
+                                        <!-- Unit Price -->
+                                        <StackPanel Grid.Column="2" VerticalAlignment="Top"  Margin="10 0 10 0">
+                                            <TextBlock Text="Đơn giá:" FontWeight="SemiBold"/>
+                                            <TextBox Width="100" Text="{Binding UnitPrice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </StackPanel>
+                                        <!-- Total -->
+                                        <StackPanel Orientation="Horizontal" Grid.Column="3" VerticalAlignment="Center" Margin="10 0 10 0">
+                                            <TextBlock Text="Tổng: " FontWeight="SemiBold"/>
+                                            <TextBlock Width="auto" Text="{Binding Total, Mode=OneWay, StringFormat='{}{0:N0} VND'}"/>
+                                        </StackPanel>
+                                        <!-- Add Book Button -->
+                                        <Button Grid.Column="4" Width="30" Height="30"
+                                                Command="{Binding DataContext.AddNewBookCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                                            <Image Source="/Assets/icon_add_dark.png"
+                                                   Width="16" Height="16"/>
+                                        </Button>
+                                        <!-- Remove Button -->
+                                        <Button Grid.Column="5" Content="-"
+                                                Width="30" Height="30" Margin="10 0 0 0"
+                                                Command="{Binding DataContext.RemoveBookRowCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" 
+                                                Style="{StaticResource MinusButtonStyle}"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <!-- Add Book Row Button -->
+                    <Button Content="Thêm sách" Command="{Binding AddBookRowCommand}" 
+                            Width="120" Margin="10 10 0 0" HorizontalAlignment="Center"
+                            Foreground="White"
+                            Background="#253251"
+                            Style="{StaticResource PrimaryButtonStyle}"/>
+                </StackPanel>
+            </ScrollViewer>
+        </GroupBox>
+        <!-- Action Buttons -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 20 0 0">
+            <Button Content="Thêm" Command="{Binding SaveImportCommand}" CommandParameter="{Binding ElementName=window}" 
+                    Width="100" Margin="0 0 10 0" Style="{StaticResource PrimaryButtonStyle}"/>
+            
+            <Button Content="Huỷ" Command="{Binding CancelCommand}" CommandParameter="{Binding ElementName=window}" 
+                    Width="100" Style="{StaticResource SecondaryButtonStyle}"/>
+        </StackPanel>
+    </Grid>
+</Window>

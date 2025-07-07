@@ -14,6 +14,10 @@ namespace SE104_Library_Manager.Repositories
 {
     public class SachRepository(DatabaseService dbService, IQuyDinhRepository quyDinhRepo) : ISachRepository
     {
+        public static void UpdateBookStatus(Sach sach)
+        {
+            sach.TrangThai = sach.SoLuongHienCo > 0 ? "Còn sách" : "Hết sách";
+        }
         public async Task<List<Sach>> GetAllAsync()
         {
             List<Sach> dsDocGia = await dbService.DbContext.DsSach

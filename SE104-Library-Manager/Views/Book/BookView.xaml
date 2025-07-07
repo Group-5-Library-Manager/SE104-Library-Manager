@@ -264,6 +264,10 @@
                                     Command="{Binding AddBookCommand}"
                                     Margin="40, 0, 0, 0"
                                     Style="{StaticResource AddButtonDarkIconStyle}" />
+                                <Button Content="Nhập sách"
+                                    Command="{Binding ImportBooksCommand}"
+                                    Margin="10, 0, 0, 0"
+                                    Style="{StaticResource AddButtonDarkIconStyle}" />
                             </StackPanel>
 
 
@@ -332,7 +336,13 @@
                                                 </Style>
                                             </DataGridTextColumn.HeaderStyle>
                                         </DataGridTextColumn>
-
+                                        <DataGridTextColumn Header="Còn lại" Width="*" Binding="{Binding SoLuongHienCo}">
+                                            <DataGridTextColumn.HeaderStyle>
+                                                <Style TargetType="DataGridColumnHeader">
+                                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                                </Style>
+                                            </DataGridTextColumn.HeaderStyle>
+                                        </DataGridTextColumn>
                                         <DataGridTextColumn Header="Tình trạng" Width="*" Binding="{Binding TrangThai}">
                                             <DataGridTextColumn.HeaderStyle>
                                                 <Style TargetType="DataGridColumnHeader">

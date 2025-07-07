@@ -29,11 +29,12 @@ public class ChiTietPhieuTraRepository(DatabaseService db) : IChiTietPhieuTraRep
     {
         await db.DbContext.DsChiTietPhieuTra.AddAsync(chiTietPhieuTra);
 
-        // Update book status to available
+        // Update book status and quantity
         var sach = await db.DbContext.DsSach.FindAsync(chiTietPhieuTra.MaSach);
         if (sach != null)
         {
-            sach.TrangThai = "Có sẵn";
+            sach.SoLuongHienCo += chiTietPhieuTra.SoLuongTra;
+            SE104_Library_Manager.Repositories.SachRepository.UpdateBookStatus(sach);
             db.DbContext.DsSach.Update(sach);
         }
 
@@ -50,7 +51,10 @@ public class ChiTietPhieuTraRepository(DatabaseService db) : IChiTietPhieuTraRep
 
         foreach (var sach in sachList)
         {
-            sach.TrangThai = "Có sẵn";
+            // Sum all SoLuongTra for this book
+            var totalReturned = dsChiTietPhieuTra.Where(c => c.MaSach == sach.MaSach).Sum(c => c.SoLuongTra);
+            sach.SoLuongHienCo += totalReturned;
+            SE104_Library_Manager.Repositories.SachRepository.UpdateBookStatus(sach);
         }
 
         await db.DbContext.SaveChangesAsync();
@@ -65,12 +69,14 @@ public class ChiTietPhieuTraRepository(DatabaseService db) : IChiTietPhieuTraRep
             .Where(ct => ct.MaPhieuTra == maPhieuTra)
             .ToListAsync();
 
-        // Cập nhật trạng thái sách về "Đã mượn"
+        // Cập nhật trạng thái sách
         foreach (var chiTiet in dsChiTiet)
         {
             if (chiTiet.Sach != null)
             {
-                chiTiet.Sach.TrangThai = "Đã mượn";
+                // Decrease SoLuongHienCo since we're deleting the return record
+                chiTiet.Sach.SoLuongHienCo -= chiTiet.SoLuongTra;
+                SE104_Library_Manager.Repositories.SachRepository.UpdateBookStatus(chiTiet.Sach);
                 db.DbContext.DsSach.Update(chiTiet.Sach);
             }
         }

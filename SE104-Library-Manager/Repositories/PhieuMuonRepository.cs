@@ -21,7 +21,14 @@ namespace SE104_Library_Manager.Repositories
                 {
                     chiTiet.MaPhieuMuon = phieuMuon.MaPhieuMuon;
                     await dbService.DbContext.DsChiTietPhieuMuon.AddAsync(chiTiet);
-                    await this.UpdateBookStatusAsync(chiTiet.MaSach, "Đã mượn");
+                    // Decrease SoLuongHienCo by borrowed quantity
+                    var sach = await dbService.DbContext.DsSach.FindAsync(chiTiet.MaSach);
+                    if (sach != null)
+                    {
+                        sach.SoLuongHienCo -= chiTiet.SoLuongMuon;
+                        SE104_Library_Manager.Repositories.SachRepository.UpdateBookStatus(sach);
+                        dbService.DbContext.DsSach.Update(sach);
+                    }
                 }
 
                 await dbService.DbContext.SaveChangesAsync();
@@ -62,10 +69,16 @@ namespace SE104_Library_Manager.Repositories
                 phieuMuon.DaXoa = true;
                 var chiTietPMs = phieuMuon.DsChiTietPhieuMuon;
 
-                // Update all borrowed books back to available status
+                // Update all borrowed books: increase SoLuongHienCo and update status
                 foreach (var chiTiet in chiTietPMs)
                 {
-                    await this.UpdateBookStatusAsync(chiTiet.MaSach, "Có sẵn");
+                    var sach = await dbService.DbContext.DsSach.FindAsync(chiTiet.MaSach);
+                    if (sach != null)
+                    {
+                        sach.SoLuongHienCo += chiTiet.SoLuongMuon;
+                        SE104_Library_Manager.Repositories.SachRepository.UpdateBookStatus(sach);
+                        dbService.DbContext.DsSach.Update(sach);
+                    }
                 }
 
                 dbService.DbContext.DsChiTietPhieuMuon.RemoveRange(chiTietPMs);
@@ -170,10 +183,16 @@ namespace SE104_Library_Manager.Repositories
                 // Remove existing details
                 dbService.DbContext.DsChiTietPhieuMuon.RemoveRange(detailsToRemove);
 
-                // Update book statuses for previously borrowed books (make them available again)
+                // For removed details, increase SoLuongHienCo and update status
                 foreach (var existingDetail in detailsToRemove)
                 {
-                    await this.UpdateBookStatusAsync(existingDetail.MaSach, "Có sẵn");
+                    var sach = await dbService.DbContext.DsSach.FindAsync(existingDetail.MaSach);
+                    if (sach != null)
+                    {
+                        sach.SoLuongHienCo += existingDetail.SoLuongMuon;
+                        SE104_Library_Manager.Repositories.SachRepository.UpdateBookStatus(sach);
+                        dbService.DbContext.DsSach.Update(sach);
+                    }
                 }
                 // Lọc ra các sách mới không phải sách đã trả
                 var newDetails = dsChiTietPhieuMuon
@@ -184,7 +203,14 @@ namespace SE104_Library_Manager.Repositories
                 {
                     chiTiet.MaPhieuMuon = phieuMuon.MaPhieuMuon;
                     await dbService.DbContext.DsChiTietPhieuMuon.AddAsync(chiTiet);
-                    await this.UpdateBookStatusAsync(chiTiet.MaSach, "Đã mượn");
+                    // Decrease SoLuongHienCo for new borrowed books
+                    var sach = await dbService.DbContext.DsSach.FindAsync(chiTiet.MaSach);
+                    if (sach != null)
+                    {
+                        sach.SoLuongHienCo -= chiTiet.SoLuongMuon;
+                        SE104_Library_Manager.Repositories.SachRepository.UpdateBookStatus(sach);
+                        dbService.DbContext.DsSach.Update(sach);
+                    }
                 }
 
                 await dbService.DbContext.SaveChangesAsync();
@@ -212,9 +238,10 @@ namespace SE104_Library_Manager.Repositories
                 throw new ArgumentException("Phiếu mượn phải có ít nhất một sách");
             }
 
-            if (dsChiTietPhieuMuon.Count > quyDinh.SoSachMuonToiDa)
+            int tongSoLuongMuon = dsChiTietPhieuMuon.Sum(ct => ct.SoLuongMuon > 0 ? ct.SoLuongMuon : 1);
+            if (tongSoLuongMuon > quyDinh.SoSachMuonToiDa)
             {
-                throw new ArgumentException($"Số sách mượn không được vượt quá {quyDinh.SoSachMuonToiDa}");
+                throw new ArgumentException($"Tổng số lượng sách mượn không được vượt quá {quyDinh.SoSachMuonToiDa}");
             }
 
             // Kiểm tra độc giả có tồn tại không
@@ -255,7 +282,7 @@ namespace SE104_Library_Manager.Repositories
                     throw new KeyNotFoundException($"Không tìm thấy sách với mã S{chiTiet.MaSach}.");
                 }
 
-                if (sach.TrangThai != "Có sẵn")
+                if (sach.TrangThai != "Còn sách")
                 {
                     throw new InvalidOperationException($"Sách {sach.TenSach} (mã S{sach.MaSach}) không có sẵn để mượn.");
                 }
@@ -269,9 +296,9 @@ namespace SE104_Library_Manager.Repositories
                     .Any(tr => tr.MaPhieuMuon == ct.MaPhieuMuon && tr.MaSach == ct.MaSach))
                 .CountAsync();
 
-            if (soSachDangMuon + dsChiTietPhieuMuon.Count > quyDinh.SoSachMuonToiDa)
+            if (soSachDangMuon + tongSoLuongMuon > quyDinh.SoSachMuonToiDa)
             {
-                throw new InvalidOperationException($"Độc giả {docGia.TenDocGia} đã mượn {soSachDangMuon} sách. Không thể mượn thêm {dsChiTietPhieuMuon.Count} sách nữa (vượt quá {quyDinh.SoSachMuonToiDa}).");
+                throw new InvalidOperationException($"Độc giả {docGia.TenDocGia} đã mượn {soSachDangMuon} sách. Không thể mượn thêm {tongSoLuongMuon} sách nữa (vượt quá {quyDinh.SoSachMuonToiDa}).");
             }
         }
 
@@ -287,9 +314,10 @@ namespace SE104_Library_Manager.Repositories
                 throw new ArgumentException("Phiếu mượn phải có ít nhất một sách");
             }
 
-            if (dsChiTietPhieuMuon.Count > quyDinh.SoSachMuonToiDa)
+            int tongSoLuongMuon = dsChiTietPhieuMuon.Sum(ct => ct.SoLuongMuon > 0 ? ct.SoLuongMuon : 1);
+            if (tongSoLuongMuon > quyDinh.SoSachMuonToiDa)
             {
-                throw new ArgumentException($"Số sách mượn không được vượt quá {quyDinh.SoSachMuonToiDa}");
+                throw new ArgumentException($"Tổng số lượng sách mượn không được vượt quá {quyDinh.SoSachMuonToiDa}");
             }
 
             // Kiểm tra độc giả có tồn tại không
@@ -357,7 +385,7 @@ namespace SE104_Library_Manager.Repositories
                 }
 
                 // Allow books that are currently borrowed by this same borrow record, or books that are available
-                if (sach.TrangThai != "Có sẵn" && !existingBorrowedBookIds.Contains(chiTiet.MaSach))
+                if (sach.TrangThai != "Còn sách" && !existingBorrowedBookIds.Contains(chiTiet.MaSach))
                 {
                     throw new InvalidOperationException($"Sách {sach.TenSach} (mã S{sach.MaSach}) không có sẵn để mượn.");
                 }
@@ -371,9 +399,9 @@ namespace SE104_Library_Manager.Repositories
                     .Any(tr => tr.MaPhieuMuon == ct.MaPhieuMuon && tr.MaSach == ct.MaSach))
                 .CountAsync();
 
-            if (soSachDangMuon + dsChiTietPhieuMuon.Count > quyDinh.SoSachMuonToiDa)
+            if (soSachDangMuon + tongSoLuongMuon > quyDinh.SoSachMuonToiDa)
             {
-                throw new InvalidOperationException($"Độc giả {docGia.TenDocGia} đã mượn {soSachDangMuon} sách. Không thể mượn thêm {dsChiTietPhieuMuon.Count} sách nữa (vượt quá {quyDinh.SoSachMuonToiDa}).");
+                throw new InvalidOperationException($"Độc giả {docGia.TenDocGia} đã mượn {soSachDangMuon} sách. Không thể mượn thêm {tongSoLuongMuon} sách nữa (vượt quá {quyDinh.SoSachMuonToiDa}).");
             }
         }
 
@@ -560,14 +588,14 @@ namespace SE104_Library_Manager.Repositories
             .Include(s => s.TheLoai)
             .Include(s => s.TacGia)
             .Include(s => s.NhaXuatBan)
-            .Where(s => !s.DaXoa && s.TrangThai == "Có sẵn")
+            .Where(s => !s.DaXoa && s.TrangThai == "Còn sách")
             .ToListAsync();
         }
 
         public async Task<bool> IsBookAvailableAsync(int maSach)
         {
             var sach = await dbService.DbContext.DsSach.FindAsync(maSach);
-            return sach != null && !sach.DaXoa && sach.TrangThai == "Có sẵn";
+            return sach != null && !sach.DaXoa && sach.TrangThai == "Còn sách";
         }
 
         public async Task UpdateBookStatusAsync(int maSach, string trangThai)
@@ -580,6 +608,7 @@ namespace SE104_Library_Manager.Repositories
             }
 
             sach.TrangThai = trangThai;
+            SE104_Library_Manager.Repositories.SachRepository.UpdateBookStatus(sach);
 
             dbService.DbContext.Update(sach);
             await dbService.DbContext.SaveChangesAsync();

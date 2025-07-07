@@ -6,6 +6,7 @@ public class ChiTietPhieuMuon
 {
     public required int MaPhieuMuon { get; set; }
     public required int MaSach { get; set; }
+    public int SoLuongMuon { get; set; } = 1;
 
     [ForeignKey("MaPhieuMuon")]
     public PhieuMuon PhieuMuon { get; set; } = null!;

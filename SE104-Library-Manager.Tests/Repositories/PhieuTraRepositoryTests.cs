@@ -630,7 +630,8 @@ namespace SE104_Library_Manager.Tests.Repositories
                 MaNhaXuatBan = nhaXuatBan[0].MaNhaXuatBan,
                 NgayNhap = DateOnly.FromDateTime(DateTime.Now),
                 TriGia = 50000,
-                TrangThai = "Có sẵn"
+                SoLuongHienCo = 5,
+                TrangThai = "Còn sách"
             };
 
             await _sachRepository.AddAsync(sach);

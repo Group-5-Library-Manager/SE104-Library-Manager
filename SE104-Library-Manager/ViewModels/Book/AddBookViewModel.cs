@@ -145,14 +145,20 @@ namespace SE104_Library_Manager.ViewModels.Book
                 NamXuatBan = PublishYear,
                 NgayNhap = DateOnly.FromDateTime(DateTime.Now),
                 TriGia = Price,
-                TrangThai = "Có sẵn"
+                SoLuongHienCo = 1, // Initial quantity
+                SoLuongTong = 1,   // Initial total quantity
+                TrangThai = "Còn sách" // Temporary value to satisfy required constraint
             };
+
+            // Set TrangThai based on quantity
+            SE104_Library_Manager.Repositories.SachRepository.UpdateBookStatus(book);
 
             try
             {
                 await sachRepo.AddAsync(book);
 
                 MessageBox.Show("Thêm sách thành công.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                w.DialogResult = true;
                 w.Close();
             }
             catch (Exception ex)

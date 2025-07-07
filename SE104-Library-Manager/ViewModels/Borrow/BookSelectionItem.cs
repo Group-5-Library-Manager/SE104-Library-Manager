@@ -17,6 +17,9 @@ namespace SE104_Library_Manager.ViewModels.Borrow
         [ObservableProperty]
         private Sach? selectedBook;
 
+        [ObservableProperty]
+        private int quantity = 1;
+
         public BookSelectionItem()
         {
         }

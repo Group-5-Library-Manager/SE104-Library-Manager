@@ -7,6 +7,7 @@ public class ChiTietPhieuTra
     public required int MaPhieuTra { get; set; }
     public required int MaSach { get; set; }
     public required int MaPhieuMuon { get; set; }
+    public int SoLuongTra { get; set; } = 1;
     public int TienPhat { get; set; } = 0;
     public bool DaXoa { get; set; } = false;
 

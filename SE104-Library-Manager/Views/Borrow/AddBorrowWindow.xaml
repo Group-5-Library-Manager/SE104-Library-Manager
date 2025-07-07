@@ -9,7 +9,7 @@
         WindowStartupLocation="CenterScreen"
         mc:Ignorable="d"
         x:Name="AddBorrowWindowElement"
-        Title="AddBorrowWindow" Height="500" Width="500">
+        Title="AddBorrowWindow" Height="500" Width="650">
     <Window.Resources>
         <converters:DateOnlyFormattedConverter x:Key="DateOnlyFormattedConverter" />
         <converters:PrefixConverter x:Key="PrefixConverter"/>
@@ -74,11 +74,13 @@
                                     <Border BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="5" Margin="10">
                                         <Grid Margin="10">
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="300"/>
+                                                <ColumnDefinition Width="auto"/>
+                                                <ColumnDefinition Width="auto"/>
+                                                <ColumnDefinition Width="auto"/>
                                                 <ColumnDefinition Width="40"/>
                                             </Grid.ColumnDefinitions>
 
-                                            <ComboBox Width="280" HorizontalAlignment="Left"
+                                            <ComboBox Grid.Column="0" Width="280" HorizontalAlignment="Left" VerticalAlignment="Center"
                                                           ItemsSource="{Binding AvailableBooks}"
                                                           SelectedItem="{Binding SelectedBook}"
                                                           DisplayMemberPath="TenSach">
@@ -92,8 +94,16 @@
                                                     </DataTemplate>
                                                 </ComboBox.ItemTemplate>
                                             </ComboBox>
+                                            <StackPanel Grid.Column="1" Margin="10 0 10 0">
+                                                <TextBlock Text="Sách còn lại:" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding SelectedBook.SoLuongHienCo}" FontWeight="Bold" Foreground="#253251"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2" Margin="10 0 10 0">
+                                                <TextBlock Text="Số lượng:" FontWeight="SemiBold"/>
+                                                <TextBox Width="100" Text="{Binding Quantity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                            </StackPanel>
 
-                                            <Button Grid.Column="1" Content="−" Width="25" Height="25"
+                                            <Button Grid.Column="3" Content="−" Width="25" Height="25"
                                                         Command="{Binding DataContext.RemoveBookFromSelectedCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                         CommandParameter="{Binding}"
                                                         Style="{StaticResource MinusButtonStyle}"/>

@@ -249,15 +249,29 @@ namespace SE104_Library_Manager.ViewModels.Borrow
                 return;
             }
 
-            var selectedBooksList = SelectedBooks
+            var selectedBookItems = SelectedBooks
                 .Where(item => item.SelectedBook != null)
-                .Select(item => item.SelectedBook!)
                 .ToList();
 
-            if (selectedBooksList.Count == 0)
+            if (selectedBookItems.Count == 0)
             {
                 MessageBox.Show("Vui lòng chọn ít nhất một sách để mượn", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
+            }
+
+            // Validation: check quantity
+            foreach (var item in selectedBookItems)
+            {
+                if (item.Quantity <= 0)
+                {
+                    MessageBox.Show($"Số lượng mượn của sách {item.SelectedBook!.TenSach} phải lớn hơn 0.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                if (item.Quantity > item.SelectedBook!.SoLuongHienCo)
+                {
+                    MessageBox.Show($"Số lượng mượn của sách {item.SelectedBook.TenSach} vượt quá số lượng còn lại.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
             }
 
             try
@@ -270,10 +284,11 @@ namespace SE104_Library_Manager.ViewModels.Borrow
                     MaNhanVien = staffSessionReader.CurrentStaffId
                 };
 
-                var dsChiTietPhieuMuon = selectedBooksList.Select(s => new ChiTietPhieuMuon
+                var dsChiTietPhieuMuon = selectedBookItems.Select(item => new ChiTietPhieuMuon
                 {
                     MaPhieuMuon = BorrowId,
-                    MaSach = s.MaSach
+                    MaSach = item.SelectedBook!.MaSach,
+                    SoLuongMuon = item.Quantity
                 }).ToList();
 
                 await phieuMuonRepo.UpdateAsync(phieuMuon, dsChiTietPhieuMuon);

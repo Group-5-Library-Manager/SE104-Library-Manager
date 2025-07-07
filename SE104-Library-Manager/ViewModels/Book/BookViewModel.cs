@@ -429,6 +429,27 @@ namespace SE104_Library_Manager.ViewModels.Book
             DsNXB = new ObservableCollection<NhaXuatBan>(filteredPublishers);
         }
 
+        [RelayCommand]
+        public async Task ImportBooks()
+        {
+            try
+            {
+                var w = App.ServiceProvider?.GetService(typeof(AddBookImportWindow)) as AddBookImportWindow;
+                if (w == null)
+                {
+                    MessageBox.Show("Failed to resolve AddBookImportWindow from DI", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                w.Owner = Application.Current.MainWindow;
+                w.ShowDialog();
+                await LoadDataAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error in ImportBooks: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         partial void OnSelectedTabChanged(TabItem value)
         {
             if (value.Header.ToString() == "Sách")

@@ -377,6 +377,7 @@ namespace SE104_Library_Manager.Tests.Repositories
             var nhanVien = await CreateTestNhanVien();
             var sach = await CreateTestSach();
 
+            // Borrow all available copies
             var phieuMuon = new PhieuMuon
             {
                 NgayMuon = DateOnly.FromDateTime(DateTime.Now),
@@ -386,7 +387,7 @@ namespace SE104_Library_Manager.Tests.Repositories
 
             var chiTietPhieuMuon = new List<ChiTietPhieuMuon>
             {
-                new ChiTietPhieuMuon { MaSach = sach.MaSach, MaPhieuMuon = phieuMuon.MaPhieuMuon }
+                new ChiTietPhieuMuon { MaSach = sach.MaSach, MaPhieuMuon = phieuMuon.MaPhieuMuon, SoLuongMuon = sach.SoLuongHienCo }
             };
 
             await _phieuMuonRepository.AddAsync(phieuMuon, chiTietPhieuMuon);
@@ -407,7 +408,7 @@ namespace SE104_Library_Manager.Tests.Repositories
             var docGia = await CreateTestDocGia();
             var nhanVien = await CreateTestNhanVien();
 
-            // Borrow one book
+            // Borrow all copies of sach1
             var phieuMuon = new PhieuMuon
             {
                 NgayMuon = DateOnly.FromDateTime(DateTime.Now),
@@ -417,7 +418,7 @@ namespace SE104_Library_Manager.Tests.Repositories
 
             var chiTietPhieuMuon = new List<ChiTietPhieuMuon>
             {
-                new ChiTietPhieuMuon { MaSach = sach1.MaSach, MaPhieuMuon = phieuMuon.MaPhieuMuon }
+                new ChiTietPhieuMuon { MaSach = sach1.MaSach, MaPhieuMuon = phieuMuon.MaPhieuMuon, SoLuongMuon = sach1.SoLuongHienCo }
             };
 
             await _phieuMuonRepository.AddAsync(phieuMuon, chiTietPhieuMuon);
@@ -495,7 +496,8 @@ namespace SE104_Library_Manager.Tests.Repositories
                 MaNhaXuatBan = nhaXuatBan[0].MaNhaXuatBan,
                 NgayNhap = DateOnly.FromDateTime(DateTime.Now),
                 TriGia = 50000,
-                TrangThai = "Có sẵn"
+                SoLuongHienCo = 5,
+                TrangThai = "Còn sách"
             };
 
             await _sachRepository.AddAsync(sach);

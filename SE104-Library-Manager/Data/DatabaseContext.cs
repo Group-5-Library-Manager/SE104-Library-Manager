@@ -9,6 +9,7 @@ public class DatabaseContext(DbContextOptions options) : DbContext(options)
     public DbSet<BangCap> DsBangCap { get; set; } = null!;
     public DbSet<BoPhan> DsBoPhan { get; set; } = null!;
     public DbSet<ChiTietPhieuMuon> DsChiTietPhieuMuon { get; set; } = null!;
+    public DbSet<ChiTietPhieuNhap> DsChiTietPhieuNhap { get; set; } = null!;
     public DbSet<ChiTietPhieuTra> DsChiTietPhieuTra { get; set; } = null!;
     public DbSet<ChucVu> DsChucVu { get; set; } = null!;
     public DbSet<DocGia> DsDocGia { get; set; } = null!;
@@ -18,6 +19,7 @@ public class DatabaseContext(DbContextOptions options) : DbContext(options)
     public DbSet<PhieuMuon> DsPhieuMuon { get; set; } = null!;
     public DbSet<PhieuTra> DsPhieuTra { get; set; } = null!;
     public DbSet<PhieuPhat> DsPhieuPhat { get; set; } = null!;
+    public DbSet<PhieuNhap> DsPhieuNhap { get; set; } = null!;
     public DbSet<QuyDinh> DsQuyDinh { get; set; } = null!;
     public DbSet<Sach> DsSach { get; set; } = null!;
     public DbSet<TacGia> DsTacGia { get; set; } = null!;
@@ -43,6 +45,12 @@ public class DatabaseContext(DbContextOptions options) : DbContext(options)
         modelBuilder.Entity<ChiTietPhieuMuon>()
             .HasKey(c => new {
                 c.MaPhieuMuon,
+                c.MaSach
+            });
+
+        modelBuilder.Entity<ChiTietPhieuNhap>()
+            .HasKey(c => new {
+                c.MaPhieuNhap,
                 c.MaSach
             });
 
@@ -190,6 +198,14 @@ public class DatabaseContext(DbContextOptions options) : DbContext(options)
             .HasForeignKey(ctpt => ctpt.MaSach)
             .IsRequired() // Ensure foreign key is required
             .OnDelete(DeleteBehavior.Restrict);
+
+        // ChiTietPhieuNhap -> Sach
+        modelBuilder.Entity<Sach>()
+            .HasMany(s => s.DsChiTietPhieuNhap)
+            .WithOne(ctpn => ctpn.Sach)
+            .HasForeignKey(ctpn => ctpn.MaSach)
+            .IsRequired() // Ensure foreign key is required
+            .OnDelete(DeleteBehavior.Restrict);
     }
 
     private static void ConfigureTransactionRestrictions(ModelBuilder modelBuilder)
@@ -226,6 +242,14 @@ public class DatabaseContext(DbContextOptions options) : DbContext(options)
             .HasMany(pt => pt.DsChiTietPhieuTra)
             .WithOne(ctpt => ctpt.PhieuTra)
             .HasForeignKey(ctpt => ctpt.MaPhieuTra)
+            .IsRequired() // Ensure foreign key is required
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // ChiTietPhieuNhap -> PhieuNhap
+        modelBuilder.Entity<PhieuNhap>()
+            .HasMany(pn => pn.DsChiTietPhieuNhap)
+            .WithOne(ctpn => ctpn.PhieuNhap)
+            .HasForeignKey(ctpn => ctpn.MaPhieuNhap)
             .IsRequired() // Ensure foreign key is required
             .OnDelete(DeleteBehavior.Cascade);
     }

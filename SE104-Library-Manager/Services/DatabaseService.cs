@@ -127,7 +127,7 @@ public class DatabaseService
     {
         if (!await context.DsNhanVien.AnyAsync())
         {
-            context.DsNhanVien.Add(new NhanVien
+            context.DsNhanVien.AddRange(new NhanVien
             {
                 TenNhanVien = "Admin",
                 DiaChi = "123 Đường ABC, Quận 1, TP.HCM",
@@ -136,7 +136,17 @@ public class DatabaseService
                 MaChucVu = 5,
                 MaBangCap = 6,
                 MaBoPhan = 4
-            });
+            }, new NhanVien
+            {
+                TenNhanVien = "ThuThu",
+                DiaChi = "123 Đường ABC, Quận 1, TP.HCM",
+                DienThoai = "0123456789",
+                NgaySinh = new DateOnly(1990, 1, 1),
+                MaChucVu = 1,
+                MaBangCap = 2,
+                MaBoPhan = 1
+            }
+            );
         }
     }
 
@@ -151,7 +161,14 @@ public class DatabaseService
                 MaNhanVien = 1, // Assuming the first employee is the admin
                 MaVaiTro = 1 // Assuming the first role is ADMIN
             };
-            context.DsTaiKhoan.Add(adminAccount);
+            var thuThuAccount = new TaiKhoan
+            {
+                TenDangNhap = "thuthu",
+                MatKhau = BCrypt.Net.BCrypt.HashPassword("thuthu"),
+                MaNhanVien = 2, // Assuming the second employee is the librarian
+                MaVaiTro = 2 // Assuming the second role is LIBRARIAN
+            };
+            context.DsTaiKhoan.AddRange(adminAccount, thuThuAccount);
         }
     }
 

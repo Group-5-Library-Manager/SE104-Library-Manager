@@ -364,6 +364,8 @@ public class DatabaseService
                     sach.TrangThai = "Có sẵn";
                 }
             }
+        }
+    }
 
     private async Task EnsureCreatePhieuPhatAsync(DatabaseContext context)
     {

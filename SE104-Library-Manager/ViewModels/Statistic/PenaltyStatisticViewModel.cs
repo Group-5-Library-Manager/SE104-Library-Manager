@@ -15,6 +15,8 @@ using System.Windows;
 using Microsoft.EntityFrameworkCore;
 using System.Drawing;
 using Microsoft.Win32;
+using LiveChartsCore.SkiaSharpView.VisualElements;
+using LiveChartsCore.Kernel.Sketches;
 
 namespace SE104_Library_Manager.ViewModels.Statistic
 {
@@ -39,7 +41,10 @@ namespace SE104_Library_Manager.ViewModels.Statistic
         private ISeries[] _series = Array.Empty<ISeries>();
 
         [ObservableProperty]
-        private PointF[] _chartPoints = Array.Empty<PointF>();
+        private Axis[] _xAxes = Array.Empty<Axis>();
+
+        [ObservableProperty]
+        private Axis[] _yAxes = Array.Empty<Axis>();
 
         public PenaltyStatisticViewModel(DatabaseService dbService)
         {
@@ -56,7 +61,7 @@ namespace SE104_Library_Manager.ViewModels.Statistic
                 DateOnly fromDateOnly = DateOnly.FromDateTime(FromDate);
                 DateOnly toDateOnly = DateOnly.FromDateTime(ToDate);
 
-                // Query the database for revenue data
+                // Query the database for penalty data from PhieuPhat
                 var penaltyData = await GetPenaltyDataAsync(fromDateOnly, toDateOnly);
 
                 // Update the UI with the results
@@ -74,19 +79,19 @@ namespace SE104_Library_Manager.ViewModels.Statistic
 
         private async Task<List<PenaltyStatisticItem>> GetPenaltyDataAsync(DateOnly fromDate, DateOnly toDate)
         {
-            // Query the database for PhieuTra records within the date range
-            var phieuTraList = await _dbService.DbContext.DsPhieuTra
-                .Where(pt => !pt.DaXoa && pt.NgayTra >= fromDate && pt.NgayTra <= toDate)
+            // Query the database for PhieuPhat records within the date range
+            var phieuPhatList = await _dbService.DbContext.DsPhieuPhat
+                .Where(pp => !pp.DaXoa && pp.NgayLap >= fromDate && pp.NgayLap <= toDate)
                 .ToListAsync();
 
-            // Group by date and calculate revenue for each day
-            var penaltyByDate = phieuTraList
-                .GroupBy(pt => pt.NgayTra)
+            // Group by date and calculate penalty collected for each day
+            var penaltyByDate = phieuPhatList
+                .GroupBy(pp => pp.NgayLap)
                 .Select((group, index) => new PenaltyStatisticItem
                 {
                     Index = index + 1,
                     Date = group.Key,
-                    Penalty = group.Sum(pt => pt.TienPhatKyNay),
+                    Penalty = group.Sum(pp => pp.TienThu), // Use TienThu (amount collected) from PhieuPhat
                     FormattedDate = group.Key.ToString("dd/MM/yyyy")
                 })
                 .OrderBy(item => item.Date)
@@ -95,14 +100,22 @@ namespace SE104_Library_Manager.ViewModels.Statistic
             return penaltyByDate;
         }
 
-        private void UpdateChart(List<PenaltyStatisticItem> revenueData)
+        private void UpdateChart(List<PenaltyStatisticItem> penaltyData)
         {
+            if (penaltyData.Count == 0)
+            {
+                Series = Array.Empty<ISeries>();
+                XAxes = Array.Empty<Axis>();
+                YAxes = Array.Empty<Axis>();
+                return;
+            }
+
             // Create chart series
             Series = new ISeries[]
             {
                 new LineSeries<PenaltyStatisticItem>
                 {
-                    Values = revenueData,
+                    Values = penaltyData,
                     GeometrySize = 10,
                     Stroke = new SolidColorPaint(SKColors.Blue, 3),
                     Fill = new SolidColorPaint(SKColors.LightBlue.WithAlpha(100)),
@@ -113,30 +126,30 @@ namespace SE104_Library_Manager.ViewModels.Statistic
                 }
             };
 
-            // Create chart points for the polygon
-            var points = new List<PointF>();
-            if (revenueData.Count > 0)
+            // Create X-axis with dates
+            XAxes = new Axis[]
             {
-                float xScale = 700f / Math.Max(1, revenueData.Count - 1); // Width of chart area is 700
-                int maxRevenue = revenueData.Max(item => item.Penalty);
-                float yScale = maxRevenue > 0 ? 300f / maxRevenue : 1f; // Height of chart area is 300
-
-                // Add bottom-left point
-                points.Add(new PointF(50, 300)); // Starting point at bottom-left of chart area
-
-                // Add data points
-                for (int i = 0; i < revenueData.Count; i++)
+                new Axis
                 {
-                    float x = 50 + i * xScale;
-                    float y = 300 - revenueData[i].Penalty * yScale;
-                    points.Add(new PointF(x, y));
+                    Labels = penaltyData.Select(item => item.FormattedDate).ToArray(),
+                    LabelsRotation = 45,
+                    SeparatorsPaint = new SolidColorPaint(SKColors.Gray, 1),
+                    TextSize = 12
                 }
+            };
 
-                // Add bottom-right point
-                points.Add(new PointF(750, 300)); // Ending point at bottom-right of chart area
-            }
-
-            ChartPoints = points.ToArray();
+            // Create Y-axis
+            YAxes = new Axis[]
+            {
+                new Axis
+                {
+                    Name = "Tiền phạt (VNĐ)",
+                    NameTextSize = 14,
+                    TextSize = 12,
+                    SeparatorsPaint = new SolidColorPaint(SKColors.Gray, 1),
+                    Labeler = value => $"{value:N0}"
+                }
+            };
         }
 
         [RelayCommand]

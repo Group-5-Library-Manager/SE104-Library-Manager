@@ -35,7 +35,6 @@ public class DatabaseService
             await EnsureDatabaseSeededAsync();
         }
     }
-
     private async Task EnsureDatabaseSeededAsync()
     {
         DatabaseContext context = GetDatabaseContext();
@@ -67,6 +66,7 @@ public class DatabaseService
         await context.SaveChangesAsync();
 
         await EnsureCreatePhieuTraAsync(context);
+        await EnsureCreatePhieuPhatAsync(context);
         await context.SaveChangesAsync();
     }
 
@@ -197,7 +197,7 @@ public class DatabaseService
                     MaLoaiDocGia = 1,
                     NgaySinh = new DateOnly(2001, 2, 15),
                     NgayLapThe = new DateOnly(2025, 6, 3),
-                    TongNo = 0
+                    TongNo = 1000000
                 }
             );
         }
@@ -261,7 +261,6 @@ public class DatabaseService
             );
         }
     }
-
 
     private async Task EnsureCreatePhieuMuonAsync(DatabaseContext context)
     {
@@ -365,6 +364,54 @@ public class DatabaseService
                     sach.TrangThai = "Có sẵn";
                 }
             }
+
+    private async Task EnsureCreatePhieuPhatAsync(DatabaseContext context)
+    {
+        const int targetDocGiaId = 3;
+        var docGia = await context.DsDocGia.FindAsync(targetDocGiaId);
+
+        if (docGia == null)
+            throw new InvalidOperationException("Độc giả có mã 3 (Lê Văn Tuấn) chưa tồn tại.");
+
+        if (!await context.DsPhieuPhat.AnyAsync(p => p.MaDocGia == targetDocGiaId))
+        {
+            var currentDate = DateOnly.FromDateTime(DateTime.Now);
+
+            // Giả sử chia ra 3 phiếu phạt lớn
+            var phieuPhats = new List<PhieuPhat>
+        {
+            new PhieuPhat
+            {
+                NgayLap = currentDate.AddDays(-10),
+                MaDocGia = targetDocGiaId,
+                TongNo = 5000000,
+                TienThu = 1000000,
+                ConLai = 4000000
+            },
+            new PhieuPhat
+            {
+                NgayLap = currentDate.AddDays(-5),
+                MaDocGia = targetDocGiaId,
+                TongNo = 4000000,
+                TienThu = 2500000,
+                ConLai = 1500000
+            },
+            new PhieuPhat
+            {
+                NgayLap = currentDate.AddDays(-2),
+                MaDocGia = targetDocGiaId,
+                TongNo = 1500000,
+                TienThu = 500000,
+                ConLai = 1000000
+            }
+        };
+
+            context.DsPhieuPhat.AddRange(phieuPhats);
+
+            // Cập nhật lại tổng nợ độc giả (chính xác bằng tổng ConLai)
+            docGia.TongNo = phieuPhats.Sum(p => p.ConLai);
+
+            await context.SaveChangesAsync();
         }
     }
 }

@@ -39,7 +39,7 @@
             </StackPanel>
         </Border>
 
-        <!-- Revenue Chart Container -->
+        <!-- Penalty Chart Container -->
         <Border Grid.Row="1" Background="White" CornerRadius="8" BorderBrush="#E2E8F0" BorderThickness="1">
             <Grid Margin="20">
                 <Grid.RowDefinitions>
@@ -49,23 +49,25 @@
                 </Grid.RowDefinitions>
 
                 <!-- Chart Title -->
-                <TextBlock Grid.Row="0" Text="Nghìn đồng" 
-                           FontSize="14" FontWeight="Medium" 
+                <TextBlock Grid.Row="0" Text="Thống kê tiền thu phạt theo ngày" 
+                           FontSize="16" FontWeight="Bold" 
                            Margin="0,0,0,20" 
-                           HorizontalAlignment="Left"/>
+                           HorizontalAlignment="Center"/>
 
                 <!-- LiveCharts Chart Area -->
                 <lvc:CartesianChart Grid.Row="1"
                                    Series="{Binding Series}"
+                                   XAxes="{Binding XAxes}"
+                                   YAxes="{Binding YAxes}"
                                    Height="300"
                                    Margin="0,0,0,20"
                                    TooltipPosition="Top"
                                    ZoomMode="X">
                 </lvc:CartesianChart>
 
-                <!-- Total Revenue Display -->
+                <!-- Total Penalty Display -->
                 <TextBlock Grid.Row="2" 
-                           Text="{Binding TotalPenalty, StringFormat='Tổng tiền phạt: {0:N0} VNĐ'}"
+                           Text="{Binding TotalPenalty, StringFormat='Tổng tiền thu phạt: {0:N0} VNĐ'}"
                            FontSize="16" FontWeight="Bold"
                            HorizontalAlignment="Right"
                            Margin="0,10,0,0"/>

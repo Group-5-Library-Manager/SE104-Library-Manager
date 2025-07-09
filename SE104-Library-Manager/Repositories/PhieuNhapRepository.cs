@@ -1,4 +1,5 @@
-﻿using SE104_Library_Manager.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using SE104_Library_Manager.Data;
 using SE104_Library_Manager.Entities;
 using SE104_Library_Manager.Interfaces.Repositories;
 using SE104_Library_Manager.Services;
@@ -17,6 +18,17 @@ namespace SE104_Library_Manager.Repositories
         public PhieuNhapRepository(DatabaseService dbService)
         {
             _dbService = dbService;
+        }
+
+        public async Task<List<PhieuNhap>> GetAllAsync()
+        {
+            return await _dbService.DbContext.DsPhieuNhap
+                .Include(p => p.NhanVien)
+                .Include(p => p.DsChiTietPhieuNhap)
+                    .ThenInclude(ct => ct.Sach)
+                .Where(p => !p.DaXoa)
+                .OrderBy(p => p.MaPhieuNhap)
+                .ToListAsync();
         }
 
         public async Task<PhieuNhap> TaoPhieuNhapAsync(PhieuNhap phieuNhap, List<ChiTietPhieuNhap> dsChiTiet)

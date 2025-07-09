@@ -8,4 +8,5 @@ public interface IChiTietPhieuTraRepository
     Task AddAsync(ChiTietPhieuTra chiTietPhieuTra);
     Task AddRangeAsync(IEnumerable<ChiTietPhieuTra> dsChiTietPhieuTra);
     Task DeleteByPhieuTraAsync(int maPhieuTra);
+    Task<bool> HasCopiesBeenBorrowedAgainAsync(int maPhieuTra);
 }

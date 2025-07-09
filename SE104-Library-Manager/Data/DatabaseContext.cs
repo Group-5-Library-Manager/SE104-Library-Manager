@@ -26,6 +26,7 @@ public class DatabaseContext(DbContextOptions options) : DbContext(options)
     public DbSet<TaiKhoan> DsTaiKhoan { get; set; } = null!;
     public DbSet<TheLoai> DsTheLoai { get; set; } = null!;
     public DbSet<VaiTro> DsVaiTro { get; set; } = null!;
+    public DbSet<BanSaoSach> DsBanSaoSach { get; set; } = null!;
     #endregion
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -45,7 +46,7 @@ public class DatabaseContext(DbContextOptions options) : DbContext(options)
         modelBuilder.Entity<ChiTietPhieuMuon>()
             .HasKey(c => new {
                 c.MaPhieuMuon,
-                c.MaSach
+                c.MaBanSao
             });
 
         modelBuilder.Entity<ChiTietPhieuNhap>()
@@ -58,7 +59,7 @@ public class DatabaseContext(DbContextOptions options) : DbContext(options)
             .HasKey(c => new
             {
                 c.MaPhieuTra,
-                c.MaSach,
+                c.MaBanSao,
             });
     }
 
@@ -183,19 +184,19 @@ public class DatabaseContext(DbContextOptions options) : DbContext(options)
             .IsRequired() // Ensure foreign key is required
             .OnDelete(DeleteBehavior.Restrict);
 
-        // ChiTietPhieuMuon -> Sach
-        modelBuilder.Entity<Sach>()
-            .HasMany(s => s.DsChiTietPhieuMuon)
-            .WithOne(ctpm => ctpm.Sach)
-            .HasForeignKey(ctpm => ctpm.MaSach)
+        // ChiTietPhieuMuon -> BanSaoSach
+        modelBuilder.Entity<BanSaoSach>()
+            .HasMany(bss => bss.DsChiTietPhieuMuon)
+            .WithOne(ctpm => ctpm.BanSaoSach)
+            .HasForeignKey(ctpm => ctpm.MaBanSao)
             .IsRequired() // Ensure foreign key is required
             .OnDelete(DeleteBehavior.Restrict);
 
-        // ChiTietPhieuTra -> Sach
-        modelBuilder.Entity<Sach>()
-            .HasMany(s => s.DsChiTietPhieuTra)
-            .WithOne(ctpt => ctpt.Sach)
-            .HasForeignKey(ctpt => ctpt.MaSach)
+        // ChiTietPhieuTra -> BanSaoSach
+        modelBuilder.Entity<BanSaoSach>()
+            .HasMany(bss => bss.DsChiTietPhieuTra)
+            .WithOne(ctpt => ctpt.BanSaoSach)
+            .HasForeignKey(ctpt => ctpt.MaBanSao)
             .IsRequired() // Ensure foreign key is required
             .OnDelete(DeleteBehavior.Restrict);
 
@@ -206,6 +207,14 @@ public class DatabaseContext(DbContextOptions options) : DbContext(options)
             .HasForeignKey(ctpn => ctpn.MaSach)
             .IsRequired() // Ensure foreign key is required
             .OnDelete(DeleteBehavior.Restrict);
+
+        // BanSaoSach -> Sach
+        modelBuilder.Entity<BanSaoSach>()
+            .HasOne(bss => bss.Sach)
+            .WithMany(s => s.DsBanSaoSach)
+            .HasForeignKey(bss => bss.MaSach)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
     }
 
     private static void ConfigureTransactionRestrictions(ModelBuilder modelBuilder)

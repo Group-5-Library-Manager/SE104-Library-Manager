@@ -2,6 +2,7 @@
 using SE104_Library_Manager.Data;
 using SE104_Library_Manager.Entities;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace SE104_Library_Manager.Services;
 
@@ -285,6 +286,23 @@ public class DatabaseService
             }
 
             context.DsSach.AddRange(sachList);
+            await context.SaveChangesAsync();
+
+            // Create BanSaoSach records for each book
+            var banSaoList = new List<BanSaoSach>();
+            foreach (var sach in sachList)
+            {
+                for (int i = 0; i < sach.SoLuongTong; i++)
+                {
+                    banSaoList.Add(new BanSaoSach
+                    {
+                        MaSach = sach.MaSach,
+                        TinhTrang = "Có sẵn"
+                    });
+                }
+            }
+            context.DsBanSaoSach.AddRange(banSaoList);
+            await context.SaveChangesAsync();
         }
     }
 
@@ -292,57 +310,94 @@ public class DatabaseService
     {
         if (!await context.DsPhieuMuon.AnyAsync())
         {
-            // Phiếu mượn cho độc giả 1
-            var phieuMuon1 = new PhieuMuon
-            {
-                NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-40)),
-                MaDocGia = 1,
-                MaNhanVien = 1
-            };
-            await context.DsPhieuMuon.AddAsync(phieuMuon1);
-            await context.SaveChangesAsync(); 
+            // Get available copies for books 1 and 2
+            var banSao1 = await context.DsBanSaoSach.FirstOrDefaultAsync(bs => bs.MaSach == 1 && bs.TinhTrang == "Có sẵn");
+            var banSao2 = await context.DsBanSaoSach.FirstOrDefaultAsync(bs => bs.MaSach == 2 && bs.TinhTrang == "Có sẵn");
 
-            var dsChiTietMuon1 = new List<ChiTietPhieuMuon>
+            if (banSao1 != null && banSao2 != null)
             {
-            new ChiTietPhieuMuon { MaPhieuMuon = phieuMuon1.MaPhieuMuon, MaSach = 1 },
-            new ChiTietPhieuMuon { MaPhieuMuon = phieuMuon1.MaPhieuMuon, MaSach = 2 }
-            };
+                // Phiếu mượn cho độc giả 1
+                var phieuMuon1 = new PhieuMuon
+                {
+                    NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-40)),
+                    MaDocGia = 1,
+                    MaNhanVien = 1
+                };
+                await context.DsPhieuMuon.AddAsync(phieuMuon1);
+                await context.SaveChangesAsync(); 
 
-            await context.DsChiTietPhieuMuon.AddRangeAsync(dsChiTietMuon1);
+                var dsChiTietMuon1 = new List<ChiTietPhieuMuon>
+                {
+                    new ChiTietPhieuMuon { MaPhieuMuon = phieuMuon1.MaPhieuMuon, MaBanSao = banSao1.MaBanSao },
+                    new ChiTietPhieuMuon { MaPhieuMuon = phieuMuon1.MaPhieuMuon, MaBanSao = banSao2.MaBanSao }
+                };
 
-            var dsSach1 = await context.DsSach.Where(s => new[] { 1, 2 }.Contains(s.MaSach)).ToListAsync();
-            foreach (var sach in dsSach1)
-            {
-                sach.SoLuongHienCo -= 1; // Decrease quantity for borrowed books
-                SE104_Library_Manager.Repositories.SachRepository.UpdateBookStatus(sach);
-            }
+                await context.DsChiTietPhieuMuon.AddRangeAsync(dsChiTietMuon1);
 
-            // Phiếu mượn cho độc giả 2
-            var phieuMuon2 = new PhieuMuon
-            {
-                NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-10)),
-                MaDocGia = 2,
-                MaNhanVien = 1
-            };
-            await context.DsPhieuMuon.AddAsync(phieuMuon2);
-            await context.SaveChangesAsync();
+                // Update copy status
+                banSao1.TinhTrang = "Đã mượn";
+                banSao2.TinhTrang = "Đã mượn";
+                context.DsBanSaoSach.UpdateRange(banSao1, banSao2);
 
-            var dsChiTietMuon2 = new List<ChiTietPhieuMuon>
-            {
-            new ChiTietPhieuMuon { MaPhieuMuon = phieuMuon2.MaPhieuMuon, MaSach = 3 },
-            new ChiTietPhieuMuon { MaPhieuMuon = phieuMuon2.MaPhieuMuon, MaSach = 4 }
-            };
-            await context.DsChiTietPhieuMuon.AddRangeAsync(dsChiTietMuon2);
+                // Update book quantities
+                var sach1 = await context.DsSach.FindAsync(1);
+                var sach2 = await context.DsSach.FindAsync(2);
+                if (sach1 != null)
+                {
+                    sach1.SoLuongHienCo -= 1;
+                    SE104_Library_Manager.Repositories.SachRepository.UpdateBookStatus(sach1);
+                }
+                if (sach2 != null)
+                {
+                    sach2.SoLuongHienCo -= 1;
+                    SE104_Library_Manager.Repositories.SachRepository.UpdateBookStatus(sach2);
+                }
 
-            var dsSach2 = await context.DsSach.Where(s => new[] { 3, 4 }.Contains(s.MaSach)).ToListAsync();
-            foreach (var sach in dsSach2)
-            {
-                sach.SoLuongHienCo -= 1; // Decrease quantity for borrowed books
-                SE104_Library_Manager.Repositories.SachRepository.UpdateBookStatus(sach);
+                // Get available copies for books 3 and 4
+                var banSao3 = await context.DsBanSaoSach.FirstOrDefaultAsync(bs => bs.MaSach == 3 && bs.TinhTrang == "Có sẵn");
+                var banSao4 = await context.DsBanSaoSach.FirstOrDefaultAsync(bs => bs.MaSach == 4 && bs.TinhTrang == "Có sẵn");
+
+                if (banSao3 != null && banSao4 != null)
+                {
+                    // Phiếu mượn cho độc giả 2
+                    var phieuMuon2 = new PhieuMuon
+                    {
+                        NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-10)),
+                        MaDocGia = 2,
+                        MaNhanVien = 1
+                    };
+                    await context.DsPhieuMuon.AddAsync(phieuMuon2);
+                    await context.SaveChangesAsync();
+
+                    var dsChiTietMuon2 = new List<ChiTietPhieuMuon>
+                    {
+                        new ChiTietPhieuMuon { MaPhieuMuon = phieuMuon2.MaPhieuMuon, MaBanSao = banSao3.MaBanSao },
+                        new ChiTietPhieuMuon { MaPhieuMuon = phieuMuon2.MaPhieuMuon, MaBanSao = banSao4.MaBanSao }
+                    };
+                    await context.DsChiTietPhieuMuon.AddRangeAsync(dsChiTietMuon2);
+
+                    // Update copy status
+                    banSao3.TinhTrang = "Đã mượn";
+                    banSao4.TinhTrang = "Đã mượn";
+                    context.DsBanSaoSach.UpdateRange(banSao3, banSao4);
+
+                    // Update book quantities
+                    var sach3 = await context.DsSach.FindAsync(3);
+                    var sach4 = await context.DsSach.FindAsync(4);
+                    if (sach3 != null)
+                    {
+                        sach3.SoLuongHienCo -= 1;
+                        SE104_Library_Manager.Repositories.SachRepository.UpdateBookStatus(sach3);
+                    }
+                    if (sach4 != null)
+                    {
+                        sach4.SoLuongHienCo -= 1;
+                        SE104_Library_Manager.Repositories.SachRepository.UpdateBookStatus(sach4);
+                    }
+                }
             }
         }
     }
-
 
     private async Task EnsureCreatePhieuTraAsync(DatabaseContext context)
     {
@@ -354,7 +409,7 @@ public class DatabaseService
 
             if (phieuMuon1 != null && phieuMuon1.DsChiTietPhieuMuon.Any())
             {
-                var sachMuon = phieuMuon1.DsChiTietPhieuMuon.First();
+                var chiTietMuon = phieuMuon1.DsChiTietPhieuMuon.First();
 
                 var phieuTra = new PhieuTra
                 {
@@ -372,7 +427,7 @@ public class DatabaseService
                 {
                     MaPhieuTra = phieuTra.MaPhieuTra,
                     MaPhieuMuon = phieuMuon1.MaPhieuMuon,
-                    MaSach = sachMuon.MaSach,
+                    MaBanSao = chiTietMuon.MaBanSao,
                     TienPhat = 10000
                 };
 
@@ -385,8 +440,18 @@ public class DatabaseService
                     docGia.TongNo += chiTiet.TienPhat;
                 }
 
+                // Cập nhật trạng thái bản sao
+                var banSao = await context.DsBanSaoSach
+                    .Include(bs => bs.Sach)
+                    .FirstOrDefaultAsync(bs => bs.MaBanSao == chiTietMuon.MaBanSao);
+                if (banSao != null)
+                {
+                    banSao.TinhTrang = "Có sẵn";
+                    context.DsBanSaoSach.Update(banSao);
+                }
+
                 // Cập nhật trạng thái sách
-                var sach = await context.DsSach.FindAsync(sachMuon.MaSach);
+                var sach = await context.DsSach.FindAsync(banSao?.MaSach);
                 if (sach != null)
                 {
                     sach.SoLuongHienCo += 1; // Increase quantity for returned books

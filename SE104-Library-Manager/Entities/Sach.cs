@@ -30,9 +30,7 @@ public class Sach
     [ForeignKey("MaNhaXuatBan")]
     public NhaXuatBan NhaXuatBan { get; set; } = null!;
 
-    public ICollection<ChiTietPhieuMuon> DsChiTietPhieuMuon { get; set; } = new List<ChiTietPhieuMuon>();
-
-    public ICollection<ChiTietPhieuTra> DsChiTietPhieuTra { get; set; } = new List<ChiTietPhieuTra>();
-
     public ICollection<ChiTietPhieuNhap> DsChiTietPhieuNhap { get; set; } = new List<ChiTietPhieuNhap>();
+
+    public ICollection<BanSaoSach> DsBanSaoSach { get; set; } = new List<BanSaoSach>();
 }

@@ -50,6 +50,17 @@ namespace SE104_Library_Manager.Repositories
                 sach.SoLuongHienCo += ct.SoLuong;
                 sach.SoLuongTong += ct.SoLuong;
                 SE104_Library_Manager.Repositories.SachRepository.UpdateBookStatus(sach);
+
+                // Thêm các bản sao sách
+                for (int i = 0; i < ct.SoLuong; i++)
+                {
+                    var banSao = new BanSaoSach
+                    {
+                        MaSach = ct.MaSach,
+                        TinhTrang = "Mới nhập"
+                    };
+                    _dbService.DbContext.DsBanSaoSach.Add(banSao);
+                }
             }
 
             _dbService.DbContext.DsPhieuNhap.Add(phieuNhap);

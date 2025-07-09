@@ -98,6 +98,15 @@ public partial class ReturnViewModel(
             return;
         }
 
+        // Kiểm tra xem có bản sao nào trong phiếu trả đã được mượn lại chưa
+        var hasBeenBorrowedAgain = await chiTietPhieuTraRepo.HasCopiesBeenBorrowedAgainAsync(maPhieuTra.Value);
+        if (hasBeenBorrowedAgain)
+        {
+            MessageBox.Show("Không thể chỉnh sửa phiếu trả này vì có bản sao đã được mượn lại sau khi trả.", 
+                "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
         var w = App.ServiceProvider?.GetService(typeof(UpdateReturnReceiptWindow)) as UpdateReturnReceiptWindow;
         if (w == null) return;
         w.Owner = Application.Current.MainWindow;

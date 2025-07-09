@@ -9,6 +9,7 @@ namespace SE104_Library_Manager.Interfaces.Repositories
 {
     public interface IPhieuNhapRepository
     {
+        Task<List<PhieuNhap>> GetAllAsync();
         Task<PhieuNhap> TaoPhieuNhapAsync(PhieuNhap phieuNhap, List<ChiTietPhieuNhap> dsChiTiet);
     }
 }

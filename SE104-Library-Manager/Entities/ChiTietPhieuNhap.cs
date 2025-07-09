@@ -14,6 +14,7 @@ namespace SE104_Library_Manager.Entities
 
         public int SoLuong { get; set; }
         public int DonGiaNhap { get; set; } // Giá mua thực tế
+        public int ThanhTien => SoLuong * DonGiaNhap;
 
         [ForeignKey("MaPhieuNhap")]
         public PhieuNhap PhieuNhap { get; set; } = null!;

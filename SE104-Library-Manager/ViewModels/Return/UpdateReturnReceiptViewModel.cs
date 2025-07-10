@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using SE104_Library_Manager.Entities;
 using SE104_Library_Manager.Interfaces.Repositories;
 using SE104_Library_Manager.Views.Return;
+using SE104_Library_Manager.ViewModels.Return;
 using System.Collections.ObjectModel;
 using System.Windows;
 
@@ -11,13 +12,13 @@ namespace SE104_Library_Manager.ViewModels;
 public partial class UpdateReturnReceiptViewModel : ObservableObject
 {
     [ObservableProperty] private QuyDinh? quyDinh;
-    [ObservableProperty] private ObservableCollection<BookReturnItem> dsSachTra = new();
+    [ObservableProperty] private ObservableCollection<CopyReturnItem> dsBanSaoTra = new();
     [ObservableProperty] private PhieuTra? selectedReturn;
     [ObservableProperty] private int tienPhatKyNay;
     [ObservableProperty] private int tongNoHienTai;
     private int tongNoBanDau;
 
-    private List<SelectableBook> allSelectableBooks = new();
+    private List<SelectableCopy> allSelectableCopies = new();
 
     private readonly IPhieuTraRepository phieuTraRepo;
     private readonly IChiTietPhieuTraRepository chiTietPhieuTraRepo;
@@ -47,114 +48,121 @@ public partial class UpdateReturnReceiptViewModel : ObservableObject
 
         tongNoBanDau = SelectedReturn.DocGia?.TongNo ?? 0;
 
-        var sachDangMuon = await phieuTraRepo.GetSachDangMuonByDocGiaAsync(phieuTra.MaDocGia);
+        var banSaoDangMuon = await phieuTraRepo.GetBanSaoDangMuonByDocGiaAsync(phieuTra.MaDocGia);
 
-        // Build AllSelectableBooks
-        allSelectableBooks = sachDangMuon
-            .Select(s => new SelectableBook
-            {
-                MaPhieuMuon = s.MaPhieuMuon,
-                MaSach = s.MaSach,
-                TenSach = s.Sach.TenSach,
-            })
-            .Concat(phieuTra.DsChiTietPhieuTra.Select(ct => new SelectableBook
+        // Build AllSelectableCopies
+        allSelectableCopies = banSaoDangMuon
+            .Select(ct => new SelectableCopy
             {
                 MaPhieuMuon = ct.MaPhieuMuon,
-                MaSach = ct.MaSach,
-                TenSach = ct.Sach.TenSach
+                MaBanSao = ct.MaBanSao,
+                TenSach = ct.BanSaoSach.Sach.TenSach,
+                MaSach = ct.BanSaoSach.MaSach,
+                TinhTrang = ct.BanSaoSach.TinhTrang,
+                NgayMuon = ct.PhieuMuon?.NgayMuon ?? DateOnly.MinValue
+            })
+            .Concat(phieuTra.DsChiTietPhieuTra.Select(ct => new SelectableCopy
+            {
+                MaPhieuMuon = ct.MaPhieuMuon,
+                MaBanSao = ct.MaBanSao,
+                TenSach = ct.BanSaoSach.Sach.TenSach,
+                MaSach = ct.BanSaoSach.MaSach,
+                TinhTrang = ct.BanSaoSach.TinhTrang,
+                NgayMuon = ct.PhieuMuon?.NgayMuon ?? DateOnly.MinValue
             }))
-            .GroupBy(b => new { b.MaSach, b.MaPhieuMuon })
+            .GroupBy(c => new { c.MaBanSao, c.MaPhieuMuon })
             .Select(g => g.First())
             .ToList();
 
         QuyDinh = await quyDinhRepo.GetQuyDinhAsync();
 
-        DsSachTra.Clear();
+        DsBanSaoTra.Clear();
         foreach (var ct in phieuTra.DsChiTietPhieuTra)
         {
-            var item = new BookReturnItem(this, QuyDinh!)
+            var item = new CopyReturnItem(this, QuyDinh!)
             {
                 MaPhieuMuon = ct.MaPhieuMuon,
-                MaSach = ct.MaSach,
-                TenSach = ct.Sach.TenSach,
+                MaBanSao = ct.MaBanSao,
+                TenSach = ct.BanSaoSach.Sach.TenSach,
                 NgayMuon = ct.PhieuMuon?.NgayMuon ?? DateOnly.MinValue,
                 TienPhat = ct.TienPhat,
-                SelectedBook = allSelectableBooks
-                    .FirstOrDefault(b => b.MaSach == ct.MaSach && b.MaPhieuMuon == ct.MaPhieuMuon)
+                SelectedCopy = allSelectableCopies
+                    .FirstOrDefault(c => c.MaBanSao == ct.MaBanSao && c.MaPhieuMuon == ct.MaPhieuMuon)
             };
-            DsSachTra.Add(item);
+            DsBanSaoTra.Add(item);
         }
 
-        UpdateAllAvailableBooks();
+        UpdateAllAvailableCopies();
         TinhTongTienPhatKyNay();
         CapNhatTongNoHienTai();
     }
 
     [RelayCommand]
-    public void RemoveBook(BookReturnItem? item)
+    public void RemoveCopy(CopyReturnItem? item)
     {
         if (item == null) return;
 
-        DsSachTra.Remove(item);
-        UpdateAllAvailableBooks();
+        DsBanSaoTra.Remove(item);
+        UpdateAllAvailableCopies();
         TinhTongTienPhatKyNay();
     }
 
     [RelayCommand]
-    public void AddBook()
+    public void AddCopy()
     {
         if (SelectedReturn == null || QuyDinh == null) return;
 
-        var available = CreateAvailableBooksList();
+        var available = CreateAvailableCopiesList();
         if (!available.Any())
         {
-            MessageBox.Show("Không còn sách nào để chọn", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("Không còn bản sao nào để chọn", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
-        var item = new BookReturnItem(this, QuyDinh);
-        DsSachTra.Add(item);
-        UpdateAllAvailableBooks();
+        var item = new CopyReturnItem(this, QuyDinh);
+        DsBanSaoTra.Add(item);
+        UpdateAllAvailableCopies();
     }
 
-    private void UpdateAllAvailableBooks()
+    private void UpdateAllAvailableCopies()
     {
-        var selectedIds = DsSachTra
-            .Where(i => i.SelectedBook != null)
-            .Select(i => (i.SelectedBook!.MaSach, i.SelectedBook.MaPhieuMuon))
+        var selectedIds = DsBanSaoTra
+            .Where(i => i.SelectedCopy != null)
+            .Select(i => (i.SelectedCopy!.MaBanSao, i.SelectedCopy.MaPhieuMuon))
             .ToList();
 
-        foreach (var item in DsSachTra)
+        foreach (var item in DsBanSaoTra)
         {
-            var current = item.SelectedBook;
+            var current = item.SelectedCopy;
 
-            var list = allSelectableBooks
-                .Where(s => !selectedIds.Contains((s.MaSach, s.MaPhieuMuon))
-                    || (current != null && s.MaSach == current.MaSach && s.MaPhieuMuon == current.MaPhieuMuon))
-                .OrderBy(s => s.TenSach)
+            var list = allSelectableCopies
+                .Where(c => !selectedIds.Contains((c.MaBanSao, c.MaPhieuMuon))
+                    || (current != null && c.MaBanSao == current.MaBanSao && c.MaPhieuMuon == current.MaPhieuMuon))
+                .OrderBy(c => c.TenSach)
                 .ToList();
 
-            SyncAvailableBooks(item, list);
+            SyncAvailableCopies(item, list);
         }
     }
 
-    private List<SelectableBook> CreateAvailableBooksList(BookReturnItem? excludeItem = null)
+    private List<SelectableCopy> CreateAvailableCopiesList(CopyReturnItem? excludeItem = null)
     {
-        var selected = DsSachTra
-            .Where(i => i.SelectedBook != null && i != excludeItem)
-            .Select(i => (i.SelectedBook!.MaSach, i.SelectedBook.MaPhieuMuon))
+        var selected = DsBanSaoTra
+            .Where(i => i.SelectedCopy != null && i != excludeItem)
+            .Select(i => (i.SelectedCopy!.MaBanSao, i.SelectedCopy.MaPhieuMuon))
             .ToList();
 
-        return allSelectableBooks
-            .Where(s => !selected.Contains((s.MaSach, s.MaPhieuMuon)))
+        return allSelectableCopies
+            .Where(c => !selected.Contains((c.MaBanSao, c.MaPhieuMuon)))
             .ToList();
     }
 
     private void TinhTongTienPhatKyNay()
     {
-        TienPhatKyNay = DsSachTra.Sum(s => s.TienPhat);
+        TienPhatKyNay = DsBanSaoTra.Sum(s => s.TienPhat);
         CapNhatTongNoHienTai();
     }
+    
     private void CapNhatTongNoHienTai()
     {
         // TongNoHienTai = TongNoBanDau - TienPhatCu + TienPhatKyNay
@@ -165,26 +173,10 @@ public partial class UpdateReturnReceiptViewModel : ObservableObject
     [RelayCommand]
     public async Task UpdateReturnAsync()
     {
-        if (SelectedReturn == null || DsSachTra.Count == 0)
+        if (SelectedReturn == null || DsBanSaoTra.Count == 0)
         {
             MessageBox.Show("Thông tin chưa đầy đủ", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
-        }
-
-        // Validate return quantities
-        var validItems = DsSachTra.Where(s => s.SelectedBook != null).ToList();
-        foreach (var item in validItems)
-        {
-            if (item.ReturnQuantity <= 0)
-            {
-                MessageBox.Show($"Số lượng trả cho sách '{item.TenSach}' phải lớn hơn 0.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-            if (item.ReturnQuantity > item.BorrowedQuantity)
-            {
-                MessageBox.Show($"Số lượng trả cho sách '{item.TenSach}' không được vượt quá số lượng đã mượn ({item.BorrowedQuantity}).", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
         }
 
         var maDocGia = SelectedReturn.MaDocGia;
@@ -202,18 +194,14 @@ public partial class UpdateReturnReceiptViewModel : ObservableObject
 
         await chiTietPhieuTraRepo.DeleteByPhieuTraAsync(SelectedReturn.MaPhieuTra);
 
-        var listCT = DsSachTra
-            .Where(s => s.SelectedBook != null && s.MaPhieuMuon > 0)
-            .Select(s => new ChiTietPhieuTra
+        var listCT = DsBanSaoTra
+            .Where(s => s.SelectedCopy != null && s.MaPhieuMuon > 0)
+            .Select(s => new ChiTietPhieuTraInfo
             {
-                MaPhieuTra = SelectedReturn.MaPhieuTra,
-                MaSach = s.SelectedBook!.MaSach,
+                MaBanSao = s.SelectedCopy!.MaBanSao,
                 MaPhieuMuon = s.MaPhieuMuon,
-                SoLuongTra = s.ReturnQuantity,
                 TienPhat = s.TienPhat
             }).ToList();
-
-        await chiTietPhieuTraRepo.AddRangeAsync(listCT);
 
         var tienPhatMoi = listCT.Sum(ct => ct.TienPhat);
         if (docGia != null)
@@ -223,8 +211,9 @@ public partial class UpdateReturnReceiptViewModel : ObservableObject
         }
 
         SelectedReturn.TienPhatKyNay = tienPhatMoi;
+        SelectedReturn.TongNo = TongNoHienTai;
 
-        await phieuTraRepo.UpdateAsync(SelectedReturn);
+        await phieuTraRepo.UpdateAsync(SelectedReturn, listCT);
 
         MessageBox.Show("Cập nhật phiếu trả thành công", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
 
@@ -239,82 +228,74 @@ public partial class UpdateReturnReceiptViewModel : ObservableObject
         w.Close();
     }
 
-    private void SyncAvailableBooks(BookReturnItem item, List<SelectableBook> newList)
+    private void SyncAvailableCopies(CopyReturnItem item, List<SelectableCopy> newList)
     {
-        var selectedMaSach = item.SelectedBook?.MaSach;
-        var selectedMaPhieuMuon = item.SelectedBook?.MaPhieuMuon;
+        var selectedMaBanSao = item.SelectedCopy?.MaBanSao;
+        var selectedMaPhieuMuon = item.SelectedCopy?.MaPhieuMuon;
 
-        for (int i = item.AvailableBooks.Count - 1; i >= 0; i--)
+        for (int i = item.AvailableCopies.Count - 1; i >= 0; i--)
         {
-            if (!newList.Any(s => s.MaSach == item.AvailableBooks[i].MaSach && s.MaPhieuMuon == item.AvailableBooks[i].MaPhieuMuon))
+            if (!newList.Any(c => c.MaBanSao == item.AvailableCopies[i].MaBanSao && c.MaPhieuMuon == item.AvailableCopies[i].MaPhieuMuon))
             {
-                item.AvailableBooks.RemoveAt(i);
+                item.AvailableCopies.RemoveAt(i);
             }
         }
 
-        foreach (var sach in newList)
+        foreach (var copy in newList)
         {
-            if (!item.AvailableBooks.Any(s => s.MaSach == sach.MaSach && s.MaPhieuMuon == sach.MaPhieuMuon))
+            if (!item.AvailableCopies.Any(c => c.MaBanSao == copy.MaBanSao && c.MaPhieuMuon == copy.MaPhieuMuon))
             {
-                item.AvailableBooks.Add(sach);
+                item.AvailableCopies.Add(copy);
             }
         }
 
-        if (selectedMaSach != null && !item.AvailableBooks.Any(s => s.MaSach == selectedMaSach && s.MaPhieuMuon == selectedMaPhieuMuon))
+        if (selectedMaBanSao != null && !item.AvailableCopies.Any(c => c.MaBanSao == selectedMaBanSao && c.MaPhieuMuon == selectedMaPhieuMuon))
         {
-            item.SelectedBook = null;
+            item.SelectedCopy = null;
         }
     }
 
-
-    public partial class BookReturnItem : ObservableObject
+    public partial class CopyReturnItem : ObservableObject
     {
         private readonly UpdateReturnReceiptViewModel vm;
 
-        public BookReturnItem(UpdateReturnReceiptViewModel vm, QuyDinh quyDinh)
+        public CopyReturnItem(UpdateReturnReceiptViewModel vm, QuyDinh quyDinh)
         {
             this.vm = vm;
             this.QuyDinh = quyDinh;
-            AvailableBooks = new ObservableCollection<SelectableBook>();
+            AvailableCopies = new ObservableCollection<SelectableCopy>();
         }
 
-        public ObservableCollection<SelectableBook> AvailableBooks { get; }
+        public ObservableCollection<SelectableCopy> AvailableCopies { get; }
         public QuyDinh QuyDinh { get; }
 
         [ObservableProperty]
-        private SelectableBook? selectedBook;
+        private SelectableCopy? selectedCopy;
 
-        partial void OnSelectedBookChanged(SelectableBook? value)
+        partial void OnSelectedCopyChanged(SelectableCopy? value)
         {
             if (value == null) return;
 
-            MaSach = value.MaSach;
+            MaBanSao = value.MaBanSao;
             TenSach = value.TenSach;
             MaPhieuMuon = value.MaPhieuMuon;
 
             var chiTiet = vm.SelectedReturn?.DsChiTietPhieuTra
-                .FirstOrDefault(ct => ct.MaPhieuMuon == MaPhieuMuon);
+                .FirstOrDefault(ct => ct.MaPhieuMuon == MaPhieuMuon && ct.MaBanSao == MaBanSao);
             if (chiTiet?.PhieuMuon != null)
             {
                 NgayMuon = chiTiet.PhieuMuon.NgayMuon;
-                BorrowedQuantity = chiTiet.SoLuongTra; // For update, this is the returned quantity
-                ReturnQuantity = chiTiet.SoLuongTra; // Default to the same quantity
             }
-
-            // Get current book stock and status
-            var sach = vm.SelectedReturn?.DsChiTietPhieuTra
-                .FirstOrDefault(ct => ct.MaSach == MaSach)?.Sach;
-            if (sach != null)
+            else
             {
-                CurrentStock = sach.SoLuongHienCo;
-                CurrentStatus = sach.TrangThai;
+                NgayMuon = value.NgayMuon;
             }
 
             _ = UpdateFineAsync();
-            vm.UpdateAllAvailableBooks();
+            vm.UpdateAllAvailableCopies();
         }
 
-        public int MaSach { get; set; }
+        public int MaBanSao { get; set; }
         public string TenSach { get; set; } = "";
         public int MaPhieuMuon { get; set; }
 
@@ -323,33 +304,6 @@ public partial class UpdateReturnReceiptViewModel : ObservableObject
 
         [ObservableProperty]
         private int tienPhat;
-
-        [ObservableProperty]
-        private int borrowedQuantity;
-
-        [ObservableProperty]
-        private int returnQuantity = 1;
-
-        [ObservableProperty]
-        private int currentStock;
-
-        [ObservableProperty]
-        private string currentStatus = "";
-
-        partial void OnReturnQuantityChanged(int value)
-        {
-            if (value > BorrowedQuantity)
-            {
-                ReturnQuantity = BorrowedQuantity;
-                MessageBox.Show($"Số lượng trả không được vượt quá số lượng đã mượn ({BorrowedQuantity}).", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-            else if (value < 1)
-            {
-                ReturnQuantity = 1;
-                MessageBox.Show("Số lượng trả phải lớn hơn 0.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-            _ = UpdateFineAsync();
-        }
 
         public async Task UpdateFineAsync()
         {
@@ -367,9 +321,12 @@ public partial class UpdateReturnReceiptViewModel : ObservableObject
     }
 }
 
-public class SelectableBook
+public class SelectableCopy
 {
-    public int MaSach { get; set; }
+    public int MaBanSao { get; set; }
     public string TenSach { get; set; }
     public int MaPhieuMuon { get; set; }
+    public int MaSach { get; set; }
+    public string TinhTrang { get; set; } = string.Empty;
+    public DateOnly NgayMuon { get; set; } = DateOnly.MinValue;
 }

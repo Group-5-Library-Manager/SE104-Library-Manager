@@ -67,7 +67,8 @@ namespace SE104_Library_Manager.ViewModels.Statistic
             var chiTietPhieuTraList = await _dbService.DbContext.DsChiTietPhieuTra
                 .Include(ct => ct.PhieuTra)
                 .Include(ct => ct.PhieuMuon)
-                .Include(ct => ct.Sach)
+                .Include(ct => ct.BanSaoSach)
+                    .ThenInclude(bs => bs.Sach)
                 .Where(ct => !ct.DaXoa &&
                        !ct.PhieuTra.DaXoa &&
                        ct.PhieuTra.NgayTra >= fromDate &&
@@ -89,7 +90,7 @@ namespace SE104_Library_Manager.ViewModels.Statistic
                     result.Add(new LateReturnStatisticItem
                     {
                         Index = index++,
-                        BookName = chiTiet.Sach.TenSach,
+                        BookName = chiTiet.BanSaoSach.Sach.TenSach,
                         BorrowDate = chiTiet.PhieuMuon.NgayMuon,
                         ReturnDate = chiTiet.PhieuTra.NgayTra,
                         DaysOverdue = daysOverdue,

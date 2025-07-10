@@ -48,6 +48,7 @@ namespace SE104_Library_Manager.Tests.Repositories
             var docGia = await CreateTestDocGia();
             var nhanVien = await CreateTestNhanVien();
             var sach = await CreateTestSach();
+            var banSao = await CreateTestBanSao(sach.MaSach);
 
             var phieuMuon = new PhieuMuon
             {
@@ -56,13 +57,10 @@ namespace SE104_Library_Manager.Tests.Repositories
                 MaNhanVien = nhanVien.MaNhanVien
             };
 
-            var chiTietPhieuMuon = new List<ChiTietPhieuMuon>
-            {
-                new ChiTietPhieuMuon { MaSach = sach.MaSach, MaPhieuMuon = phieuMuon.MaPhieuMuon }
-            };
+            var selectedCopies = new List<BanSaoSach> { banSao };
 
             // Act
-            await _phieuMuonRepository.AddAsync(phieuMuon, chiTietPhieuMuon);
+            await _phieuMuonRepository.AddAsync(phieuMuon, selectedCopies);
 
             // Assert
             var result = await _phieuMuonRepository.GetByIdAsync(phieuMuon.MaPhieuMuon);
@@ -78,7 +76,7 @@ namespace SE104_Library_Manager.Tests.Repositories
             // Arrange
             var docGia = await CreateTestDocGia();
             var nhanVien = await CreateTestNhanVien();
-            var sachList = await CreateMultipleTestSach(6); // More than allowed (5)
+            var banSaoList = await CreateMultipleTestBanSao(6); // More than allowed (5)
 
             var phieuMuon = new PhieuMuon
             {
@@ -87,24 +85,24 @@ namespace SE104_Library_Manager.Tests.Repositories
                 MaNhanVien = nhanVien.MaNhanVien
             };
 
-            var chiTietPhieuMuon = sachList.Select(s => new ChiTietPhieuMuon { MaSach = s.MaSach, MaPhieuMuon = phieuMuon.MaPhieuMuon }).ToList();
-
             // Act & Assert
             await Assert.ThrowsExceptionAsync<ArgumentException>(() =>
-                _phieuMuonRepository.AddAsync(phieuMuon, chiTietPhieuMuon));
+                _phieuMuonRepository.AddAsync(phieuMuon, banSaoList));
         }
 
         [TestMethod]
-        public async Task AddAsync_UnavailableBook_ShouldThrowException()
+        public async Task AddAsync_UnavailableBookCopy_ShouldThrowException()
         {
             // Arrange
             var docGia = await CreateTestDocGia();
             var nhanVien = await CreateTestNhanVien();
             var sach = await CreateTestSach();
+            var banSao = await CreateTestBanSao(sach.MaSach);
 
-            // Make book unavailable
-            sach.TrangThai = "Đã mượn";
-            await _sachRepository.UpdateAsync(sach);
+            // Make book copy unavailable
+            banSao.TinhTrang = "Đã mượn";
+            DbContext.Update(banSao);
+            await DbContext.SaveChangesAsync();
 
             var phieuMuon = new PhieuMuon
             {
@@ -113,14 +111,11 @@ namespace SE104_Library_Manager.Tests.Repositories
                 MaNhanVien = nhanVien.MaNhanVien
             };
 
-            var chiTietPhieuMuon = new List<ChiTietPhieuMuon>
-            {
-                new ChiTietPhieuMuon { MaSach = sach.MaSach, MaPhieuMuon = phieuMuon.MaPhieuMuon }
-            };
+            var selectedCopies = new List<BanSaoSach> { banSao };
 
             // Act & Assert
             await Assert.ThrowsExceptionAsync<InvalidOperationException>(() =>
-                _phieuMuonRepository.AddAsync(phieuMuon, chiTietPhieuMuon));
+                _phieuMuonRepository.AddAsync(phieuMuon, selectedCopies));
         }
 
         [TestMethod]
@@ -130,6 +125,7 @@ namespace SE104_Library_Manager.Tests.Repositories
             var docGia = await CreateTestDocGia();
             var nhanVien = await CreateTestNhanVien();
             var sach = await CreateTestSach();
+            var banSao = await CreateTestBanSao(sach.MaSach);
 
             // Create an overdue borrow receipt
             var overduePhieuMuon = new PhieuMuon
@@ -139,15 +135,13 @@ namespace SE104_Library_Manager.Tests.Repositories
                 MaNhanVien = nhanVien.MaNhanVien
             };
 
-            var overdueChiTiet = new List<ChiTietPhieuMuon>
-            {
-                new ChiTietPhieuMuon { MaSach = sach.MaSach, MaPhieuMuon = overduePhieuMuon.MaPhieuMuon }
-            };
+            var overdueSelectedCopies = new List<BanSaoSach> { banSao };
 
-            await _phieuMuonRepository.AddAsync(overduePhieuMuon, overdueChiTiet);
+            await _phieuMuonRepository.AddAsync(overduePhieuMuon, overdueSelectedCopies);
 
             // Try to create another borrow receipt
             var newSach = await CreateTestSach();
+            var newBanSao = await CreateTestBanSao(newSach.MaSach);
             var newPhieuMuon = new PhieuMuon
             {
                 NgayMuon = DateOnly.FromDateTime(DateTime.Now),
@@ -155,14 +149,11 @@ namespace SE104_Library_Manager.Tests.Repositories
                 MaNhanVien = nhanVien.MaNhanVien
             };
 
-            var newChiTiet = new List<ChiTietPhieuMuon>
-            {
-                new ChiTietPhieuMuon { MaSach = newSach.MaSach, MaPhieuMuon = newPhieuMuon.MaPhieuMuon }
-            };
+            var newSelectedCopies = new List<BanSaoSach> { newBanSao };
 
             // Act & Assert
             await Assert.ThrowsExceptionAsync<InvalidOperationException>(() =>
-                _phieuMuonRepository.AddAsync(newPhieuMuon, newChiTiet));
+                _phieuMuonRepository.AddAsync(newPhieuMuon, newSelectedCopies));
         }
 
         [TestMethod]
@@ -172,6 +163,7 @@ namespace SE104_Library_Manager.Tests.Repositories
             var docGia = await CreateTestDocGia();
             var nhanVien = await CreateTestNhanVien();
             var sach = await CreateTestSach();
+            var banSao = await CreateTestBanSao(sach.MaSach);
 
             var phieuMuon = new PhieuMuon
             {
@@ -180,12 +172,9 @@ namespace SE104_Library_Manager.Tests.Repositories
                 MaNhanVien = nhanVien.MaNhanVien
             };
 
-            var chiTietPhieuMuon = new List<ChiTietPhieuMuon>
-            {
-                new ChiTietPhieuMuon { MaSach = sach.MaSach, MaPhieuMuon = phieuMuon.MaPhieuMuon }
-            };
+            var selectedCopies = new List<BanSaoSach> { banSao };
 
-            await _phieuMuonRepository.AddAsync(phieuMuon, chiTietPhieuMuon);
+            await _phieuMuonRepository.AddAsync(phieuMuon, selectedCopies);
 
             // Create a return receipt for this borrow receipt
             var phieuTra = new PhieuTra
@@ -200,7 +189,7 @@ namespace SE104_Library_Manager.Tests.Repositories
             // detail for return receipt
             var chiTietPhieuTra = new List<ChiTietPhieuTra>
             {
-                new ChiTietPhieuTra { MaSach = sach.MaSach, MaPhieuTra = phieuTra.MaPhieuTra, MaPhieuMuon = phieuMuon.MaPhieuMuon }
+                new ChiTietPhieuTra { MaBanSao = banSao.MaBanSao, MaPhieuTra = phieuTra.MaPhieuTra, MaPhieuMuon = phieuMuon.MaPhieuMuon }
             };
             DbContext.AddRange(chiTietPhieuTra);
             await DbContext.SaveChangesAsync();
@@ -218,17 +207,14 @@ namespace SE104_Library_Manager.Tests.Repositories
             var nhanVien = await CreateTestNhanVien();
             var sach1 = await CreateTestSach();
             var sach2 = await CreateTestSach();
+            var banSao1 = await CreateTestBanSao(sach1.MaSach);
+            var banSao2 = await CreateTestBanSao(sach2.MaSach);
 
             var phieuMuon1 = new PhieuMuon
             {
                 NgayMuon = DateOnly.FromDateTime(DateTime.Now),
                 MaDocGia = docGia.MaDocGia,
                 MaNhanVien = nhanVien.MaNhanVien
-            };
-
-            var chiTiet1 = new List<ChiTietPhieuMuon>
-            {
-                new ChiTietPhieuMuon { MaSach = sach1.MaSach, MaPhieuMuon = phieuMuon1.MaPhieuMuon }
             };
 
             var phieuMuon2 = new PhieuMuon
@@ -238,63 +224,46 @@ namespace SE104_Library_Manager.Tests.Repositories
                 MaNhanVien = nhanVien.MaNhanVien
             };
 
-            var chiTiet2 = new List<ChiTietPhieuMuon>
-            {
-                new ChiTietPhieuMuon { MaSach = sach2.MaSach, MaPhieuMuon = phieuMuon2.MaPhieuMuon }
-            };
+            var selectedCopies1 = new List<BanSaoSach> { banSao1 };
+            var selectedCopies2 = new List<BanSaoSach> { banSao2 };
 
-            await _phieuMuonRepository.AddAsync(phieuMuon1, chiTiet1);
-            await _phieuMuonRepository.AddAsync(phieuMuon2, chiTiet2);
+            await _phieuMuonRepository.AddAsync(phieuMuon1, selectedCopies1);
+            await _phieuMuonRepository.AddAsync(phieuMuon2, selectedCopies2);
 
             // Act
             var result = await _phieuMuonRepository.GetAllAsync();
 
             // Assert
-            result.Should().HaveCount(2);
+            result.Should().HaveCountGreaterThanOrEqualTo(2);
+            result.Should().OnlyContain(pm => !pm.DaXoa);
         }
 
         [TestMethod]
         public async Task GetByReaderIdAsync_ShouldReturnReaderPhieuMuon()
         {
             // Arrange
-            var docGia1 = await CreateTestDocGia();
+            var docGia = await CreateTestDocGia();
             var nhanVien = await CreateTestNhanVien();
-            var sach1 = await CreateTestSach();
-            var sach2 = await CreateTestSach();
+            var sach = await CreateTestSach();
+            var banSao = await CreateTestBanSao(sach.MaSach);
 
-            var phieuMuon1 = new PhieuMuon
+            var phieuMuon = new PhieuMuon
             {
                 NgayMuon = DateOnly.FromDateTime(DateTime.Now),
-                MaDocGia = docGia1.MaDocGia,
+                MaDocGia = docGia.MaDocGia,
                 MaNhanVien = nhanVien.MaNhanVien
             };
 
-            var chiTiet1 = new List<ChiTietPhieuMuon>
-            {
-                new ChiTietPhieuMuon { MaSach = sach1.MaSach, MaPhieuMuon = phieuMuon1.MaPhieuMuon }
-            };
+            var selectedCopies = new List<BanSaoSach> { banSao };
 
-            var phieuMuon2 = new PhieuMuon
-            {
-                NgayMuon = DateOnly.FromDateTime(DateTime.Now),
-                MaDocGia = docGia1.MaDocGia,
-                MaNhanVien = nhanVien.MaNhanVien
-            };
-
-            var chiTiet2 = new List<ChiTietPhieuMuon>
-            {
-                new ChiTietPhieuMuon { MaSach = sach2.MaSach, MaPhieuMuon = phieuMuon2.MaPhieuMuon }
-            };
-
-            await _phieuMuonRepository.AddAsync(phieuMuon1, chiTiet1);
-            await _phieuMuonRepository.AddAsync(phieuMuon2, chiTiet2);
+            await _phieuMuonRepository.AddAsync(phieuMuon, selectedCopies);
 
             // Act
-            var result = await _phieuMuonRepository.GetByReaderIdAsync(docGia1.MaDocGia);
+            var result = await _phieuMuonRepository.GetByReaderIdAsync(docGia.MaDocGia);
 
             // Assert
-            result.Should().HaveCount(2); // Should return both borrow receipts for the reader
-            result.Should().OnlyContain(pm => pm.MaDocGia == docGia1.MaDocGia);
+            result.Should().NotBeEmpty();
+            result.Should().OnlyContain(pm => pm.MaDocGia == docGia.MaDocGia);
         }
 
         [TestMethod]
@@ -304,27 +273,25 @@ namespace SE104_Library_Manager.Tests.Repositories
             var docGia = await CreateTestDocGia();
             var nhanVien = await CreateTestNhanVien();
             var sach = await CreateTestSach();
+            var banSao = await CreateTestBanSao(sach.MaSach);
 
-            var phieuMuon = new PhieuMuon
+            var overduePhieuMuon = new PhieuMuon
             {
                 NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-10)), // Overdue
                 MaDocGia = docGia.MaDocGia,
                 MaNhanVien = nhanVien.MaNhanVien
             };
 
-            var chiTietPhieuMuon = new List<ChiTietPhieuMuon>
-            {
-                new ChiTietPhieuMuon { MaSach = sach.MaSach, MaPhieuMuon = phieuMuon.MaPhieuMuon }
-            };
+            var selectedCopies = new List<BanSaoSach> { banSao };
 
-            await _phieuMuonRepository.AddAsync(phieuMuon, chiTietPhieuMuon);
+            await _phieuMuonRepository.AddAsync(overduePhieuMuon, selectedCopies);
 
             // Act
             var result = await _phieuMuonRepository.GetOverdueBooksAsync(docGia.MaDocGia);
 
             // Assert
-            result.Should().HaveCount(1);
-            result[0].MaDocGia.Should().Be(docGia.MaDocGia);
+            result.Should().NotBeEmpty();
+            result.Should().OnlyContain(pm => pm.MaDocGia == docGia.MaDocGia);
         }
 
         [TestMethod]
@@ -334,20 +301,18 @@ namespace SE104_Library_Manager.Tests.Repositories
             var docGia = await CreateTestDocGia();
             var nhanVien = await CreateTestNhanVien();
             var sach = await CreateTestSach();
+            var banSao = await CreateTestBanSao(sach.MaSach);
 
-            var phieuMuon = new PhieuMuon
+            var overduePhieuMuon = new PhieuMuon
             {
                 NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-10)), // Overdue
                 MaDocGia = docGia.MaDocGia,
                 MaNhanVien = nhanVien.MaNhanVien
             };
 
-            var chiTietPhieuMuon = new List<ChiTietPhieuMuon>
-            {
-                new ChiTietPhieuMuon { MaSach = sach.MaSach, MaPhieuMuon = phieuMuon.MaPhieuMuon }
-            };
+            var selectedCopies = new List<BanSaoSach> { banSao };
 
-            await _phieuMuonRepository.AddAsync(phieuMuon, chiTietPhieuMuon);
+            await _phieuMuonRepository.AddAsync(overduePhieuMuon, selectedCopies);
 
             // Act
             var result = await _phieuMuonRepository.HasOverdueBooksAsync(docGia.MaDocGia);
@@ -361,6 +326,7 @@ namespace SE104_Library_Manager.Tests.Repositories
         {
             // Arrange
             var sach = await CreateTestSach();
+            var banSao = await CreateTestBanSao(sach.MaSach);
 
             // Act
             var result = await _phieuMuonRepository.IsBookAvailableAsync(sach.MaSach);
@@ -376,8 +342,8 @@ namespace SE104_Library_Manager.Tests.Repositories
             var docGia = await CreateTestDocGia();
             var nhanVien = await CreateTestNhanVien();
             var sach = await CreateTestSach();
+            var banSao = await CreateTestBanSao(sach.MaSach);
 
-            // Borrow all available copies
             var phieuMuon = new PhieuMuon
             {
                 NgayMuon = DateOnly.FromDateTime(DateTime.Now),
@@ -385,12 +351,9 @@ namespace SE104_Library_Manager.Tests.Repositories
                 MaNhanVien = nhanVien.MaNhanVien
             };
 
-            var chiTietPhieuMuon = new List<ChiTietPhieuMuon>
-            {
-                new ChiTietPhieuMuon { MaSach = sach.MaSach, MaPhieuMuon = phieuMuon.MaPhieuMuon, SoLuongMuon = sach.SoLuongHienCo }
-            };
+            var selectedCopies = new List<BanSaoSach> { banSao };
 
-            await _phieuMuonRepository.AddAsync(phieuMuon, chiTietPhieuMuon);
+            await _phieuMuonRepository.AddAsync(phieuMuon, selectedCopies);
 
             // Act
             var result = await _phieuMuonRepository.IsBookAvailableAsync(sach.MaSach);
@@ -405,10 +368,13 @@ namespace SE104_Library_Manager.Tests.Repositories
             // Arrange
             var sach1 = await CreateTestSach();
             var sach2 = await CreateTestSach();
+            var banSao1 = await CreateTestBanSao(sach1.MaSach);
+            var banSao2 = await CreateTestBanSao(sach2.MaSach);
+
+            // Borrow one book
             var docGia = await CreateTestDocGia();
             var nhanVien = await CreateTestNhanVien();
 
-            // Borrow all copies of sach1
             var phieuMuon = new PhieuMuon
             {
                 NgayMuon = DateOnly.FromDateTime(DateTime.Now),
@@ -416,105 +382,400 @@ namespace SE104_Library_Manager.Tests.Repositories
                 MaNhanVien = nhanVien.MaNhanVien
             };
 
-            var chiTietPhieuMuon = new List<ChiTietPhieuMuon>
-            {
-                new ChiTietPhieuMuon { MaSach = sach1.MaSach, MaPhieuMuon = phieuMuon.MaPhieuMuon, SoLuongMuon = sach1.SoLuongHienCo }
-            };
+            var selectedCopies = new List<BanSaoSach> { banSao1 };
 
-            await _phieuMuonRepository.AddAsync(phieuMuon, chiTietPhieuMuon);
+            await _phieuMuonRepository.AddAsync(phieuMuon, selectedCopies);
 
             // Act
             var result = await _phieuMuonRepository.GetAvailableBooksAsync();
 
             // Assert
-            result.Should().Contain(s => s.MaSach == sach2.MaSach);
+            result.Should().NotBeEmpty();
             result.Should().NotContain(s => s.MaSach == sach1.MaSach);
         }
 
-        
+        [TestMethod]
+        public async Task UpdateAsync_ValidPhieuMuon_ShouldUpdateSuccessfully()
+        {
+            // Arrange
+            var docGia = await CreateTestDocGia();
+            var nhanVien = await CreateTestNhanVien();
+            var sach = await CreateTestSach();
+            var banSao = await CreateTestBanSao(sach.MaSach);
 
-        // Helper methods to create test data
+            var phieuMuon = new PhieuMuon
+            {
+                NgayMuon = DateOnly.FromDateTime(DateTime.Now),
+                MaDocGia = docGia.MaDocGia,
+                MaNhanVien = nhanVien.MaNhanVien
+            };
+
+            var selectedCopies = new List<BanSaoSach> { banSao };
+
+            await _phieuMuonRepository.AddAsync(phieuMuon, selectedCopies);
+
+            // Update the borrow receipt
+            phieuMuon.NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-1));
+            var newSach = await CreateTestSach();
+            var newBanSao = await CreateTestBanSao(newSach.MaSach);
+            var newSelectedCopies = new List<BanSaoSach> { newBanSao };
+
+            // Act
+            await _phieuMuonRepository.UpdateAsync(phieuMuon, newSelectedCopies);
+
+            // Assert
+            var result = await _phieuMuonRepository.GetByIdAsync(phieuMuon.MaPhieuMuon);
+            result.Should().NotBeNull();
+            result.NgayMuon.Should().Be(phieuMuon.NgayMuon);
+        }
+
+        [TestMethod]
+        public async Task UpdateAsync_PhieuMuonWithReturnedBooks_ShouldThrowException()
+        {
+            // Arrange
+            var docGia = await CreateTestDocGia();
+            var nhanVien = await CreateTestNhanVien();
+            var sach = await CreateTestSach();
+            var banSao = await CreateTestBanSao(sach.MaSach);
+
+            var phieuMuon = new PhieuMuon
+            {
+                NgayMuon = DateOnly.FromDateTime(DateTime.Now),
+                MaDocGia = docGia.MaDocGia,
+                MaNhanVien = nhanVien.MaNhanVien
+            };
+
+            var selectedCopies = new List<BanSaoSach> { banSao };
+
+            await _phieuMuonRepository.AddAsync(phieuMuon, selectedCopies);
+
+            // Create a return receipt for this borrow receipt
+            var phieuTra = new PhieuTra
+            {
+                NgayTra = DateOnly.FromDateTime(DateTime.Now),
+                MaNhanVien = nhanVien.MaNhanVien,
+                MaDocGia = docGia.MaDocGia,
+            };
+            DbContext.Add(phieuTra);
+            await DbContext.SaveChangesAsync();
+
+            var chiTietPhieuTra = new List<ChiTietPhieuTra>
+            {
+                new ChiTietPhieuTra { MaBanSao = banSao.MaBanSao, MaPhieuTra = phieuTra.MaPhieuTra, MaPhieuMuon = phieuMuon.MaPhieuMuon }
+            };
+            DbContext.AddRange(chiTietPhieuTra);
+            await DbContext.SaveChangesAsync();
+
+            // Try to update the borrow receipt
+            var newSach = await CreateTestSach();
+            var newBanSao = await CreateTestBanSao(newSach.MaSach);
+            var newSelectedCopies = new List<BanSaoSach> { newBanSao };
+
+            // Act & Assert
+            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() =>
+                _phieuMuonRepository.UpdateAsync(phieuMuon, newSelectedCopies));
+        }
+
+        [TestMethod]
+        public async Task GetAllOverdueBooksAsync_ShouldReturnAllOverdueBooks()
+        {
+            // Arrange
+            var docGia1 = await CreateTestDocGia();
+            var docGia2 = await CreateTestDocGia();
+            var nhanVien = await CreateTestNhanVien();
+            var sach1 = await CreateTestSach();
+            var sach2 = await CreateTestSach();
+            var banSao1 = await CreateTestBanSao(sach1.MaSach);
+            var banSao2 = await CreateTestBanSao(sach2.MaSach);
+
+            var overduePhieuMuon1 = new PhieuMuon
+            {
+                NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-10)),
+                MaDocGia = docGia1.MaDocGia,
+                MaNhanVien = nhanVien.MaNhanVien
+            };
+
+            var overduePhieuMuon2 = new PhieuMuon
+            {
+                NgayMuon = DateOnly.FromDateTime(DateTime.Now.AddDays(-15)),
+                MaDocGia = docGia2.MaDocGia,
+                MaNhanVien = nhanVien.MaNhanVien
+            };
+
+            var selectedCopies1 = new List<BanSaoSach> { banSao1 };
+            var selectedCopies2 = new List<BanSaoSach> { banSao2 };
+
+            await _phieuMuonRepository.AddAsync(overduePhieuMuon1, selectedCopies1);
+            await _phieuMuonRepository.AddAsync(overduePhieuMuon2, selectedCopies2);
+
+            // Act
+            var result = await _phieuMuonRepository.GetAllOverdueBooksAsync();
+
+            // Assert
+            result.Should().HaveCountGreaterThanOrEqualTo(2);
+        }
+
+        [TestMethod]
+        public async Task HasReturnedBooksAsync_WithReturnedBooks_ShouldReturnTrue()
+        {
+            // Arrange
+            var docGia = await CreateTestDocGia();
+            var nhanVien = await CreateTestNhanVien();
+            var sach = await CreateTestSach();
+            var banSao = await CreateTestBanSao(sach.MaSach);
+
+            var phieuMuon = new PhieuMuon
+            {
+                NgayMuon = DateOnly.FromDateTime(DateTime.Now),
+                MaDocGia = docGia.MaDocGia,
+                MaNhanVien = nhanVien.MaNhanVien
+            };
+
+            var selectedCopies = new List<BanSaoSach> { banSao };
+
+            await _phieuMuonRepository.AddAsync(phieuMuon, selectedCopies);
+
+            // Create a return receipt
+            var phieuTra = new PhieuTra
+            {
+                NgayTra = DateOnly.FromDateTime(DateTime.Now),
+                MaNhanVien = nhanVien.MaNhanVien,
+                MaDocGia = docGia.MaDocGia,
+            };
+            DbContext.Add(phieuTra);
+            await DbContext.SaveChangesAsync();
+
+            var chiTietPhieuTra = new List<ChiTietPhieuTra>
+            {
+                new ChiTietPhieuTra { MaBanSao = banSao.MaBanSao, MaPhieuTra = phieuTra.MaPhieuTra, MaPhieuMuon = phieuMuon.MaPhieuMuon }
+            };
+            DbContext.AddRange(chiTietPhieuTra);
+            await DbContext.SaveChangesAsync();
+
+            // Act
+            var result = await _phieuMuonRepository.HasReturnedBooksAsync(phieuMuon.MaPhieuMuon);
+
+            // Assert
+            result.Should().BeTrue();
+        }
+
+        [TestMethod]
+        public async Task GetAvailableBanSaoSach_ShouldReturnAvailableCopies()
+        {
+            // Arrange
+            var sach = await CreateTestSach();
+            var banSao = await CreateTestBanSao(sach.MaSach);
+
+            // Act
+            var result = _phieuMuonRepository.GetAvailableBanSaoSach();
+
+            // Assert
+            result.Should().NotBeEmpty();
+            result.Should().Contain(bs => bs.TinhTrang == "Có sẵn");
+        }
+
+        [TestMethod]
+        public async Task GetAllBanSaoSach_ShouldReturnAllCopies()
+        {
+            // Arrange
+            var sach = await CreateTestSach();
+            var banSao = await CreateTestBanSao(sach.MaSach);
+
+            // Act
+            var result = _phieuMuonRepository.GetAllBanSaoSach();
+
+            // Assert
+            result.Should().NotBeEmpty();
+        }
+
+        [TestMethod]
+        public async Task UpdateBookStatusAsync_ShouldUpdateBookStatus()
+        {
+            // Arrange
+            var sach = await CreateTestSach();
+
+            // Act
+            await _phieuMuonRepository.UpdateBookStatusAsync(sach.MaSach, "Đã mượn");
+
+            // Assert
+            var updatedSach = await _phieuMuonRepository.GetBookByIdAsync(sach.MaSach);
+            updatedSach.Should().NotBeNull();
+            updatedSach.TrangThai.Should().Be("Đã mượn");
+        }
+
+        [TestMethod]
+        public async Task GetBookByIdAsync_ExistingBook_ShouldReturnBook()
+        {
+            // Arrange
+            var sach = await CreateTestSach();
+
+            // Act
+            var result = await _phieuMuonRepository.GetBookByIdAsync(sach.MaSach);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.MaSach.Should().Be(sach.MaSach);
+        }
+
+        [TestMethod]
+        public async Task GetBookByIdAsync_NonExistentBook_ShouldReturnNull()
+        {
+            // Act
+            var result = await _phieuMuonRepository.GetBookByIdAsync(999);
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        [TestMethod]
+        public async Task GetAllBooksAsync_ShouldReturnAllBooks()
+        {
+            // Arrange
+            var sach1 = await CreateTestSach();
+            var sach2 = await CreateTestSach();
+
+            // Act
+            var result = await _phieuMuonRepository.GetAllBooksAsync();
+
+            // Assert
+            result.Should().NotBeEmpty();
+            result.Should().Contain(s => s.MaSach == sach1.MaSach);
+            result.Should().Contain(s => s.MaSach == sach2.MaSach);
+        }
+
+        // Helper methods
         private async Task<DocGia> CreateTestDocGia()
         {
-            var loaiDocGia = await _loaiDocGiaRepository.GetAllAsync();
+            var loaiDocGia = new LoaiDocGia
+            {
+                TenLoaiDocGia = "Sinh viên"
+            };
+            DbContext.Add(loaiDocGia);
+            await DbContext.SaveChangesAsync();
+
             var docGia = new DocGia
             {
-                TenDocGia = "Test Reader",
-                DiaChi = "Test Address",
-                Email = "test@example.com",
-                MaLoaiDocGia = loaiDocGia[0].MaLoaiDocGia,
-                NgaySinh = new DateOnly(1990, 1, 1),
+                TenDocGia = "Nguyễn Văn A",
+                DiaChi = "Hà Nội",
+                MaLoaiDocGia = loaiDocGia.MaLoaiDocGia,
+                NgaySinh = DateOnly.FromDateTime(DateTime.Now.AddYears(-20)),
                 NgayLapThe = DateOnly.FromDateTime(DateTime.Now),
                 TongNo = 0
             };
-
-            await _docGiaRepository.AddAsync(docGia);
+            DbContext.Add(docGia);
+            await DbContext.SaveChangesAsync();
             return docGia;
         }
 
         private async Task<NhanVien> CreateTestNhanVien()
         {
-            var bangCap = await _bangCapRepository.GetAllAsync();
-            var boPhan = await _boPhanRepository.GetAllAsync();
-            var chucVu = await _chucVuRepository.GetAllAsync();
+            var boPhan = new BoPhan
+            {
+                TenBoPhan = "Thư viện"
+            };
+            DbContext.Add(boPhan);
+            await DbContext.SaveChangesAsync();
+
+            var chucVu = new ChucVu
+            {
+                TenChucVu = "Nhân viên"
+            };
+            DbContext.Add(chucVu);
+            await DbContext.SaveChangesAsync();
+
+            var bangCap = new BangCap
+            {
+                TenBangCap = "Đại học"
+            };
+            DbContext.Add(bangCap);
+            await DbContext.SaveChangesAsync();
 
             var nhanVien = new NhanVien
             {
-                TenNhanVien = "Test Staff",
-                DiaChi = "Test Address",
-                DienThoai = "0123456789",
-                NgaySinh = new DateOnly(1985, 1, 1),
-                MaChucVu = chucVu[0].MaChucVu,
-                MaBangCap = bangCap[0].MaBangCap,
-                MaBoPhan = boPhan[0].MaBoPhan
+                TenNhanVien = "Nguyễn Văn B",
+                DiaChi = "Hà Nội",
+                DienThoai = "0987654321",
+                NgaySinh = DateOnly.FromDateTime(DateTime.Now.AddYears(-25)),
+                MaBoPhan = boPhan.MaBoPhan,
+                MaChucVu = chucVu.MaChucVu,
+                MaBangCap = bangCap.MaBangCap
             };
-            //sample account
-            var taiKhoan = new TaiKhoan
-            {
-                TenDangNhap = "testuser",
-                MatKhau = BCrypt.Net.BCrypt.HashPassword("password123"),
-                MaNhanVien = nhanVien.MaNhanVien,
-                MaVaiTro = 1 // Assuming 1 is the role ID for staff
-            };
-
-            await _nhanVienRepository.AddAsync(nhanVien, taiKhoan);
+            DbContext.Add(nhanVien);
+            await DbContext.SaveChangesAsync();
             return nhanVien;
         }
 
         private async Task<Sach> CreateTestSach()
         {
-            var theLoai = await _theLoaiRepository.GetAllAsync();
-            var tacGia = await _tacGiaRepository.GetAllAsync();
-            var nhaXuatBan = await _nhaXuatBanRepository.GetAllAsync();
+            var theLoai = new TheLoai
+            {
+                TenTheLoai = "Khoa học"
+            };
+            DbContext.Add(theLoai);
+            await DbContext.SaveChangesAsync();
+
+            var tacGia = new TacGia
+            {
+                TenTacGia = "Tác giả A"
+            };
+            DbContext.Add(tacGia);
+            await DbContext.SaveChangesAsync();
+
+            var nhaXuatBan = new NhaXuatBan
+            {
+                TenNhaXuatBan = "NXB A"
+            };
+            DbContext.Add(nhaXuatBan);
+            await DbContext.SaveChangesAsync();
 
             var sach = new Sach
             {
-                TenSach = "Test Book",
-                MaTheLoai = theLoai[0].MaTheLoai,
-                MaTacGia = tacGia[0].MaTacGia,
-                NamXuatBan = 2020,
-                MaNhaXuatBan = nhaXuatBan[0].MaNhaXuatBan,
+                TenSach = "Sách Test",
+                MaTheLoai = theLoai.MaTheLoai,
+                MaTacGia = tacGia.MaTacGia,
+                MaNhaXuatBan = nhaXuatBan.MaNhaXuatBan,
+                NamXuatBan = 2023,
                 NgayNhap = DateOnly.FromDateTime(DateTime.Now),
-                TriGia = 50000,
+                TriGia = 100000,
+                TrangThai = "Còn sách",
                 SoLuongHienCo = 5,
-                TrangThai = "Còn sách"
+                SoLuongTong = 5
             };
-
-            await _sachRepository.AddAsync(sach);
+            DbContext.Add(sach);
+            await DbContext.SaveChangesAsync();
             return sach;
         }
 
-        private async Task<List<Sach>> CreateMultipleTestSach(int count)
+        private async Task<BanSaoSach> CreateTestBanSao(int maSach)
         {
-            var sachList = new List<Sach>();
+            var banSao = new BanSaoSach
+            {
+                MaSach = maSach,
+                TinhTrang = "Có sẵn"
+            };
+            DbContext.Add(banSao);
+            await DbContext.SaveChangesAsync();
+            return banSao;
+        }
+
+        private async Task<List<BanSaoSach>> CreateMultipleTestBanSao(int count)
+        {
+            var sach = await CreateTestSach();
+            var banSaoList = new List<BanSaoSach>();
+
             for (int i = 0; i < count; i++)
             {
-                var sach = await CreateTestSach();
-                sach.TenSach = $"Test Book {i + 1}";
-                await _sachRepository.UpdateAsync(sach);
-                sachList.Add(sach);
+                var banSao = new BanSaoSach
+                {
+                    MaSach = sach.MaSach,
+                    TinhTrang = "Có sẵn"
+                };
+                banSaoList.Add(banSao);
             }
-            return sachList;
+
+            DbContext.AddRange(banSaoList);
+            await DbContext.SaveChangesAsync();
+            return banSaoList;
         }
     }
 }

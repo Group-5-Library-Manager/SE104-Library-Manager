@@ -63,8 +63,9 @@ namespace SE104_Library_Manager.ViewModels.Statistic
             // Query the database for PhieuMuon records within the date range
             var chiTietPhieuMuonList = await _dbService.DbContext.DsChiTietPhieuMuon
                 .Include(ct => ct.PhieuMuon)
-                .Include(ct => ct.Sach)
-                .ThenInclude(s => s.TheLoai)
+                .Include(ct => ct.BanSaoSach)
+                    .ThenInclude(bs => bs.Sach)
+                        .ThenInclude(s => s.TheLoai)
                 .Where(ct => !ct.PhieuMuon.DaXoa &&
                        ct.PhieuMuon.NgayMuon >= fromDate &&
                        ct.PhieuMuon.NgayMuon <= toDate)
@@ -72,11 +73,11 @@ namespace SE104_Library_Manager.ViewModels.Statistic
 
             // Group by genre and count borrows
             var borrowsByGenre = chiTietPhieuMuonList
-                .GroupBy(ct => ct.Sach.TheLoai.MaTheLoai)
+                .GroupBy(ct => ct.BanSaoSach.Sach.TheLoai.MaTheLoai)
                 .Select((group, index) => new
                 {
                     GenreId = group.Key,
-                    GenreName = group.First().Sach.TheLoai.TenTheLoai,
+                    GenreName = group.First().BanSaoSach.Sach.TheLoai.TenTheLoai,
                     Count = group.Count()
                 })
                 .OrderByDescending(item => item.Count)

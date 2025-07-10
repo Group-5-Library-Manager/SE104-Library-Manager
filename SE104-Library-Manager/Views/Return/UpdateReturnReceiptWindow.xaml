@@ -75,35 +75,34 @@
                 </Grid>
             </GroupBox>
 
-            <!-- Danh sách sách trả -->
-            <GroupBox Header="Danh sách sách trả" Margin="10 25 10 10" Style="{StaticResource GroupBoxStyle}">
+            <!-- Danh sách bản sao trả -->
+            <GroupBox Header="Danh sách bản sao trả" Margin="10 25 10 10" Style="{StaticResource GroupBoxStyle}">
                 <Grid>
                     <ScrollViewer MaxHeight="250" VerticalScrollBarVisibility="Auto">
                         <StackPanel>
-                            <ItemsControl ItemsSource="{Binding DsSachTra}">
+                            <ItemsControl ItemsSource="{Binding DsBanSaoTra}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Border BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="5" Margin="10">
                                             <Grid Margin="10">
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="250"/>
-                                                    <ColumnDefinition Width="80"/>
+                                                    <ColumnDefinition Width="300"/>
                                                     <ColumnDefinition Width="80"/>
                                                     <ColumnDefinition Width="60"/>
                                                     <ColumnDefinition Width="*"/>
                                                 </Grid.ColumnDefinitions>
 
-                                                <ComboBox Width="240" HorizontalAlignment="Left"
+                                                <ComboBox Width="280" HorizontalAlignment="Left"
                                                           BorderThickness="0"
                                                           Padding="8 4"
                                                           VerticalContentAlignment="Center"
-                                                          ItemsSource="{Binding AvailableBooks}"
-                                                          SelectedItem="{Binding SelectedBook, Mode=TwoWay}"
+                                                          ItemsSource="{Binding AvailableCopies}"
+                                                          SelectedItem="{Binding SelectedCopy, Mode=TwoWay}"
                                                           DisplayMemberPath="TenSach">
                                                     <ComboBox.ItemTemplate>
                                                         <DataTemplate>
                                                             <TextBlock>
-                                                                <Run Text="{Binding MaSach}"/>
+                                                                <Run Text="{Binding MaBanSao, StringFormat='BS{0}'}"/>
                                                                 <Run Text=" - "/>
                                                                 <Run Text="{Binding TenSach}"/>
                                                             </TextBlock>
@@ -112,24 +111,17 @@
                                                 </ComboBox>
 
                                                 <StackPanel Grid.Column="1" Orientation="Vertical" Margin="5 0">
-                                                    <TextBlock Text="Đã mượn:" FontSize="11" FontWeight="SemiBold"/>
-                                                    <TextBlock Text="{Binding BorrowedQuantity}" FontSize="12" HorizontalAlignment="Center"/>
+                                                    <TextBlock Text="Trạng thái:" FontSize="11" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="{Binding SelectedCopy.TinhTrang}" FontSize="12" HorizontalAlignment="Center"/>
                                                 </StackPanel>
 
-                                                <StackPanel Grid.Column="2" Orientation="Vertical" Margin="5 0">
-                                                    <TextBlock Text="Trả về:" FontSize="11" FontWeight="SemiBold"/>
-                                                    <TextBox Text="{Binding ReturnQuantity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="50" Height="20" 
-                                                             HorizontalAlignment="Center" VerticalContentAlignment="Center"
-                                                             FontSize="11" Padding="2"/>
-                                                </StackPanel>
-
-                                                <Button Grid.Column="3" Content="-" Width="25" Height="25"
-                                                        Command="{Binding DataContext.RemoveBookCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                <Button Grid.Column="2" Content="-" Width="25" Height="25"
+                                                        Command="{Binding DataContext.RemoveCopyCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                         CommandParameter="{Binding}"
                                                         Style="{StaticResource MinusButtonStyle}"/>
 
-                                                <StackPanel Grid.Column="4" Orientation="Vertical"
-                                                            Visibility="{Binding SelectedBook, Converter={StaticResource NullToCollapsedConverter}}">
+                                                <StackPanel Grid.Column="3" Orientation="Vertical"
+                                                            Visibility="{Binding SelectedCopy, Converter={StaticResource NullToCollapsedConverter}}">
                                                     <StackPanel Orientation="Horizontal">
                                                         <TextBlock Text="Ngày mượn: " FontWeight="SemiBold"/>
                                                         <TextBlock Text="{Binding NgayMuon, Converter={StaticResource DateOnlyFormattedConverter}}"/>
@@ -138,13 +130,6 @@
                                                         <TextBlock Text="Tiền phạt: " FontWeight="SemiBold"/>
                                                         <TextBlock Text="{Binding TienPhat, Converter={StaticResource PriceConverter}, StringFormat='{}{0:N0} VNĐ'}"/>
                                                     </StackPanel>
-                                                    <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                                                        <TextBlock Text="Tồn kho: " FontWeight="SemiBold"/>
-                                                        <TextBlock Text="{Binding CurrentStock}"/>
-                                                        <TextBlock Text=" (" FontWeight="SemiBold"/>
-                                                        <TextBlock Text="{Binding CurrentStatus}"/>
-                                                        <TextBlock Text=")" FontWeight="SemiBold"/>
-                                                    </StackPanel>
                                                 </StackPanel>
                                             </Grid>
                                         </Border>
@@ -152,8 +137,8 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
 
-                            <Button Content="Thêm sách" FontSize="14" Width="120" Margin="0 10 0 10" HorizontalAlignment="Center" 
-                                    Command="{Binding AddBookCommand}"
+                            <Button Content="Thêm bản sao" FontSize="14" Width="120" Margin="0 10 0 10" HorizontalAlignment="Center" 
+                                    Command="{Binding AddCopyCommand}"
                                     Foreground="White"
                                     Background="#253251"
                                     Style="{StaticResource PrimaryButtonStyle}"/>

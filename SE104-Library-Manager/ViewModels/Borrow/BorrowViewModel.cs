@@ -149,7 +149,16 @@ namespace SE104_Library_Manager.ViewModels.Borrow
                     return;
                 }
 
-                await updateBorrowVM.LoadBorrowData(SelectedBorrow);
+                // Reload the borrow data from database to ensure we have all navigation properties
+                var freshBorrowData = await phieuMuonRepo.GetByIdAsync(SelectedBorrow.MaPhieuMuon);
+                if (freshBorrowData != null)
+                {
+                    await updateBorrowVM.LoadBorrowData(freshBorrowData);
+                }
+                else
+                {
+                    await updateBorrowVM.LoadBorrowData(SelectedBorrow);
+                }
 
                 var updateBorrowWindow = new UpdateBorrowWindow(updateBorrowVM);
                 updateBorrowWindow.Owner = Application.Current.MainWindow;

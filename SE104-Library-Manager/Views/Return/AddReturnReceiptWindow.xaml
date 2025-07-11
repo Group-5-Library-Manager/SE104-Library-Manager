@@ -92,7 +92,6 @@
                                             <Grid Margin="10">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="300"/>
-                                                    <ColumnDefinition Width="80"/>
                                                     <ColumnDefinition Width="60"/>
                                                     <ColumnDefinition Width="*"/>
                                                 </Grid.ColumnDefinitions>
@@ -101,7 +100,7 @@
                                                           BorderThickness="0"
                                                           Padding="8 4"
                                                           VerticalContentAlignment="Center"
-                                                          ItemsSource="{Binding BorrowedCopies}"
+                                                          ItemsSource="{Binding AvailableCopies}"
                                                           SelectedItem="{Binding SelectedCopy}"
                                                           DisplayMemberPath="Sach.TenSach">
                                                     <ComboBox.ItemTemplate>
@@ -109,26 +108,26 @@
                                                             <TextBlock>
                                                                 <Run Text="{Binding MaBanSao, StringFormat='BS{0}'}"/>
                                                                 <Run Text=" - "/>
-                                                                <Run Text="{Binding Sach.TenSach}"/>
-                                                                <Run Text=" ("/>
+                                                                <Run Text="{Binding TenSach}"/>
+                                                                <!--<Run Text=" ("/>
                                                                 <Run Text="{Binding TinhTrang}"/>
-                                                                <Run Text=")"/>
+                                                                <Run Text=")"/>-->
                                                             </TextBlock>
                                                         </DataTemplate>
                                                     </ComboBox.ItemTemplate>
                                                 </ComboBox>
 
-                                                <StackPanel Grid.Column="1" Orientation="Vertical" Margin="5 0">
+                                                <!--<StackPanel Grid.Column="1" Orientation="Vertical" Margin="5 0">
                                                     <TextBlock Text="Trạng thái:" FontSize="11" FontWeight="SemiBold"/>
                                                     <TextBlock Text="{Binding SelectedCopy.TinhTrang}" FontSize="12" HorizontalAlignment="Center"/>
-                                                </StackPanel>
+                                                </StackPanel>-->
 
-                                                <Button Grid.Column="2" Content="-" Width="25" Height="25"
+                                                <Button Grid.Column="1" Content="-" Width="25" Height="25"
                                                         Command="{Binding DataContext.RemoveCopyCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                         CommandParameter="{Binding}"
                                                         Style="{StaticResource MinusButtonStyle}"/>
 
-                                                <StackPanel Grid.Column="3" Orientation="Vertical"
+                                                <StackPanel Grid.Column="2" Orientation="Vertical"
                                                             Visibility="{Binding SelectedCopy, Converter={StaticResource NullToCollapsedConverter}}">
                                                     <StackPanel Orientation="Horizontal">
                                                         <TextBlock Text="Ngày mượn: " FontWeight="SemiBold"/>
@@ -148,7 +147,7 @@
                             </ItemsControl>
 
                             <!-- Nút thêm bản sao -->
-                            <Button Content="Thêm bản sao" FontSize="14" Width="120" Margin="0 10 0 10" HorizontalAlignment="Center" 
+                            <Button Content="Thêm sách trả" FontSize="14" Width="120" Margin="0 10 0 10" HorizontalAlignment="Center" 
                                     Command="{Binding AddCopyCommand}"
                                     Foreground="White"
                                     Background="#253251"

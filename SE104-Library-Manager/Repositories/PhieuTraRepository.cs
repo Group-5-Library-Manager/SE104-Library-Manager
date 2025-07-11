@@ -16,6 +16,8 @@ public class PhieuTraRepository(DatabaseService db) : IPhieuTraRepository
             .Include(p => p.DsChiTietPhieuTra)
                 .ThenInclude(ct => ct.BanSaoSach)
                     .ThenInclude(bs => bs.Sach)
+            .Include(p => p.DsChiTietPhieuTra)
+                .ThenInclude(ct => ct.PhieuMuon)
             .Include(p => p.DocGia)
             .Include(p => p.NhanVien)
             .Where(p => !p.DaXoa)

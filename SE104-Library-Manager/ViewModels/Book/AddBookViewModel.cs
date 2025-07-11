@@ -58,6 +58,7 @@ namespace SE104_Library_Manager.ViewModels.Book
             this.tacGiaRepo = tacGiaRepo;
             this.nhaXuatBanRepo = nhaXuatBanrRepo;
             LoadDataAsync().ConfigureAwait(false);
+            ResetForm();
         }
 
         private async Task LoadDataAsync()
@@ -156,7 +157,7 @@ namespace SE104_Library_Manager.ViewModels.Book
             try
             {
                 await sachRepo.AddAsync(book);
-
+                ResetForm();
                 MessageBox.Show("Thêm sách thành công.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
                 w.DialogResult = true;
                 w.Close();
@@ -172,6 +173,17 @@ namespace SE104_Library_Manager.ViewModels.Book
         public void Cancel(AddBookWindow w)
         {
             w.Close();
+        }
+
+        public void ResetForm()
+        {
+            BookName = string.Empty;
+            SelectedAuthor = null;
+            SelectedGenre = null;
+            SelectedPublisher = null;
+            Price = 0;
+            PublishYear = DateTime.Now.Year;
+            TodayDate = DateTime.Now.ToString("dd/MM/yyyy");
         }
     }
 }

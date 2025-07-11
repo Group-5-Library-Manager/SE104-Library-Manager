@@ -9,6 +9,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using SE104_Library_Manager.Views.Book;
+using System.IO;
+using iText.IO.Font;
+using iText.Kernel.Font;
+using iText.Kernel.Pdf;
+using iText.Layout;
+using iText.Layout.Element;
 
 namespace SE104_Library_Manager.ViewModels.Book
 {
@@ -190,5 +196,50 @@ namespace SE104_Library_Manager.ViewModels.Book
             w.DialogResult = false;
             w.Close();
         }
+
+        [RelayCommand]
+        private async Task AddAndExportImportReceiptToPdf(Window w)
+        {
+            try
+            {
+                if (ImportDetails.Count == 0 || ImportDetails.Any(d => d.SelectedBook == null || d.Quantity <= 0 || d.UnitPrice <= 0))
+                {
+                    MessageBox.Show("Vui lòng điền đầy đủ thông tin nhập sách", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                var phieuNhap = new PhieuNhap
+                {
+                    MaNhanVien = staffSessionReader.CurrentStaffId,
+                    NgayNhap = ImportDate,
+                };
+                var chiTietList = ImportDetails.Select(d => new ChiTietPhieuNhap
+                {
+                    MaPhieuNhap = 0,
+                    MaSach = d.SelectedBook!.MaSach,
+                    SoLuong = d.Quantity,
+                    DonGiaNhap = d.UnitPrice
+                }).ToList();
+                await phieuNhapRepo.TaoPhieuNhapAsync(phieuNhap, chiTietList);
+
+                // Lấy lại phiếu nhập vừa thêm 
+                var allPhieuNhap = await phieuNhapRepo.GetAllAsync();
+                var phieuNhapMoi = allPhieuNhap.OrderByDescending(p => p.MaPhieuNhap).FirstOrDefault();
+                if (phieuNhapMoi == null)
+                {
+                    MessageBox.Show("Không tìm thấy phiếu nhập vừa thêm để xuất PDF", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                await phieuNhapRepo.ExportToPdf(phieuNhapMoi);
+
+                MessageBox.Show("Thêm và xuất file PDF thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                w.DialogResult = true;
+                w.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi thêm và xuất PDF: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
     }
-} 
+}

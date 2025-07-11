@@ -290,7 +290,8 @@ public partial class ReaderViewModel(IDocGiaRepository docGiaRepo, ILoaiDocGiaRe
                 Email = value.Email,
                 MaLoaiDocGia = value.MaLoaiDocGia,
                 NgaySinh = value.NgaySinh,
-                NgayLapThe = value.NgayLapThe
+                NgayLapThe = value.NgayLapThe,
+                TongNo = value.TongNo
             };
 
             SelectedReaderForEditBirthday = value.NgaySinh.ToDateTime(TimeOnly.MinValue);

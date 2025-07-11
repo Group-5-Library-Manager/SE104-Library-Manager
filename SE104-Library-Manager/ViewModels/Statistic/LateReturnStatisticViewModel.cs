@@ -11,6 +11,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Win32;
+using LiveChartsCore;
+using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Painting;
+using SkiaSharp;
 
 namespace SE104_Library_Manager.ViewModels.Statistic
 {
@@ -28,6 +32,14 @@ namespace SE104_Library_Manager.ViewModels.Statistic
 
         [ObservableProperty]
         private ObservableCollection<LateReturnStatisticItem> _lateReturnItems = new();
+
+        // Chart properties for LiveCharts2
+        [ObservableProperty]
+        private ISeries[] _series = new ISeries[0];
+        [ObservableProperty]
+        private Axis[] _xAxes = new Axis[0];
+        [ObservableProperty]
+        private Axis[] _yAxes = new Axis[0];
 
         public LateReturnStatisticViewModel(DatabaseService dbService, IQuyDinhRepository quyDinhRepo)
         {
@@ -50,6 +62,38 @@ namespace SE104_Library_Manager.ViewModels.Statistic
 
                 // Update the UI with the results
                 LateReturnItems = new ObservableCollection<LateReturnStatisticItem>(lateReturnData);
+
+                // Prepare chart data: Bar chart, X = BookName, Y = DaysOverdue (sum for each book)
+                var chartData = lateReturnData
+                    .GroupBy(x => x.BookName)
+                    .Select(g => new { BookName = g.Key, TotalDaysOverdue = g.Sum(x => x.DaysOverdue) })
+                    .OrderByDescending(x => x.TotalDaysOverdue)
+                    .ToList();
+
+                Series = new ISeries[]
+                {
+                    new ColumnSeries<int>
+                    {
+                        Values = chartData.Select(x => x.TotalDaysOverdue).ToArray(),
+                        Name = "Số ngày trả trễ"
+                    }
+                };
+                XAxes = new Axis[]
+                {
+                    new Axis
+                    {
+                        Labels = chartData.Select(x => x.BookName).ToArray(),
+                        LabelsRotation = 15,
+                        Name = "Tên sách"
+                    }
+                };
+                YAxes = new Axis[]
+                {
+                    new Axis
+                    {
+                        Name = "Tổng số ngày trả trễ"
+                    }
+                };
             }
             catch (Exception ex)
             {
@@ -63,7 +107,10 @@ namespace SE104_Library_Manager.ViewModels.Statistic
             var quyDinh = await _quyDinhRepo.GetQuyDinhAsync();
             int maxBorrowDays = quyDinh.SoNgayMuonToiDa;
 
-            // Query the database for PhieuTra records within the date range
+            var result = new List<LateReturnStatisticItem>();
+            int index = 1;
+
+            // 1. Returned late books (as before)
             var chiTietPhieuTraList = await _dbService.DbContext.DsChiTietPhieuTra
                 .Include(ct => ct.PhieuTra)
                 .Include(ct => ct.PhieuMuon)
@@ -76,26 +123,66 @@ namespace SE104_Library_Manager.ViewModels.Statistic
                        ct.TienPhat > 0) // Only include items with fines
                 .ToListAsync();
 
-            // Calculate overdue days and create result items
-            var result = new List<LateReturnStatisticItem>();
-            int index = 1;
-
             foreach (var chiTiet in chiTietPhieuTraList)
             {
-                // Calculate overdue days
-                int daysOverdue = CalculateOverdueDays(chiTiet.PhieuMuon.NgayMuon, chiTiet.PhieuTra.NgayTra, maxBorrowDays);
-
+                int daysOverdue = CalculateOverdueDays(
+                    chiTiet.PhieuMuon.NgayMuon, // NgayMuon is required, not nullable
+                    chiTiet.PhieuTra.NgayTra,   // NgayTra is required, not nullable
+                    maxBorrowDays);
                 if (daysOverdue > 0)
                 {
                     result.Add(new LateReturnStatisticItem
                     {
                         Index = index++,
                         BookName = chiTiet.BanSaoSach.Sach.TenSach,
-                        BorrowDate = chiTiet.PhieuMuon.NgayMuon,
-                        ReturnDate = chiTiet.PhieuTra.NgayTra,
+                        BorrowDate = chiTiet.PhieuMuon.NgayMuon, // not nullable
+                        ReturnDate = chiTiet.PhieuTra.NgayTra,   // not nullable
                         DaysOverdue = daysOverdue,
                         Fine = chiTiet.TienPhat
                     });
+                }
+            }
+
+            // 2. Overdue books not yet returned
+            var today = DateOnly.FromDateTime(DateTime.Now);
+            var allBorrowings = await _dbService.DbContext.DsChiTietPhieuMuon
+                .Include(ct => ct.PhieuMuon)
+                .Include(ct => ct.BanSaoSach)
+                    .ThenInclude(bs => bs.Sach)
+                .Where(ct => !ct.PhieuMuon.DaXoa &&
+                             ct.PhieuMuon.NgayMuon >= fromDate &&
+                             ct.PhieuMuon.NgayMuon <= toDate)
+                .ToListAsync();
+
+            var allReturnedPairs = await _dbService.DbContext.DsChiTietPhieuTra
+                .Where(ctpt => !ctpt.DaXoa)
+                .Select(ctpt => new { ctpt.MaPhieuMuon, ctpt.MaBanSao })
+                .ToListAsync();
+
+            foreach (var chiTiet in allBorrowings)
+            {
+                bool isReturned = allReturnedPairs.Any(pair =>
+                    pair.MaPhieuMuon == chiTiet.MaPhieuMuon &&
+                    pair.MaBanSao == chiTiet.MaBanSao);
+
+                if (!isReturned)
+                {
+                    int daysOverdue = CalculateOverdueDays(
+                        chiTiet.PhieuMuon.NgayMuon,
+                        today,
+                        maxBorrowDays);
+                    if (daysOverdue > 0)
+                    {
+                        result.Add(new LateReturnStatisticItem
+                        {
+                            Index = index++,
+                            BookName = chiTiet.BanSaoSach.Sach.TenSach,
+                            BorrowDate = chiTiet.PhieuMuon.NgayMuon, // not nullable
+                            ReturnDate = null, // Not yet returned
+                            DaysOverdue = daysOverdue,
+                            Fine = 0 // Not yet fined
+                        });
+                    }
                 }
             }
 
@@ -141,7 +228,7 @@ namespace SE104_Library_Manager.ViewModels.Statistic
                         Index = item.Index,
                         BookName = item.BookName,
                         BorrowDate = item.BorrowDate,
-                        ReturnDate = item.ReturnDate,
+                        ReturnDate = (DateOnly)item.ReturnDate,
                         DaysOverdue = item.DaysOverdue,
                         Fine = item.Fine
                     }).ToList();
@@ -162,11 +249,11 @@ namespace SE104_Library_Manager.ViewModels.Statistic
         public int Index { get; set; }
         public string BookName { get; set; } = string.Empty;
         public DateOnly BorrowDate { get; set; }
-        public DateOnly ReturnDate { get; set; }
+        public DateOnly? ReturnDate { get; set; } // Nullable for not yet returned
         public int DaysOverdue { get; set; }
         public int Fine { get; set; }
         public string FormattedBorrowDate => BorrowDate.ToString("dd/MM/yyyy");
-        public string FormattedReturnDate => ReturnDate.ToString("dd/MM/yyyy");
+        public string FormattedReturnDate => ReturnDate.HasValue ? ReturnDate.Value.ToString("dd/MM/yyyy") : "Chưa trả";
         public string FormattedFine => $"{Fine:N0} VND";
     }
 }

@@ -145,6 +145,11 @@
                                 </TextBlock>
                             </StackPanel>
 
+                            <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0">
+                                <TextBlock Text="Tổng nợ: " FontWeight="SemiBold" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding SelectedReaderForEdit.TongNo, StringFormat={}{0:N0} VNĐ}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                            </StackPanel>
+
                             <StackPanel Orientation="Horizontal"
                                         Margin="0, 40, 0, 0">
                                 <Button Content="Cập nhật"
@@ -363,7 +368,7 @@
                                             </DataGridTextColumn.HeaderStyle>
                                         </DataGridTextColumn>
 
-                                        <DataGridTextColumn Header="Tổng nợ" Width="*" Binding="{Binding TongNo}">
+                                        <DataGridTextColumn Header="Tổng nợ" Width="*" Binding="{Binding TongNo, StringFormat={}{0:N0} VNĐ}">
                                             <DataGridTextColumn.HeaderStyle>
                                                 <Style TargetType="DataGridColumnHeader">
                                                     <Setter Property="FontWeight" Value="SemiBold" />

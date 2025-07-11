@@ -10,6 +10,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Win32;
+using LiveChartsCore;
+using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Painting;
+using SkiaSharp;
 
 namespace SE104_Library_Manager.ViewModels.Statistic
 {
@@ -29,6 +33,14 @@ namespace SE104_Library_Manager.ViewModels.Statistic
 
         [ObservableProperty]
         private int _totalBorrows = 0;
+
+        // Chart properties for LiveCharts2
+        [ObservableProperty]
+        private ISeries[] _series = new ISeries[0];
+        [ObservableProperty]
+        private Axis[] _xAxes = new Axis[0];
+        [ObservableProperty]
+        private Axis[] _yAxes = new Axis[0];
 
         public BorrowingStatisticViewModel(DatabaseService dbService)
         {
@@ -51,6 +63,32 @@ namespace SE104_Library_Manager.ViewModels.Statistic
                 // Update the UI with the results
                 BorrowingItems = new ObservableCollection<BorrowingStatisticItem>(borrowingData);
                 TotalBorrows = borrowingData.Sum(item => item.BorrowCount);
+
+                // Prepare chart data: Bar chart, X = GenreName, Y = BorrowCount
+                Series = new ISeries[]
+                {
+                    new ColumnSeries<int>
+                    {
+                        Values = borrowingData.Select(x => x.BorrowCount).ToArray(),
+                        Name = "Số lượt mượn"
+                    }
+                };
+                XAxes = new Axis[]
+                {
+                    new Axis
+                    {
+                        Labels = borrowingData.Select(x => x.GenreName).ToArray(),
+                        LabelsRotation = 15,
+                        Name = "Thể loại"
+                    }
+                };
+                YAxes = new Axis[]
+                {
+                    new Axis
+                    {
+                        Name = "Số lượt mượn"
+                    }
+                };
             }
             catch (Exception ex)
             {

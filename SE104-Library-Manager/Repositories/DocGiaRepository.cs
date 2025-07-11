@@ -48,6 +48,10 @@ public class DocGiaRepository(DatabaseService dbService, IQuyDinhRepository quyD
         List<DocGia> dsDocGia = await dbService.DbContext.DsDocGia
             .AsNoTracking()
             .Include(dg => dg.LoaiDocGia)
+            .Include(dg => dg.DsPhieuMuon)
+                .ThenInclude(pm => pm.DsChiTietPhieuMuon)
+            .Include(dg => dg.DsPhieuMuon)
+                .ThenInclude(pm => pm.DsChiTietPhieuTra)
             .Where(dg => !dg.DaXoa)
             .ToListAsync();
 

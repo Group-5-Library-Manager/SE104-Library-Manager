@@ -9,7 +9,7 @@
         WindowStartupLocation="CenterScreen"
         mc:Ignorable="d"
         x:Name="AddBorrowWindowElement"
-        Title="AddBorrowWindow" Height="500" Width="650">
+        Title="Lập phiếu mượn sách" Height="500" Width="650">
     <Window.Resources>
         <converters:DateOnlyFormattedConverter x:Key="DateOnlyFormattedConverter" />
         <converters:PrefixConverter x:Key="PrefixConverter"/>
@@ -22,7 +22,7 @@
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
         <!-- Thông tin chung -->
-        <GroupBox Grid.Row="0" Header="Thông tin phiếu mượn">
+        <GroupBox Grid.Row="0" Header="Thông tin phiếu mượn" BorderBrush="Black">
             <Grid Margin="10">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -36,6 +36,7 @@
 
                 <TextBlock Text="Độc giả:" FontWeight="Bold" VerticalAlignment="Center"/>
                 <ComboBox Grid.Column="1" Width="300" HorizontalAlignment="Left"
+                          FontSize="14"  BorderThickness="0" Padding="8 4"
                               ItemsSource="{Binding Readers}"
                               SelectedItem="{Binding SelectedReader}">
                     <ComboBox.ItemTemplate>
@@ -63,11 +64,18 @@
         </GroupBox>
 
         <!-- Danh sách bản sao mượn -->
-        <GroupBox Grid.Row="1" Header="Danh sách bản sao mượn" Margin="0,10,0,0" >
-            <StackPanel>
+        <GroupBox Grid.Row="1" Header="Danh sách bản sao mượn" Margin="0,10,0,0" BorderBrush="Black" >
+            <StackPanel Margin="10">
                 <Button Content="Chọn bản sao sách" Width="180" Margin="0,0,0,10" HorizontalAlignment="Left"
-                        Command="{Binding SelectCopiesCommand}"/>
+                        Command="{Binding SelectCopiesCommand}" Style="{StaticResource PrimaryButtonStyle}" />
+                
                 <DataGrid CanUserAddRows="False" CanUserDeleteRows="False" ItemsSource="{Binding SelectedCopies}" AutoGenerateColumns="False" Height="200" Margin="0,0,0,0">
+                    <DataGrid.ColumnHeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                        </Style>
+                    </DataGrid.ColumnHeaderStyle>
+                    
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Mã bản sao" Binding="{Binding MaBanSao}" Width="*"/>
                         <DataGridTextColumn Header="Mã sách" Binding="{Binding MaSach}" Width="*"/>

@@ -8,9 +8,9 @@
         WindowStartupLocation="CenterScreen"
         FontSize="16"
         mc:Ignorable="d"
-        Title="Nhập sách mới" Height="525" Width="450">
+        Title="Lập sách mới" Height="525" Width="450">
     <StackPanel Orientation="Vertical" Margin="20">
-        <TextBlock Text="Nhập sách mới"
+        <TextBlock Text="Lập sách mới"
                    FontSize="28"
                    FontWeight="Bold"
                    HorizontalAlignment="Center"/>

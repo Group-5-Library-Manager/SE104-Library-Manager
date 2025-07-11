@@ -2,14 +2,8 @@
 using CommunityToolkit.Mvvm.Input;
 using SE104_Library_Manager.Entities;
 using SE104_Library_Manager.Interfaces.Repositories;
-using SE104_Library_Manager.Views;
 using SE104_Library_Manager.Views.Book;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -229,11 +223,13 @@ namespace SE104_Library_Manager.ViewModels.Book
                 return;
             }
 
+            var query = SearchImportQuery.Trim().ToLower();
             var filtered = originalDsPhieuNhap
                 .Where(p =>
-                    p.MaPhieuNhap.ToString().Contains(SearchImportQuery, StringComparison.OrdinalIgnoreCase) ||
-                    p.NhanVien.TenNhanVien.Contains(SearchImportQuery, StringComparison.OrdinalIgnoreCase) ||
-                    p.NgayNhap.ToString().Contains(SearchImportQuery, StringComparison.OrdinalIgnoreCase)
+                    p.MaPhieuNhap.ToString().Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    $"pn{p.MaPhieuNhap}".ToLower().Contains(query) ||
+                    p.NhanVien.TenNhanVien.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    p.NgayNhap.ToString("dd/MM/yyyy").ToLower().Contains(query)
                 ).ToList();
 
             DsPhieuNhap = new ObservableCollection<PhieuNhap>(filtered);
@@ -482,8 +478,31 @@ namespace SE104_Library_Manager.ViewModels.Book
             DsNXB = new ObservableCollection<NhaXuatBan>(filteredPublishers);
         }
 
+        [RelayCommand]
+        public async Task ExportSelectedImportToPdf()
+        {
+            if (SelectedImport == null)
+            {
+                MessageBox.Show("Vui lòng chọn một phiếu nhập để xuất PDF!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            try
+            {
+                await phieuNhapRepo.ExportToPdf(SelectedImport);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi xuất PDF: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         partial void OnSelectedTabChanged(TabItem value)
         {
+            SearchBookQuery = string.Empty;
+            SearchImportQuery = string.Empty;
+            SearchGenreQuery = string.Empty;
+            SearchAuthorQuery = string.Empty;
+            SearchPublisherQuery = string.Empty;
             if (value.Header.ToString() == "Sách")
             {
                 LoadDataAsync().ConfigureAwait(false);

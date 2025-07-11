@@ -136,6 +136,12 @@ namespace SE104_Library_Manager.ViewModels.Borrow
                     MessageBox.Show($"Không thể cập nhật phiếu mượn PM{SelectedBorrow.MaPhieuMuon} vì có sách đã được trả.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
+                // Check if the selected reader is violating
+                if (await phieuMuonRepo.HasOverdueBooksAsync(SelectedBorrow.MaDocGia))
+                {
+                    MessageBox.Show("Độc giả đang vi phạm (có sách quá hạn chưa trả). Không thể cập nhật phiếu mượn cho độc giả này.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
                 var updateBorrowVM = App.ServiceProvider?.GetService(typeof(UpdateBorrowViewModel)) as UpdateBorrowViewModel;
                 if (updateBorrowVM == null)
                 {
@@ -143,7 +149,16 @@ namespace SE104_Library_Manager.ViewModels.Borrow
                     return;
                 }
 
-                await updateBorrowVM.LoadBorrowData(SelectedBorrow);
+                // Reload the borrow data from database to ensure we have all navigation properties
+                var freshBorrowData = await phieuMuonRepo.GetByIdAsync(SelectedBorrow.MaPhieuMuon);
+                if (freshBorrowData != null)
+                {
+                    await updateBorrowVM.LoadBorrowData(freshBorrowData);
+                }
+                else
+                {
+                    await updateBorrowVM.LoadBorrowData(SelectedBorrow);
+                }
 
                 var updateBorrowWindow = new UpdateBorrowWindow(updateBorrowVM);
                 updateBorrowWindow.Owner = Application.Current.MainWindow;

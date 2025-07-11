@@ -49,8 +49,13 @@ namespace SE104_Library_Manager.Tests.Repositories
                 MaNhaXuatBan = nhaXuatBan[0].MaNhaXuatBan,
                 NgayNhap = DateOnly.FromDateTime(DateTime.Now),
                 TriGia = 50000,
-                TrangThai = "Có sẵn"
+                SoLuongHienCo = 5,
+                SoLuongTong = 5,
+                TrangThai = "Còn sách"
             };
+
+            // Set TrangThai based on quantity
+            SE104_Library_Manager.Repositories.SachRepository.UpdateBookStatus(sach);
 
             // Act
             await _sachRepository.AddAsync(sach);
@@ -59,7 +64,7 @@ namespace SE104_Library_Manager.Tests.Repositories
             var result = await _sachRepository.GetByIdAsync(sach.MaSach);
             result.Should().NotBeNull();
             result.TenSach.Should().Be("Truyện Kiều");
-            result.TrangThai.Should().Be("Có sẵn");
+            result.TrangThai.Should().Be("Còn sách");
         }
 
         [TestMethod]
@@ -79,7 +84,7 @@ namespace SE104_Library_Manager.Tests.Repositories
                 MaNhaXuatBan = nhaXuatBan[0].MaNhaXuatBan,
                 NgayNhap = DateOnly.FromDateTime(DateTime.Now),
                 TriGia = 50000,
-                TrangThai = "Có sẵn"
+                TrangThai = "Còn sách"
             };
 
             // Act & Assert
@@ -103,7 +108,7 @@ namespace SE104_Library_Manager.Tests.Repositories
                 MaNhaXuatBan = nhaXuatBan[0].MaNhaXuatBan,
                 NgayNhap = DateOnly.FromDateTime(DateTime.Now),
                 TriGia = 50000,
-                TrangThai = "Có sẵn"
+                TrangThai = "Còn sách"
             };
 
             // Act & Assert
@@ -127,7 +132,7 @@ namespace SE104_Library_Manager.Tests.Repositories
                 MaNhaXuatBan = nhaXuatBan[0].MaNhaXuatBan,
                 NgayNhap = DateOnly.FromDateTime(DateTime.Now),
                 TriGia = -1000, // Negative value
-                TrangThai = "Có sẵn"
+                TrangThai = "Còn sách"
             };
 
             // Act & Assert
@@ -151,7 +156,7 @@ namespace SE104_Library_Manager.Tests.Repositories
                 MaNhaXuatBan = nhaXuatBan[0].MaNhaXuatBan,
                 NgayNhap = DateOnly.FromDateTime(DateTime.Now),
                 TriGia = 50000,
-                TrangThai = "Có sẵn"
+                TrangThai = "Còn sách"
             };
 
             await _sachRepository.AddAsync(sach);
@@ -185,7 +190,7 @@ namespace SE104_Library_Manager.Tests.Repositories
                 MaNhaXuatBan = nhaXuatBan[0].MaNhaXuatBan,
                 NgayNhap = DateOnly.FromDateTime(DateTime.Now),
                 TriGia = 50000,
-                TrangThai = "Có sẵn"
+                TrangThai = "Còn sách"
             };
 
             await _sachRepository.AddAsync(sach);
@@ -215,7 +220,7 @@ namespace SE104_Library_Manager.Tests.Repositories
                 MaNhaXuatBan = nhaXuatBan[0].MaNhaXuatBan,
                 NgayNhap = DateOnly.FromDateTime(DateTime.Now),
                 TriGia = 50000,
-                TrangThai = "Có sẵn"
+                TrangThai = "Còn sách"
             };
 
             var sach2 = new Sach
@@ -227,7 +232,7 @@ namespace SE104_Library_Manager.Tests.Repositories
                 MaNhaXuatBan = nhaXuatBan[1].MaNhaXuatBan,
                 NgayNhap = DateOnly.FromDateTime(DateTime.Now),
                 TriGia = 75000,
-                TrangThai = "Đã mượn"
+                TrangThai = "Hết sách"
             };
 
             await _sachRepository.AddAsync(sach1);
@@ -259,7 +264,7 @@ namespace SE104_Library_Manager.Tests.Repositories
                 MaNhaXuatBan = nhaXuatBan[0].MaNhaXuatBan,
                 NgayNhap = DateOnly.FromDateTime(DateTime.Now),
                 TriGia = 50000,
-                TrangThai = "Có sẵn"
+                TrangThai = "Còn sách"
             };
 
             await _sachRepository.AddAsync(sach);
@@ -308,7 +313,7 @@ namespace SE104_Library_Manager.Tests.Repositories
                 MaNhaXuatBan = nhaXuatBan[0].MaNhaXuatBan,
                 NgayNhap = DateOnly.FromDateTime(DateTime.Now),
                 TriGia = 50000,
-                TrangThai = "Có sẵn"
+                TrangThai = "Còn sách"
             };
 
             // Act & Assert

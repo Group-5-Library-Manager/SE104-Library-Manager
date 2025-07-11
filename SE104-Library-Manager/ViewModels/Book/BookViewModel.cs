@@ -2,20 +2,14 @@
 using CommunityToolkit.Mvvm.Input;
 using SE104_Library_Manager.Entities;
 using SE104_Library_Manager.Interfaces.Repositories;
-using SE104_Library_Manager.Views;
 using SE104_Library_Manager.Views.Book;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
 namespace SE104_Library_Manager.ViewModels.Book
 {
-    public partial class BookViewModel(ISachRepository sachRepo, ITheLoaiRepository theLoaiRepo, ITacGiaRepository tacGiaRepo, INhaXuatBanRepository nhaXuatBanRepo, IQuyDinhRepository quyDinhRepo) : ObservableObject
+    public partial class BookViewModel(ISachRepository sachRepo, IPhieuNhapRepository phieuNhapRepo, ITheLoaiRepository theLoaiRepo, ITacGiaRepository tacGiaRepo, INhaXuatBanRepository nhaXuatBanRepo, IQuyDinhRepository quyDinhRepo) : ObservableObject
     {
         [ObservableProperty]
         private TabItem selectedTab = null!;
@@ -28,6 +22,9 @@ namespace SE104_Library_Manager.ViewModels.Book
 
         [ObservableProperty]
         private Sach? selectedBookForEdit;
+
+        [ObservableProperty]
+        private PhieuNhap? selectedImport;
 
         [ObservableProperty]
         private TheLoai? selectedGenre;
@@ -48,6 +45,9 @@ namespace SE104_Library_Manager.ViewModels.Book
         private NhaXuatBan? selectedPublisherForEdit;
 
         [ObservableProperty]
+        private ObservableCollection<PhieuNhap> dsPhieuNhap = new ObservableCollection<PhieuNhap>();
+
+        [ObservableProperty]
         private ObservableCollection<TheLoai> dsTheLoai = new ObservableCollection<TheLoai>();
 
         [ObservableProperty]
@@ -58,6 +58,9 @@ namespace SE104_Library_Manager.ViewModels.Book
 
         [ObservableProperty]
         private string searchBookQuery = string.Empty;
+
+        [ObservableProperty]
+        private string searchImportQuery = string.Empty;
 
         [ObservableProperty]
         private string searchGenreQuery = string.Empty;
@@ -72,6 +75,7 @@ namespace SE104_Library_Manager.ViewModels.Book
         private QuyDinh quyDinhHienTai = null!;
 
         private List<Sach> originalDsSach = new List<Sach>();
+        private List<PhieuNhap> originalDsPhieuNhap = new List<PhieuNhap>();
         private List<TheLoai> originalDsTheLoai = new List<TheLoai>();
         private List<TacGia> originalDsTacGia = new List<TacGia>();
         private List<NhaXuatBan> originalDsNXB = new List<NhaXuatBan>();
@@ -79,6 +83,7 @@ namespace SE104_Library_Manager.ViewModels.Book
         private async Task LoadDataAsync()
         {
             originalDsSach = await sachRepo.GetAllAsync();
+            originalDsPhieuNhap = await phieuNhapRepo.GetAllAsync();
             originalDsTheLoai = await theLoaiRepo.GetAllAsync();
             originalDsTacGia = await tacGiaRepo.GetAllAsync();
             originalDsNXB = await nhaXuatBanRepo.GetAllAsync();
@@ -86,6 +91,8 @@ namespace SE104_Library_Manager.ViewModels.Book
             if (originalDsSach == null || originalDsTheLoai == null || originalDsTacGia == null || originalDsNXB == null) return;
 
             DsSach = new ObservableCollection<Sach>(originalDsSach);
+
+            DsPhieuNhap = new ObservableCollection<PhieuNhap>(originalDsPhieuNhap);
 
             DsTheLoai = new ObservableCollection<TheLoai>(originalDsTheLoai);
 
@@ -184,6 +191,48 @@ namespace SE104_Library_Manager.ViewModels.Book
                             r.NamXuatBan.ToString().Contains(SearchBookQuery, StringComparison.OrdinalIgnoreCase)).ToList();
 
             DsSach = new ObservableCollection<Sach>(filteredBooks);
+        }
+
+        [RelayCommand]
+        public async Task ImportBooks()
+        {
+            try
+            {
+                var w = App.ServiceProvider?.GetService(typeof(AddBookImportWindow)) as AddBookImportWindow;
+                if (w == null)
+                {
+                    MessageBox.Show("Failed to resolve AddBookImportWindow from DI", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                w.Owner = Application.Current.MainWindow;
+                w.ShowDialog();
+                await LoadDataAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error in ImportBooks: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        [RelayCommand]
+        public void SearchImports()
+        {
+            if (SearchImportQuery.Trim() == string.Empty)
+            {
+                DsPhieuNhap = new ObservableCollection<PhieuNhap>(originalDsPhieuNhap);
+                return;
+            }
+
+            var query = SearchImportQuery.Trim().ToLower();
+            var filtered = originalDsPhieuNhap
+                .Where(p =>
+                    p.MaPhieuNhap.ToString().Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    $"pn{p.MaPhieuNhap}".ToLower().Contains(query) ||
+                    p.NhanVien.TenNhanVien.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    p.NgayNhap.ToString("dd/MM/yyyy").ToLower().Contains(query)
+                ).ToList();
+
+            DsPhieuNhap = new ObservableCollection<PhieuNhap>(filtered);
         }
 
         [RelayCommand]
@@ -429,8 +478,31 @@ namespace SE104_Library_Manager.ViewModels.Book
             DsNXB = new ObservableCollection<NhaXuatBan>(filteredPublishers);
         }
 
+        [RelayCommand]
+        public async Task ExportSelectedImportToPdf()
+        {
+            if (SelectedImport == null)
+            {
+                MessageBox.Show("Vui lòng chọn một phiếu nhập để xuất PDF!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            try
+            {
+                await phieuNhapRepo.ExportToPdf(SelectedImport);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi xuất PDF: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         partial void OnSelectedTabChanged(TabItem value)
         {
+            SearchBookQuery = string.Empty;
+            SearchImportQuery = string.Empty;
+            SearchGenreQuery = string.Empty;
+            SearchAuthorQuery = string.Empty;
+            SearchPublisherQuery = string.Empty;
             if (value.Header.ToString() == "Sách")
             {
                 LoadDataAsync().ConfigureAwait(false);
@@ -507,6 +579,11 @@ namespace SE104_Library_Manager.ViewModels.Book
         {
             SearchBooks();
         }
+        partial void OnSearchImportQueryChanged(string value)
+        {
+            SearchImports();
+        }
+
         partial void OnSearchAuthorQueryChanged(string value)
         {
             SearchAuthors();

@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Input;
 
 namespace SE104_Library_Manager.ViewModels.Borrow
 {
@@ -16,6 +17,26 @@ namespace SE104_Library_Manager.ViewModels.Borrow
 
         [ObservableProperty]
         private Sach? selectedBook;
+
+        private List<BanSaoSach> selectedCopies = new List<BanSaoSach>();
+        public List<BanSaoSach> SelectedCopies
+        {
+            get => selectedCopies;
+            set
+            {
+                selectedCopies = value;
+                OnPropertyChanged(nameof(SelectedCopies));
+                OnPropertyChanged(nameof(Quantity));
+            }
+        }
+
+        public int Quantity => SelectedCopies?.Count ?? 0;
+
+        public IRelayCommand SelectCopiesCommand { get; set; }
+
+        public string SelectedCopyIdsDisplay => SelectedCopies != null && SelectedCopies.Count > 0
+            ? string.Join(", ", SelectedCopies.Select(c => c.MaBanSao))
+            : "Chưa chọn bản sao";
 
         public BookSelectionItem()
         {

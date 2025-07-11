@@ -79,13 +79,13 @@
                 </Grid>
             </GroupBox>
 
-            <!-- Danh sách sách - Chỉ hiển thị khi đã chọn độc giả -->
-            <GroupBox Header="Danh sách sách trả" Margin="10 25 10 10" Visibility="{Binding HasSelectedReader, Converter={StaticResource BooleanToVisibilityConverter}}" Style="{StaticResource GroupBoxStyle}">
+            <!-- Danh sách bản sao - Chỉ hiển thị khi đã chọn độc giả -->
+            <GroupBox Header="Danh sách bản sao trả" Margin="10 25 10 10" Visibility="{Binding HasSelectedReader, Converter={StaticResource BooleanToVisibilityConverter}}" Style="{StaticResource GroupBoxStyle}">
                 <Grid>
                     <!-- Khung cố định có thể cuộn -->
                     <ScrollViewer MaxHeight="200" VerticalScrollBarVisibility="Auto">
                         <StackPanel>
-                            <ItemsControl ItemsSource="{Binding SelectedBooks}">
+                            <ItemsControl ItemsSource="{Binding SelectedCopies}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Border BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="5" Margin="10">
@@ -100,27 +100,35 @@
                                                           BorderThickness="0"
                                                           Padding="8 4"
                                                           VerticalContentAlignment="Center"
-                                                          ItemsSource="{Binding BorrowedBooks}"
-                                                          SelectedItem="{Binding SelectedBook}"
-                                                          DisplayMemberPath="TenSach">
+                                                          ItemsSource="{Binding AvailableCopies}"
+                                                          SelectedItem="{Binding SelectedCopy}"
+                                                          DisplayMemberPath="Sach.TenSach">
                                                     <ComboBox.ItemTemplate>
                                                         <DataTemplate>
                                                             <TextBlock>
-                                                                <Run Text="{Binding MaSach}"/>
+                                                                <Run Text="{Binding MaBanSao, StringFormat='BS{0}'}"/>
                                                                 <Run Text=" - "/>
                                                                 <Run Text="{Binding TenSach}"/>
+                                                                <!--<Run Text=" ("/>
+                                                                <Run Text="{Binding TinhTrang}"/>
+                                                                <Run Text=")"/>-->
                                                             </TextBlock>
                                                         </DataTemplate>
                                                     </ComboBox.ItemTemplate>
                                                 </ComboBox>
 
+                                                <!--<StackPanel Grid.Column="1" Orientation="Vertical" Margin="5 0">
+                                                    <TextBlock Text="Trạng thái:" FontSize="11" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="{Binding SelectedCopy.TinhTrang}" FontSize="12" HorizontalAlignment="Center"/>
+                                                </StackPanel>-->
+
                                                 <Button Grid.Column="1" Content="-" Width="25" Height="25"
-                                                        Command="{Binding DataContext.RemoveBookCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        Command="{Binding DataContext.RemoveCopyCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                         CommandParameter="{Binding}"
                                                         Style="{StaticResource MinusButtonStyle}"/>
 
                                                 <StackPanel Grid.Column="2" Orientation="Vertical"
-                                                            Visibility="{Binding SelectedBook, Converter={StaticResource NullToCollapsedConverter}}">
+                                                            Visibility="{Binding SelectedCopy, Converter={StaticResource NullToCollapsedConverter}}">
                                                     <StackPanel Orientation="Horizontal">
                                                         <TextBlock Text="Ngày mượn: " FontWeight="SemiBold"/>
                                                         <TextBlock Text="{Binding BorrowDate, Converter={StaticResource DateOnlyFormattedConverter}}"/>
@@ -138,9 +146,9 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
 
-                            <!-- Nút thêm sách -->
-                            <Button Content="Thêm sách" FontSize="14" Width="120" Margin="0 10 0 10" HorizontalAlignment="Center" 
-                                    Command="{Binding AddBookCommand}"
+                            <!-- Nút thêm bản sao -->
+                            <Button Content="Thêm sách trả" FontSize="14" Width="120" Margin="0 10 0 10" HorizontalAlignment="Center" 
+                                    Command="{Binding AddCopyCommand}"
                                     Foreground="White"
                                     Background="#253251"
                                     Style="{StaticResource PrimaryButtonStyle}"/>

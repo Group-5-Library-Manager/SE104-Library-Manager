@@ -10,6 +10,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using SE104_Library_Manager.Views.Borrow;
+using System.Windows.Interop;
 
 namespace SE104_Library_Manager.ViewModels.Borrow
 {
@@ -25,29 +27,31 @@ namespace SE104_Library_Manager.ViewModels.Borrow
         private DocGia? selectedReader;
 
         [ObservableProperty]
-        private ObservableCollection<Sach> allBooks = new ObservableCollection<Sach>();
+        private ObservableCollection<BanSaoSach> selectedCopies = new();
 
-        [ObservableProperty]
-        private ObservableCollection<BookSelectionItem> selectedBooks = new ObservableCollection<BookSelectionItem>();
+        public IRelayCommand SelectCopiesCommand { get; set; }
 
         [ObservableProperty]
         private NhanVien? currentStaff;
 
-        private bool _isUpdatingAvailableBooks = false;
+        private int maxBorrowCount = 5;
 
         private readonly IPhieuMuonRepository phieuMuonRepo;
         private readonly IDocGiaRepository docGiaRepo;
         private readonly INhanVienRepository nhanVienRepo;
         private readonly IStaffSessionReader staffSessionReader;
+        private readonly IQuyDinhRepository quyDinhRepo;
 
         public AddBorrowViewModel(IPhieuMuonRepository phieuMuonRepository, IDocGiaRepository docGiaRepository,
-                                 INhanVienRepository nhanVienRepository ,IStaffSessionReader staffSessionReader)
+                                 INhanVienRepository nhanVienRepository ,IStaffSessionReader staffSessionReader, IQuyDinhRepository quyDinhRepository)
         {
             phieuMuonRepo = phieuMuonRepository;
             docGiaRepo = docGiaRepository;
             nhanVienRepo = nhanVienRepository;
             this.staffSessionReader = staffSessionReader;
+            quyDinhRepo = quyDinhRepository;
 
+            SelectCopiesCommand = new RelayCommand(OpenSelectCopiesWindow);
             LoadDataAsync().ConfigureAwait(false);
         }
 
@@ -56,17 +60,22 @@ namespace SE104_Library_Manager.ViewModels.Borrow
             try
             {
                 var dsDocGia = await docGiaRepo.GetAllAsync();
-                Readers = new ObservableCollection<DocGia>(dsDocGia);
-
-                var dsSach = await phieuMuonRepo.GetAvailableBooksAsync();
-                AllBooks = new ObservableCollection<Sach>(dsSach);
+                var validReaders = new List<DocGia>();
+                foreach (var reader in dsDocGia)
+                {
+                    if (!await phieuMuonRepo.HasOverdueBooksAsync(reader.MaDocGia))
+                    {
+                        validReaders.Add(reader);
+                    }
+                }
+                Readers = new ObservableCollection<DocGia>(validReaders);
 
                 if (staffSessionReader.CurrentStaffId > 0)
                 {
                     CurrentStaff = await nhanVienRepo.GetByIdAsync(staffSessionReader.CurrentStaffId);
                 }
                 BorrowDate = DateOnly.FromDateTime(DateTime.Now);
-                AddInitialBookItem();
+                maxBorrowCount = quyDinhRepo.GetQuyDinhAsync().Result.SoSachMuonToiDa;
             }
             catch (Exception ex)
             {
@@ -74,116 +83,14 @@ namespace SE104_Library_Manager.ViewModels.Borrow
             }
         }
 
-        private void AddInitialBookItem()
+        private void OpenSelectCopiesWindow()
         {
-            var initialBookItem = new BookSelectionItem();
-            UpdateAvailableBooksForItem(initialBookItem);
-
-            initialBookItem.PropertyChanged += (sender, e) =>
+            var availableCopies = phieuMuonRepo.GetAvailableBanSaoSach();
+            var vm = new SelectCopiesViewModel(availableCopies, SelectedCopies, maxBorrowCount);
+            var window = new SelectCopiesWindow { DataContext = vm, Owner = Application.Current.MainWindow };
+            if (window.ShowDialog() == true)
             {
-                if (e.PropertyName == nameof(BookSelectionItem.SelectedBook) && !_isUpdatingAvailableBooks)
-                {
-                    UpdateAllAvailableBooks();
-                }
-            };
-
-            SelectedBooks.Add(initialBookItem);
-        }
-
-        [RelayCommand]
-        private void AddBookToSelected()
-        {
-            var newBookItem = new BookSelectionItem();
-            UpdateAvailableBooksForItem(newBookItem);
-
-            newBookItem.PropertyChanged += (sender, e) =>
-            {
-                if (e.PropertyName == nameof(BookSelectionItem.SelectedBook) && !_isUpdatingAvailableBooks)
-                {
-                    UpdateAllAvailableBooks();
-                }
-            };
-
-            SelectedBooks.Add(newBookItem);
-        }
-
-        [RelayCommand]
-        private void RemoveBookFromSelected(BookSelectionItem bookItem)
-        {
-            if (SelectedBooks.Contains(bookItem))
-            {
-                SelectedBooks.Remove(bookItem);
-                UpdateAllAvailableBooks();
-            }
-        }
-
-        private void UpdateAllAvailableBooks()
-        {
-            if (_isUpdatingAvailableBooks) return;
-
-            _isUpdatingAvailableBooks = true;
-
-            try
-            {
-                // Get all currently selected book IDs
-                var selectedBookIds = SelectedBooks
-                    .Where(item => item.SelectedBook != null)
-                    .Select(item => item.SelectedBook!.MaSach)
-                    .ToHashSet();
-
-                // Update available books for each item
-                foreach (var item in SelectedBooks)
-                {
-                    UpdateAvailableBooksForItem(item, selectedBookIds);
-                }
-            }
-            finally
-            {
-                _isUpdatingAvailableBooks = false;
-            }
-        }
-
-        private void UpdateAvailableBooksForItem(BookSelectionItem item, HashSet<int>? excludeIds = null)
-        {
-            if (_isUpdatingAvailableBooks && excludeIds == null)
-            {
-                // If we're in a batch update, don't trigger individual updates
-                return;
-            }
-
-            excludeIds ??= SelectedBooks
-                .Where(x => x != item && x.SelectedBook != null)
-                .Select(x => x.SelectedBook!.MaSach)
-                .ToHashSet();
-
-            var availableBooks = AllBooks
-                .Where(book => !excludeIds.Contains(book.MaSach))
-                .ToList();
-
-            // Always ensure the currently selected book is available in its own ComboBox
-            if (item.SelectedBook != null && !availableBooks.Any(b => b.MaSach == item.SelectedBook.MaSach))
-            {
-                availableBooks.Insert(0, item.SelectedBook);
-            }
-
-            // Store current selection to restore it after updating the collection
-            var currentSelectionId = item.SelectedBook?.MaSach;
-
-            // Clear and repopulate the available books
-            item.AvailableBooks.Clear();
-            foreach (var book in availableBooks)
-            {
-                item.AvailableBooks.Add(book);
-            }
-
-            // Restore selection if it exists in the new collection
-            if (currentSelectionId.HasValue)
-            {
-                var bookToSelect = item.AvailableBooks.FirstOrDefault(b => b.MaSach == currentSelectionId.Value);
-                if (bookToSelect != null)
-                {
-                    item.SelectedBook = bookToSelect;
-                }
+                SelectedCopies = new ObservableCollection<BanSaoSach>(vm.SelectedCopies);
             }
         }
 
@@ -196,14 +103,9 @@ namespace SE104_Library_Manager.ViewModels.Borrow
                 return;
             }
 
-            var selectedBooksList = SelectedBooks
-                .Where(item => item.SelectedBook != null)
-                .Select(item => item.SelectedBook!)
-                .ToList();
-
-            if (selectedBooksList.Count == 0)
+            if (SelectedCopies.Count == 0)
             {
-                MessageBox.Show("Vui lòng chọn ít nhất một sách để mượn", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Vui lòng chọn ít nhất một bản sao để mượn", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -216,21 +118,15 @@ namespace SE104_Library_Manager.ViewModels.Borrow
                     MaNhanVien = staffSessionReader.CurrentStaffId
                 };
 
-                var dsChiTietPhieuMuon = selectedBooksList.Select(s => new ChiTietPhieuMuon
-                {
-                    MaPhieuMuon = 0, // Sẽ được cập nhật sau khi thêm phiếu mượn
-                    MaSach = s.MaSach
-                }).ToList();
+                await phieuMuonRepo.AddAsync(phieuMuon, SelectedCopies.ToList());
 
-                await phieuMuonRepo.AddAsync(phieuMuon, dsChiTietPhieuMuon);
-
-                MessageBox.Show("Thêm phiếu mượn thành công", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Tạo phiếu mượn thành công", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
                 window.DialogResult = true;
                 window.Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi khi thêm phiếu mượn: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Lỗi khi tạo phiếu mượn: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

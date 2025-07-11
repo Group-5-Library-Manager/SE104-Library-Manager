@@ -5,12 +5,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SE104_Library_Manager.Views.Book"
-        WindowStartupLocation="CenterOwner"
+        WindowStartupLocation="CenterScreen"
         FontSize="16"
         mc:Ignorable="d"
-        Title="Nhập sách mới" Height="525" Width="450">
+        Title="Lập sách mới" Height="525" Width="450">
     <StackPanel Orientation="Vertical" Margin="20">
-        <TextBlock Text="Nhập sách mới"
+        <TextBlock Text="Lập sách mới"
                    FontSize="28"
                    FontWeight="Bold"
                    HorizontalAlignment="Center"/>

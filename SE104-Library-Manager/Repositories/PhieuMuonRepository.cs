@@ -7,9 +7,9 @@ namespace SE104_Library_Manager.Repositories
 {
     public class PhieuMuonRepository(DatabaseService dbService, IQuyDinhRepository quyDinhRepo) : IPhieuMuonRepository
     {
-        public async Task AddAsync(PhieuMuon phieuMuon, List<ChiTietPhieuMuon> dsChiTietPhieuMuon)
+        public async Task AddAsync(PhieuMuon phieuMuon, List<BanSaoSach> selectedCopies)
         {
-            await ValidatePhieuMuon(phieuMuon, dsChiTietPhieuMuon);
+            await ValidatePhieuMuon(phieuMuon, selectedCopies);
 
             using var transaction = await dbService.DbContext.Database.BeginTransactionAsync();
             try
@@ -17,11 +17,31 @@ namespace SE104_Library_Manager.Repositories
                 await dbService.DbContext.DsPhieuMuon.AddAsync(phieuMuon);
                 await dbService.DbContext.SaveChangesAsync();
 
-                foreach (var chiTiet in dsChiTietPhieuMuon)
+                foreach (var copy in selectedCopies)
                 {
-                    chiTiet.MaPhieuMuon = phieuMuon.MaPhieuMuon;
+                    var chiTiet = new ChiTietPhieuMuon
+                    {
+                        MaPhieuMuon = phieuMuon.MaPhieuMuon,
+                        MaBanSao = copy.MaBanSao
+                    };
                     await dbService.DbContext.DsChiTietPhieuMuon.AddAsync(chiTiet);
-                    await this.UpdateBookStatusAsync(chiTiet.MaSach, "Đã mượn");
+                    // Set copy status
+                    var banSao = await dbService.DbContext.DsBanSaoSach
+                        .Include(bs => bs.Sach)
+                        .FirstOrDefaultAsync(bs => bs.MaBanSao == copy.MaBanSao);
+                    if (banSao != null)
+                    {
+                        banSao.TinhTrang = "Đã mượn";
+                        dbService.DbContext.DsBanSaoSach.Update(banSao);
+                        // Update book quantity
+                        var sach = await dbService.DbContext.DsSach.FindAsync(banSao.MaSach);
+                        if (sach != null)
+                        {
+                            sach.SoLuongHienCo -= 1;
+                            SachRepository.UpdateBookStatus(sach);
+                            dbService.DbContext.DsSach.Update(sach);
+                        }
+                    }
                 }
 
                 await dbService.DbContext.SaveChangesAsync();
@@ -40,35 +60,40 @@ namespace SE104_Library_Manager.Repositories
 
         public async Task DeleteAsync(int id)
         {
-            // Kiểm tra xem phiếu mượn có sách đã trả hay không
-            var hasSachDaTra = await HasReturnedBooksAsync(id);
-            if (hasSachDaTra)
-            {
-                throw new InvalidOperationException($"Không thể xóa phiếu mượn PM{id} vì có sách đã được trả.");
-            }
+            // Không cho xóa nếu có bản sao đã trả
+            var hasReturned = await HasReturnedBooksAsync(id);
+            if (hasReturned)
+                throw new InvalidOperationException($"Không thể xóa phiếu mượn PM{id} vì có bản sao đã được trả.");
             using var transaction = await dbService.DbContext.Database.BeginTransactionAsync();
             try
             {
                 var phieuMuon = await dbService.DbContext.DsPhieuMuon
                     .Include(pm => pm.DsChiTietPhieuMuon)
                     .FirstOrDefaultAsync(pm => pm.MaPhieuMuon == id);
-
                 if (phieuMuon == null)
-                {
                     throw new KeyNotFoundException($"Không tìm thấy phiếu mượn với mã PM{id}.");
-                }
-
-                // Mark the borrow receipt as deleted
-                phieuMuon.DaXoa = true;
-                var chiTietPMs = phieuMuon.DsChiTietPhieuMuon;
-
-                // Update all borrowed books back to available status
-                foreach (var chiTiet in chiTietPMs)
+                // Trả lại trạng thái cho các bản sao và sách
+                foreach (var chiTiet in phieuMuon.DsChiTietPhieuMuon)
                 {
-                    await this.UpdateBookStatusAsync(chiTiet.MaSach, "Có sẵn");
+                    var banSao = await dbService.DbContext.DsBanSaoSach
+                        .Include(bs => bs.Sach)
+                        .FirstOrDefaultAsync(bs => bs.MaBanSao == chiTiet.MaBanSao);
+                    if (banSao != null)
+                    {
+                        banSao.TinhTrang = "Có sẵn";
+                        dbService.DbContext.DsBanSaoSach.Update(banSao);
+                        var sach = await dbService.DbContext.DsSach.FindAsync(banSao.MaSach);
+                        if (sach != null)
+                        {
+                            sach.SoLuongHienCo += 1;
+                            SachRepository.UpdateBookStatus(sach);
+                            dbService.DbContext.DsSach.Update(sach);
+                        }
+                    }
                 }
-
-                dbService.DbContext.DsChiTietPhieuMuon.RemoveRange(chiTietPMs);
+                phieuMuon.DaXoa = true;
+                dbService.DbContext.Update(phieuMuon);
+                dbService.DbContext.DsChiTietPhieuMuon.RemoveRange(phieuMuon.DsChiTietPhieuMuon);
                 await dbService.DbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
             }
@@ -86,105 +111,117 @@ namespace SE104_Library_Manager.Repositories
         public async Task<List<PhieuMuon>> GetAllAsync()
         {
             return await dbService.DbContext.DsPhieuMuon
-            .AsNoTracking()
-            .Include(pm => pm.DocGia)
-            .Include(pm => pm.NhanVien)
-            .Include(pm => pm.DsChiTietPhieuMuon)
-                .ThenInclude(ct => ct.Sach)
-            .Where(pm => !pm.DaXoa)
-            .ToListAsync();
+                .AsNoTracking()
+                .Include(pm => pm.DocGia)
+                .Include(pm => pm.NhanVien)
+                .Include(pm => pm.DsChiTietPhieuMuon)
+                    .ThenInclude(ct => ct.BanSaoSach)
+                        .ThenInclude(bs => bs.Sach)
+                .Where(pm => !pm.DaXoa)
+                .ToListAsync();
         }
 
         public async Task<PhieuMuon?> GetByIdAsync(int id)
         {
             return await dbService.DbContext.DsPhieuMuon
-            .AsNoTracking()
-            .Include(pm => pm.DocGia)
-            .Include(pm => pm.NhanVien)
-            .Include(pm => pm.DsChiTietPhieuMuon)
-                .ThenInclude(ct => ct.Sach)
-            .FirstOrDefaultAsync(pm => pm.MaPhieuMuon == id && !pm.DaXoa);
+                .AsNoTracking()
+                .Include(pm => pm.DocGia)
+                .Include(pm => pm.NhanVien)
+                .Include(pm => pm.DsChiTietPhieuMuon)
+                    .ThenInclude(ct => ct.BanSaoSach)
+                        .ThenInclude(bs => bs.Sach)
+                .FirstOrDefaultAsync(pm => pm.MaPhieuMuon == id && !pm.DaXoa);
         }
 
         public async Task<List<PhieuMuon>> GetByReaderIdAsync(int maDocGia)
         {
             return await dbService.DbContext.DsPhieuMuon
-            .AsNoTracking()
-            .Include(pm => pm.DocGia)
-            .Include(pm => pm.NhanVien)
-            .Include(pm => pm.DsChiTietPhieuMuon)
-                .ThenInclude(ct => ct.Sach)
-            .Where(pm => pm.MaDocGia == maDocGia && !pm.DaXoa)
-            .ToListAsync();
+                .AsNoTracking()
+                .Include(pm => pm.DocGia)
+                .Include(pm => pm.NhanVien)
+                .Include(pm => pm.DsChiTietPhieuMuon)
+                    .ThenInclude(ct => ct.BanSaoSach)
+                        .ThenInclude(bs => bs.Sach)
+                .Where(pm => pm.MaDocGia == maDocGia && !pm.DaXoa)
+                .ToListAsync();
         }
 
-        public async Task UpdateAsync(PhieuMuon phieuMuon)
+        public async Task UpdateAsync(PhieuMuon phieuMuon, List<BanSaoSach> selectedCopies)
         {
-            var existingPhieuMuon = await dbService.DbContext.DsPhieuMuon.FindAsync(phieuMuon.MaPhieuMuon);
-
-            if (existingPhieuMuon == null)
+            // Check if any copy in this borrow has been returned
+            var returnedBanSao = await dbService.DbContext.DsChiTietPhieuTra
+                .Where(tr => tr.MaPhieuMuon == phieuMuon.MaPhieuMuon)
+                .Select(tr => tr.MaBanSao)
+                .ToListAsync();
+            if (returnedBanSao.Any())
             {
-                throw new KeyNotFoundException($"Không tìm thấy phiếu mượn với mã PM{phieuMuon.MaPhieuMuon}.");
+                throw new InvalidOperationException("Không thể cập nhật phiếu mượn đã có bản sao được trả.");
             }
 
-            existingPhieuMuon.NgayMuon = phieuMuon.NgayMuon;
-            existingPhieuMuon.MaDocGia = phieuMuon.MaDocGia;
-            existingPhieuMuon.MaNhanVien = phieuMuon.MaNhanVien;
-
-            dbService.DbContext.Update(existingPhieuMuon);
-            await dbService.DbContext.SaveChangesAsync();
-            dbService.DbContext.ChangeTracker.Clear();
-        }
-
-        // New overloaded UpdateAsync method that handles both PhieuMuon and its details
-        public async Task UpdateAsync(PhieuMuon phieuMuon, List<ChiTietPhieuMuon> dsChiTietPhieuMuon)
-        {
-            await ValidatePhieuMuonForUpdate(phieuMuon, dsChiTietPhieuMuon);
+            await ValidatePhieuMuon(phieuMuon, selectedCopies);
 
             using var transaction = await dbService.DbContext.Database.BeginTransactionAsync();
             try
             {
-                // Update the main PhieuMuon record
+                // Update main borrow record
                 var existingPhieuMuon = await dbService.DbContext.DsPhieuMuon.FindAsync(phieuMuon.MaPhieuMuon);
                 if (existingPhieuMuon == null)
-                {
                     throw new KeyNotFoundException($"Không tìm thấy phiếu mượn với mã PM{phieuMuon.MaPhieuMuon}.");
-                }
-
                 existingPhieuMuon.NgayMuon = phieuMuon.NgayMuon;
                 existingPhieuMuon.MaDocGia = phieuMuon.MaDocGia;
                 existingPhieuMuon.MaNhanVien = phieuMuon.MaNhanVien;
-                // Lấy danh sách sách đã trả
-                var sachDaTra = await dbService.DbContext.DsChiTietPhieuTra
-                    .Where(ct => ct.MaPhieuMuon == phieuMuon.MaPhieuMuon)
-                    .Select(ct => ct.MaSach)
-                    .ToListAsync();
-                // Get existing details to update book statuses
-                var existingDetails = await dbService.DbContext.DsChiTietPhieuMuon
-                    .Where(ct => ct.MaPhieuMuon == phieuMuon.MaPhieuMuon)
-                    .ToListAsync();
-                // Lọc ra các chi tiết phiếu mượn của sách chưa trả để xóa
-                var detailsToRemove = existingDetails
-                    .Where(detail => !sachDaTra.Contains(detail.MaSach))
-                    .ToList();
-                // Remove existing details
-                dbService.DbContext.DsChiTietPhieuMuon.RemoveRange(detailsToRemove);
+                dbService.DbContext.Update(existingPhieuMuon);
 
-                // Update book statuses for previously borrowed books (make them available again)
-                foreach (var existingDetail in detailsToRemove)
+                // Remove all old borrow details (since none have been returned)
+                var oldDetails = await dbService.DbContext.DsChiTietPhieuMuon
+                    .Where(ct => ct.MaPhieuMuon == phieuMuon.MaPhieuMuon)
+                    .ToListAsync();
+                foreach (var old in oldDetails)
                 {
-                    await this.UpdateBookStatusAsync(existingDetail.MaSach, "Có sẵn");
+                    // Restore book/copy status
+                    var banSao = await dbService.DbContext.DsBanSaoSach
+                        .Include(bs => bs.Sach)
+                        .FirstOrDefaultAsync(bs => bs.MaBanSao == old.MaBanSao);
+                    if (banSao != null)
+                    {
+                        banSao.TinhTrang = "Có sẵn";
+                        dbService.DbContext.DsBanSaoSach.Update(banSao);
+                        var sach = await dbService.DbContext.DsSach.FindAsync(banSao.MaSach);
+                        if (sach != null)
+                        {
+                            sach.SoLuongHienCo += 1;
+                            SachRepository.UpdateBookStatus(sach);
+                            dbService.DbContext.DsSach.Update(sach);
+                        }
+                    }
                 }
-                // Lọc ra các sách mới không phải sách đã trả
-                var newDetails = dsChiTietPhieuMuon
-                    .Where(detail => !sachDaTra.Contains(detail.MaSach))
-                    .ToList();
-                // Add new details
-                foreach (var chiTiet in newDetails)
+                dbService.DbContext.DsChiTietPhieuMuon.RemoveRange(oldDetails);
+
+                // Add new borrow details
+                foreach (var copy in selectedCopies)
                 {
-                    chiTiet.MaPhieuMuon = phieuMuon.MaPhieuMuon;
+                    var chiTiet = new ChiTietPhieuMuon
+                    {
+                        MaPhieuMuon = phieuMuon.MaPhieuMuon,
+                        MaBanSao = copy.MaBanSao
+                    };
                     await dbService.DbContext.DsChiTietPhieuMuon.AddAsync(chiTiet);
-                    await this.UpdateBookStatusAsync(chiTiet.MaSach, "Đã mượn");
+                    // Set copy status
+                    var banSao = await dbService.DbContext.DsBanSaoSach
+                        .Include(bs => bs.Sach)
+                        .FirstOrDefaultAsync(bs => bs.MaBanSao == copy.MaBanSao);
+                    if (banSao != null)
+                    {
+                        banSao.TinhTrang = "Đã mượn";
+                        dbService.DbContext.DsBanSaoSach.Update(banSao);
+                        var sach = await dbService.DbContext.DsSach.FindAsync(banSao.MaSach);
+                        if (sach != null)
+                        {
+                            sach.SoLuongHienCo -= 1;
+                            SachRepository.UpdateBookStatus(sach);
+                            dbService.DbContext.DsSach.Update(sach);
+                        }
+                    }
                 }
 
                 await dbService.DbContext.SaveChangesAsync();
@@ -201,20 +238,21 @@ namespace SE104_Library_Manager.Repositories
             }
         }
 
-        public async Task ValidatePhieuMuon(PhieuMuon phieuMuon, List<ChiTietPhieuMuon> dsChiTietPhieuMuon)
+        public async Task ValidatePhieuMuon(PhieuMuon phieuMuon, List<BanSaoSach> selectedCopies)
         {
             QuyDinh quyDinh = await quyDinhRepo.GetQuyDinhAsync();
 
             if (phieuMuon == null) throw new ArgumentNullException("Phiếu mượn không được là null");
 
-            if (dsChiTietPhieuMuon == null || !dsChiTietPhieuMuon.Any())
+            if (selectedCopies == null || !selectedCopies.Any())
             {
-                throw new ArgumentException("Phiếu mượn phải có ít nhất một sách");
+                throw new ArgumentException("Phiếu mượn phải có ít nhất một bản sao sách");
             }
 
-            if (dsChiTietPhieuMuon.Count > quyDinh.SoSachMuonToiDa)
+            int tongSoLuongMuon = selectedCopies.Count;
+            if (tongSoLuongMuon > quyDinh.SoSachMuonToiDa)
             {
-                throw new ArgumentException($"Số sách mượn không được vượt quá {quyDinh.SoSachMuonToiDa}");
+                throw new ArgumentException($"Tổng số lượng sách mượn không được vượt quá {quyDinh.SoSachMuonToiDa}");
             }
 
             // Kiểm tra độc giả có tồn tại không
@@ -246,134 +284,38 @@ namespace SE104_Library_Manager.Repositories
                 throw new KeyNotFoundException($"Không tìm thấy nhân viên với mã NV{phieuMuon.MaNhanVien}.");
             }
 
-            // Kiểm tra sách có tồn tại và có sẵn không
-            foreach (var chiTiet in dsChiTietPhieuMuon)
+            // Kiểm tra bản sao có tồn tại và có sẵn không (hoặc đang được mượn trong phiếu này)
+            foreach (var copy in selectedCopies)
             {
-                var sach = await dbService.DbContext.DsSach.FindAsync(chiTiet.MaSach);
-                if (sach == null)
+                var banSao = await dbService.DbContext.DsBanSaoSach
+                    .Include(bs => bs.Sach)
+                    .FirstOrDefaultAsync(bs => bs.MaBanSao == copy.MaBanSao);
+                if (banSao == null)
                 {
-                    throw new KeyNotFoundException($"Không tìm thấy sách với mã S{chiTiet.MaSach}.");
+                    throw new KeyNotFoundException($"Không tìm thấy bản sao sách với mã BS{copy.MaBanSao}.");
                 }
-
-                if (sach.TrangThai != "Có sẵn")
+                
+                // Check if this copy is already borrowed in this specific borrow receipt
+                var isAlreadyInThisBorrow = await dbService.DbContext.DsChiTietPhieuMuon
+                    .AnyAsync(ct => ct.MaPhieuMuon == phieuMuon.MaPhieuMuon && ct.MaBanSao == copy.MaBanSao);
+                
+                if (banSao.TinhTrang != "Có sẵn" && !isAlreadyInThisBorrow)
                 {
-                    throw new InvalidOperationException($"Sách {sach.TenSach} (mã S{sach.MaSach}) không có sẵn để mượn.");
-                }
-            }
-
-            // Kiểm tra số sách đang mượn của độc giả (không tính sách đã trả)
-            var soSachDangMuon = await dbService.DbContext.DsPhieuMuon
-                .Where(pm => pm.MaDocGia == phieuMuon.MaDocGia && !pm.DaXoa)
-                .SelectMany(pm => pm.DsChiTietPhieuMuon)
-                .Where(ct => !dbService.DbContext.DsChiTietPhieuTra
-                    .Any(tr => tr.MaPhieuMuon == ct.MaPhieuMuon && tr.MaSach == ct.MaSach))
-                .CountAsync();
-
-            if (soSachDangMuon + dsChiTietPhieuMuon.Count > quyDinh.SoSachMuonToiDa)
-            {
-                throw new InvalidOperationException($"Độc giả {docGia.TenDocGia} đã mượn {soSachDangMuon} sách. Không thể mượn thêm {dsChiTietPhieuMuon.Count} sách nữa (vượt quá {quyDinh.SoSachMuonToiDa}).");
-            }
-        }
-
-        // Validation method specifically for updates
-        private async Task ValidatePhieuMuonForUpdate(PhieuMuon phieuMuon, List<ChiTietPhieuMuon> dsChiTietPhieuMuon)
-        {
-            QuyDinh quyDinh = await quyDinhRepo.GetQuyDinhAsync();
-
-            if (phieuMuon == null) throw new ArgumentNullException("Phiếu mượn không được là null");
-
-            if (dsChiTietPhieuMuon == null || !dsChiTietPhieuMuon.Any())
-            {
-                throw new ArgumentException("Phiếu mượn phải có ít nhất một sách");
-            }
-
-            if (dsChiTietPhieuMuon.Count > quyDinh.SoSachMuonToiDa)
-            {
-                throw new ArgumentException($"Số sách mượn không được vượt quá {quyDinh.SoSachMuonToiDa}");
-            }
-
-            // Kiểm tra độc giả có tồn tại không
-            var docGia = await dbService.DbContext.DsDocGia.FindAsync(phieuMuon.MaDocGia);
-            if (docGia == null)
-            {
-                throw new KeyNotFoundException($"Không tìm thấy độc giả với mã DG{phieuMuon.MaDocGia}.");
-            }
-
-            // Kiểm tra thẻ độc giả có hết hạn không
-            var ngayLapThe = docGia.NgayLapThe.ToDateTime(TimeOnly.MinValue);
-            var ngayHetHan = ngayLapThe.AddMonths(quyDinh.ThoiHanTheDocGia);
-            if (ngayHetHan < DateTime.Now.Date)
-            {
-                throw new InvalidOperationException($"Thẻ độc giả của {docGia.TenDocGia} đã hết hạn vào ngày {ngayHetHan:dd/MM/yyyy}. Vui lòng gia hạn thẻ trước khi cập nhật phiếu mượn.");
-            }
-
-            // Kiểm tra độc giả có sách quá hạn không (exclude current borrow record)
-            var hasSachQuaHan = await HasOverdueBooksAsync(phieuMuon.MaDocGia, phieuMuon.MaPhieuMuon);
-            if (hasSachQuaHan)
-            {
-                throw new InvalidOperationException($"Độc giả {docGia.TenDocGia} có sách quá hạn. Vui lòng trả sách quá hạn trước khi cập nhật phiếu mượn.");
-            }
-
-            // Kiểm tra nhân viên có tồn tại không
-            var nhanVien = await dbService.DbContext.DsNhanVien.FindAsync(phieuMuon.MaNhanVien);
-            if (nhanVien == null)
-            {
-                throw new KeyNotFoundException($"Không tìm thấy nhân viên với mã NV{phieuMuon.MaNhanVien}.");
-            }
-
-            // Get existing borrowed books for this borrow record
-            var existingBorrowedBookIds = await dbService.DbContext.DsChiTietPhieuMuon
-                .Where(ct => ct.MaPhieuMuon == phieuMuon.MaPhieuMuon)
-                .Select(ct => ct.MaSach)
-                .ToListAsync();
-            // Kiểm tra xem có sách nào đã được trả không
-            var sachDaTra = await dbService.DbContext.DsChiTietPhieuTra
-                .Where(ct => ct.MaPhieuMuon == phieuMuon.MaPhieuMuon)
-                .Select(ct => new { ct.MaSach, ct.MaPhieuTra })
-                .ToListAsync();
-
-            // Tạo danh sách mã sách đã trả
-            var dsMaSachDaTra = sachDaTra.Select(s => s.MaSach).ToList();
-
-            // Kiểm tra xem danh sách sách mới có bỏ sót sách đã trả không
-            var sachDaTraBiXoa = dsMaSachDaTra.Except(dsChiTietPhieuMuon.Select(ct => ct.MaSach)).ToList();
-            if (sachDaTraBiXoa.Any())
-            {
-                var sachInfo = await dbService.DbContext.DsSach
-                    .Where(s => sachDaTraBiXoa.Contains(s.MaSach))
-                    .Select(s => new { s.MaSach, s.TenSach })
-                    .FirstOrDefaultAsync();
-
-                throw new InvalidOperationException($"Sách {sachInfo?.TenSach} (mã S{sachInfo?.MaSach}) đã được trả. Không thể xóa thông tin mượn của sách này.");
-            }
-
-            // Kiểm tra sách có tồn tại và có sẵn không (cho phép sách đang được mượn trong cùng phiếu mượn này)
-            foreach (var chiTiet in dsChiTietPhieuMuon)
-            {
-                var sach = await dbService.DbContext.DsSach.FindAsync(chiTiet.MaSach);
-                if (sach == null)
-                {
-                    throw new KeyNotFoundException($"Không tìm thấy sách với mã S{chiTiet.MaSach}.");
-                }
-
-                // Allow books that are currently borrowed by this same borrow record, or books that are available
-                if (sach.TrangThai != "Có sẵn" && !existingBorrowedBookIds.Contains(chiTiet.MaSach))
-                {
-                    throw new InvalidOperationException($"Sách {sach.TenSach} (mã S{sach.MaSach}) không có sẵn để mượn.");
+                    throw new InvalidOperationException($"Bản sao sách BS{banSao.MaBanSao} không có sẵn để mượn.");
                 }
             }
 
-            // Kiểm tra số sách đang mượn của độc giả (excluding current borrow record and returned books)
+            // Kiểm tra số sách đang mượn của độc giả (không tính sách đã trả và không tính sách trong phiếu hiện tại)
             var soSachDangMuon = await dbService.DbContext.DsPhieuMuon
                 .Where(pm => pm.MaDocGia == phieuMuon.MaDocGia && !pm.DaXoa && pm.MaPhieuMuon != phieuMuon.MaPhieuMuon)
                 .SelectMany(pm => pm.DsChiTietPhieuMuon)
                 .Where(ct => !dbService.DbContext.DsChiTietPhieuTra
-                    .Any(tr => tr.MaPhieuMuon == ct.MaPhieuMuon && tr.MaSach == ct.MaSach))
+                    .Any(tr => tr.MaPhieuMuon == ct.MaPhieuMuon && tr.MaBanSao == ct.MaBanSao))
                 .CountAsync();
 
-            if (soSachDangMuon + dsChiTietPhieuMuon.Count > quyDinh.SoSachMuonToiDa)
+            if (soSachDangMuon + tongSoLuongMuon > quyDinh.SoSachMuonToiDa)
             {
-                throw new InvalidOperationException($"Độc giả {docGia.TenDocGia} đã mượn {soSachDangMuon} sách. Không thể mượn thêm {dsChiTietPhieuMuon.Count} sách nữa (vượt quá {quyDinh.SoSachMuonToiDa}).");
+                throw new InvalidOperationException($"Độc giả {docGia.TenDocGia} đã mượn {soSachDangMuon} sách. Không thể mượn thêm {tongSoLuongMuon} sách nữa (vượt quá {quyDinh.SoSachMuonToiDa}).");
             }
         }
 
@@ -406,19 +348,19 @@ namespace SE104_Library_Manager.Repositories
             // Get all borrowed books from overdue borrow receipts
             var allOverdueBooks = await dbService.DbContext.DsChiTietPhieuMuon
                 .Where(ct => overduePhieuMuonIds.Contains(ct.MaPhieuMuon))
-                .Select(ct => new { ct.MaPhieuMuon, ct.MaSach })
+                .Select(ct => new { ct.MaPhieuMuon, ct.MaBanSao })
                 .ToListAsync();
 
             // Get all returned books for these borrow receipts
             var returnedBooks = await dbService.DbContext.DsChiTietPhieuTra
                 .Where(ct => overduePhieuMuonIds.Contains(ct.MaPhieuMuon))
-                .Select(ct => new { ct.MaPhieuMuon, ct.MaSach })
+                .Select(ct => new { ct.MaPhieuMuon, ct.MaBanSao })
                 .ToListAsync();
 
             // Create a lookup for returned books
             var returnedBooksLookup = returnedBooks
                 .GroupBy(rb => rb.MaPhieuMuon)
-                .ToDictionary(g => g.Key, g => g.Select(rb => rb.MaSach).ToHashSet());
+                .ToDictionary(g => g.Key, g => g.Select(rb => rb.MaBanSao).ToHashSet());
 
             // Check if there are any unreturned overdue books
             foreach (var book in allOverdueBooks)
@@ -429,7 +371,7 @@ namespace SE104_Library_Manager.Repositories
                     return true;
                 }
                 
-                if (!returnedBookIds.Contains(book.MaSach))
+                if (!returnedBookIds.Contains(book.MaBanSao))
                 {
                     // This book is not in the returned books list, so it's overdue
                     return true;
@@ -451,7 +393,7 @@ namespace SE104_Library_Manager.Repositories
                 .Include(pm => pm.DocGia)
                 .Include(pm => pm.NhanVien)
                 .Include(pm => pm.DsChiTietPhieuMuon)
-                    .ThenInclude(ct => ct.Sach)
+                    .ThenInclude(ct => ct.BanSaoSach)
                 .Where(pm => pm.MaDocGia == maDocGia && !pm.DaXoa &&
                            pm.NgayMuon.AddDays(quyDinh.SoNgayMuonToiDa) < currentDate)
                 .ToListAsync();
@@ -460,13 +402,13 @@ namespace SE104_Library_Manager.Repositories
             var phieuMuonIds = overduePhieuMuon.Select(pm => pm.MaPhieuMuon).ToList();
             var returnedBooks = await dbService.DbContext.DsChiTietPhieuTra
                 .Where(ct => phieuMuonIds.Contains(ct.MaPhieuMuon))
-                .Select(ct => new { ct.MaPhieuMuon, ct.MaSach })
+                .Select(ct => new { ct.MaPhieuMuon, ct.MaBanSao })
                 .ToListAsync();
 
             // Create a lookup for returned books
             var returnedBooksLookup = returnedBooks
                 .GroupBy(rb => rb.MaPhieuMuon)
-                .ToDictionary(g => g.Key, g => g.Select(rb => rb.MaSach).ToHashSet());
+                .ToDictionary(g => g.Key, g => g.Select(rb => rb.MaBanSao).ToHashSet());
 
             // Filter out books that have already been returned
             foreach (var phieuMuon in overduePhieuMuon)
@@ -474,7 +416,7 @@ namespace SE104_Library_Manager.Repositories
                 if (returnedBooksLookup.TryGetValue(phieuMuon.MaPhieuMuon, out var returnedBookIds))
                 {
                     phieuMuon.DsChiTietPhieuMuon = phieuMuon.DsChiTietPhieuMuon
-                        .Where(ct => !returnedBookIds.Contains(ct.MaSach))
+                        .Where(ct => !returnedBookIds.Contains(ct.MaBanSao))
                         .ToList();
                 }
             }
@@ -494,7 +436,7 @@ namespace SE104_Library_Manager.Repositories
                 .Include(pm => pm.DocGia)
                 .Include(pm => pm.NhanVien)
                 .Include(pm => pm.DsChiTietPhieuMuon)
-                    .ThenInclude(ct => ct.Sach)
+                    .ThenInclude(ct => ct.BanSaoSach)
                 .Where(pm => !pm.DaXoa && pm.NgayMuon.AddDays(quyDinh.SoNgayMuonToiDa) < currentDate)
                 .ToListAsync();
 
@@ -502,13 +444,13 @@ namespace SE104_Library_Manager.Repositories
             var phieuMuonIds = overduePhieuMuon.Select(pm => pm.MaPhieuMuon).ToList();
             var returnedBooks = await dbService.DbContext.DsChiTietPhieuTra
                 .Where(ct => phieuMuonIds.Contains(ct.MaPhieuMuon))
-                .Select(ct => new { ct.MaPhieuMuon, ct.MaSach })
+                .Select(ct => new { ct.MaPhieuMuon, ct.MaBanSao })
                 .ToListAsync();
 
             // Create a lookup for returned books
             var returnedBooksLookup = returnedBooks
                 .GroupBy(rb => rb.MaPhieuMuon)
-                .ToDictionary(g => g.Key, g => g.Select(rb => rb.MaSach).ToHashSet());
+                .ToDictionary(g => g.Key, g => g.Select(rb => rb.MaBanSao).ToHashSet());
 
             // Filter out books that have already been returned
             foreach (var phieuMuon in overduePhieuMuon)
@@ -516,7 +458,7 @@ namespace SE104_Library_Manager.Repositories
                 if (returnedBooksLookup.TryGetValue(phieuMuon.MaPhieuMuon, out var returnedBookIds))
                 {
                     phieuMuon.DsChiTietPhieuMuon = phieuMuon.DsChiTietPhieuMuon
-                        .Where(ct => !returnedBookIds.Contains(ct.MaSach))
+                        .Where(ct => !returnedBookIds.Contains(ct.MaBanSao))
                         .ToList();
                 }
             }
@@ -526,7 +468,7 @@ namespace SE104_Library_Manager.Repositories
         }
         public async Task<bool> HasReturnedBooksAsync(int maPhieuMuon)
         {
-            // Kiểm tra xem phiếu mượn có sách đã trả hay không
+            // Kiểm tra xem phiếu mượn có bản sao nào đã trả hay không
             return await dbService.DbContext.DsChiTietPhieuTra
                 .AnyAsync(ct => ct.MaPhieuMuon == maPhieuMuon);
         }
@@ -555,19 +497,33 @@ namespace SE104_Library_Manager.Repositories
 
         public async Task<List<Sach>> GetAvailableBooksAsync()
         {
+            // Get books that have at least one available copy
+            var availableBookIds = await dbService.DbContext.DsBanSaoSach
+                .Where(bs => bs.TinhTrang == "Có sẵn")
+                .Select(bs => bs.MaSach)
+                .Distinct()
+                .ToListAsync();
+
             return await dbService.DbContext.DsSach
-            .AsNoTracking()
-            .Include(s => s.TheLoai)
-            .Include(s => s.TacGia)
-            .Include(s => s.NhaXuatBan)
-            .Where(s => !s.DaXoa && s.TrangThai == "Có sẵn")
-            .ToListAsync();
+                .AsNoTracking()
+                .Include(s => s.TheLoai)
+                .Include(s => s.TacGia)
+                .Include(s => s.NhaXuatBan)
+                .Where(s => !s.DaXoa && availableBookIds.Contains(s.MaSach))
+                .ToListAsync();
         }
 
         public async Task<bool> IsBookAvailableAsync(int maSach)
         {
             var sach = await dbService.DbContext.DsSach.FindAsync(maSach);
-            return sach != null && !sach.DaXoa && sach.TrangThai == "Có sẵn";
+            if (sach == null || sach.DaXoa)
+                return false;
+
+            // Check if there are any available copies
+            var availableCopies = await dbService.DbContext.DsBanSaoSach
+                .AnyAsync(bs => bs.MaSach == maSach && bs.TinhTrang == "Có sẵn");
+            
+            return availableCopies;
         }
 
         public async Task UpdateBookStatusAsync(int maSach, string trangThai)
@@ -584,6 +540,35 @@ namespace SE104_Library_Manager.Repositories
             dbService.DbContext.Update(sach);
             await dbService.DbContext.SaveChangesAsync();
             dbService.DbContext.ChangeTracker.Clear();
+        }
+
+        public List<int> GetLockedBanSaoSachIds(int excludePhieuMuonId)
+        {
+            return dbService.DbContext.DsChiTietPhieuMuon
+                .Where(ct => !ct.PhieuMuon.DaXoa &&
+                             !dbService.DbContext.DsChiTietPhieuTra.Any(tr => tr.MaBanSao == ct.MaBanSao) &&
+                             ct.MaPhieuMuon != excludePhieuMuonId)
+                .Select(ct => ct.MaBanSao)
+                .Distinct()
+                .ToList();
+        }
+
+
+        public IEnumerable<BanSaoSach> GetAvailableBanSaoSach()
+        {
+            return dbService.DbContext.DsBanSaoSach
+                .AsNoTracking()
+                .Include(bs => bs.Sach)
+                .Where(bs => bs.TinhTrang == "Có sẵn")
+                .ToList();
+        }
+
+        public IEnumerable<BanSaoSach> GetAllBanSaoSach()
+        {
+            return dbService.DbContext.DsBanSaoSach
+                .AsNoTracking()
+                .Include(bs => bs.Sach)
+                .ToList();
         }
         #endregion
     }

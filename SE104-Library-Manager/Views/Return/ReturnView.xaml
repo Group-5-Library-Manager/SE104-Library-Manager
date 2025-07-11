@@ -18,59 +18,134 @@
             <TabItem Header="Trả sách">
                 <Grid Margin="0, 20">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="0.7*" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
                     <!-- Thông tin phiếu trả -->
                     <Border BorderThickness="1" BorderBrush="Black" CornerRadius="5" Padding="20" Grid.Row="0">
                         <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="250"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Orientation="Vertical" Grid.Column="0">
-                                <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0">
-                                    <TextBlock Text="Mã phiếu trả: " FontWeight="SemiBold" />
-                                    <TextBlock Text="{Binding SelectedPhieuTra.MaPhieuTra, StringFormat='PT{0}'}" />
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Grid Grid.Row="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="250"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <StackPanel Orientation="Vertical" Grid.Column="0">
+                                    <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0">
+                                        <TextBlock Text="Mã phiếu trả: " FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding SelectedPhieuTra.MaPhieuTra, StringFormat='PT{0}'}" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0">
+                                        <TextBlock Text="Mã độc giả: " FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding SelectedPhieuTra.DocGia.MaDocGia, StringFormat='DG{0}'}" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0">
+                                        <TextBlock Text="Mã nhân viên: " FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding SelectedPhieuTra.NhanVien.MaNhanVien, StringFormat='NV{0}'}" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0">
+                                        <TextBlock Text="Tiền phạt kỳ này: " FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding SelectedPhieuTra.TienPhatKyNay, Converter={StaticResource PriceConverter}, StringFormat='{}{0:N0} VNĐ'}"/>
+                                    </StackPanel>
+                                
+                                    <!--<StackPanel Orientation="Horizontal" Margin="0, 20, 0, 0" HorizontalAlignment="Left"
+                                                Visibility="{Binding SelectedPhieuTra, Converter={StaticResource NullToCollapsedConverter}}">
+                                        <Button Content="Cập nhật" Width="100" Margin="0,0,20,0" Command="{Binding OpenUpdateReturnWindowCommand}" CommandParameter="{Binding SelectedPhieuTra.MaPhieuTra}" Style="{StaticResource PrimaryButtonStyle}" />
+                                        <Button Content="Xóa" Width="100" Command="{Binding DeleteReturnReceiptCommand}" Style="{StaticResource SecondaryButtonStyle}" />
+                                    </StackPanel>-->
+                                </StackPanel>   
+                                <StackPanel Orientation="Vertical" Grid.Column="1">
+                                    <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0">
+                                        <TextBlock Text="Ngày trả: " FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding SelectedPhieuTra.NgayTra, Converter={StaticResource DateOnlyFormattedConverter}}"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0">
+                                        <TextBlock Text="Tên độc giả: " FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding SelectedPhieuTra.DocGia.TenDocGia}" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0">
+                                        <TextBlock Text="Tên nhân viên: " FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding SelectedPhieuTra.NhanVien.TenNhanVien}" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0">
+                                        <TextBlock Text="Tổng nợ: " FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding SelectedPhieuTra.TongNo, Converter={StaticResource PriceConverter}, StringFormat='{}{0:N0} VNĐ'}"/>
+                                    </StackPanel>
                                 </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0">
-                                    <TextBlock Text="Mã độc giả: " FontWeight="SemiBold" />
-                                    <TextBlock Text="{Binding SelectedPhieuTra.DocGia.MaDocGia, StringFormat='DG{0}'}" />
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0">
-                                    <TextBlock Text="Mã nhân viên: " FontWeight="SemiBold" />
-                                    <TextBlock Text="{Binding SelectedPhieuTra.NhanVien.MaNhanVien, StringFormat='NV{0}'}" />
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0">
-                                    <TextBlock Text="Tiền phạt kỳ này: " FontWeight="SemiBold" />
-                                    <TextBlock Text="{Binding SelectedPhieuTra.TienPhatKyNay, Converter={StaticResource PriceConverter}, StringFormat='{}{0:N0} VNĐ'}"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0, 20, 0, 0" HorizontalAlignment="Left"
-                                            Visibility="{Binding SelectedPhieuTra, Converter={StaticResource NullToCollapsedConverter}}">
-                                    <Button Content="Cập nhật" Width="100" Margin="0,0,20,0" Command="{Binding OpenUpdateReturnWindowCommand}" CommandParameter="{Binding SelectedPhieuTra.MaPhieuTra}" Style="{StaticResource PrimaryButtonStyle}" />
-                                    <Button Content="Xóa" Width="100" Command="{Binding DeleteReturnReceiptCommand}" Style="{StaticResource SecondaryButtonStyle}" />
-                                </StackPanel>
-                            </StackPanel>
+                            </Grid>
 
-                            <StackPanel Orientation="Vertical" Grid.Column="1">
-                                <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0">
-                                    <TextBlock Text="Ngày trả: " FontWeight="SemiBold"/>
-                                    <TextBlock Text="{Binding SelectedPhieuTra.NgayTra, Converter={StaticResource DateOnlyFormattedConverter}}"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0">
-                                    <TextBlock Text="Tên độc giả: " FontWeight="SemiBold"/>
-                                    <TextBlock Text="{Binding SelectedPhieuTra.DocGia.TenDocGia}" />
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0">
-                                    <TextBlock Text="Tên nhân viên: " FontWeight="SemiBold"/>
-                                    <TextBlock Text="{Binding SelectedPhieuTra.NhanVien.TenNhanVien}" />
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0">
-                                    <TextBlock Text="Tổng nợ: " FontWeight="SemiBold"/>
-                                    <TextBlock Text="{Binding SelectedPhieuTra.TongNo, Converter={StaticResource PriceConverter}, StringFormat='{}{0:N0} VNĐ'}"/>
-                                </StackPanel>
-                            </StackPanel>
+                            <DataGrid Grid.Row="1"
+                                      Margin="0, 20, 0, 0"
+                                      SelectionMode="Single"
+                                      AutoGenerateColumns="False"
+                                      Background="Transparent"
+                                      CanUserReorderColumns="False"
+                                      CanUserResizeRows="False"
+                                      CanUserAddRows="False"
+                                      CanUserDeleteRows="False"
+                                      BorderThickness="1"
+                                      IsReadOnly="True"
+                                      HeadersVisibility="Column"
+                                      MaxHeight="250"
+                                      ItemsSource="{Binding SelectedPhieuTra.DsChiTietPhieuTra}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Mã bản sao" 
+                                              Width="*" 
+                                              Binding="{Binding MaBanSao, StringFormat='BS{0}'}">
+                                        <DataGridTextColumn.HeaderStyle>
+                                            <Style TargetType="DataGridColumnHeader">
+                                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                            </Style>
+                                        </DataGridTextColumn.HeaderStyle>
+                                    </DataGridTextColumn>
+
+                                    <DataGridTextColumn Header="Mã sách" 
+                                              Width="*" 
+                                              Binding="{Binding BanSaoSach.MaSach, StringFormat='S{0}'}">
+                                        <DataGridTextColumn.HeaderStyle>
+                                            <Style TargetType="DataGridColumnHeader">
+                                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                            </Style>
+                                        </DataGridTextColumn.HeaderStyle>
+                                    </DataGridTextColumn>
+
+                                    <DataGridTextColumn Header="Tên sách" 
+                                              Width="*" 
+                                              Binding="{Binding BanSaoSach.Sach.TenSach}">
+                                        <DataGridTextColumn.HeaderStyle>
+                                            <Style TargetType="DataGridColumnHeader">
+                                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                            </Style>
+                                        </DataGridTextColumn.HeaderStyle>
+                                    </DataGridTextColumn>
+
+                                    <DataGridTextColumn Header="Ngày mượn" 
+                                              Width="*" 
+                                              Binding="{Binding PhieuMuon.NgayMuon, Converter={StaticResource DateOnlyFormattedConverter}}">
+                                        <DataGridTextColumn.HeaderStyle>
+                                            <Style TargetType="DataGridColumnHeader">
+                                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                            </Style>
+                                        </DataGridTextColumn.HeaderStyle>
+                                    </DataGridTextColumn>
+
+                                    <DataGridTextColumn Header="Tiền phạt" 
+                                              Width="*" 
+                                              Binding="{Binding TienPhat, StringFormat='{}{0:N0} VNĐ'}">
+                                        <DataGridTextColumn.HeaderStyle>
+                                            <Style TargetType="DataGridColumnHeader">
+                                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                            </Style>
+                                        </DataGridTextColumn.HeaderStyle>
+                                    </DataGridTextColumn>
+
+                                </DataGrid.Columns>
+                            </DataGrid>
                         </Grid>
                     </Border>
 

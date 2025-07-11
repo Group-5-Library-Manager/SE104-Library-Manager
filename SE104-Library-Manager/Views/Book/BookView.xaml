@@ -13,6 +13,7 @@
         <converters:ReaderStatusMultiConverter x:Key="ReaderStatusMultiConverter" />
         <converters:DateOnlyConverter x:Key="DateOnlyConverter" />
         <converters:DateOnlyFormattedConverter x:Key="DateOnlyFormattedConverter" />
+        <converters:NullToCollapsedConverter x:Key="NullToCollapsedConverter"/>
     </UserControl.Resources>
 
     <Grid Margin="20">
@@ -332,11 +333,331 @@
                                                 </Style>
                                             </DataGridTextColumn.HeaderStyle>
                                         </DataGridTextColumn>
-
-                                        <DataGridTextColumn Header="Tình trạng" Width="*" Binding="{Binding TrangThai}">
+                                        <DataGridTextColumn Header="Số lượng tổng" Width="*" Binding="{Binding SoLuongTong}">
                                             <DataGridTextColumn.HeaderStyle>
                                                 <Style TargetType="DataGridColumnHeader">
                                                     <Setter Property="FontWeight" Value="SemiBold" />
+                                                </Style>
+                                            </DataGridTextColumn.HeaderStyle>
+                                        </DataGridTextColumn>
+                                        <DataGridTextColumn Header="Sẵn có" Width="*" Binding="{Binding SoLuongHienCo}">
+                                            <DataGridTextColumn.HeaderStyle>
+                                                <Style TargetType="DataGridColumnHeader">
+                                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                                </Style>
+                                            </DataGridTextColumn.HeaderStyle>
+                                        </DataGridTextColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Nhập sách">
+                <Grid Margin="0, 20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="0.7*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Border BorderThickness="1"
+                        BorderBrush="Black"
+                        Padding="20"
+                        Grid.Row="0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Grid Grid.Row="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="0.3*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Hàng 1: Mã phiếu + Ngày nhập -->
+                                <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0">
+                                    <TextBlock Text="Mã phiếu nhập: " FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding SelectedImport.MaPhieuNhap, Converter={StaticResource PrefixConverter}, ConverterParameter=PN}" FontWeight="SemiBold" />
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="1">
+                                    <TextBlock Text="Ngày nhập: " FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding SelectedImport.NgayNhap, Converter={StaticResource DateOnlyFormattedConverter}}" FontWeight="SemiBold" />
+                                </StackPanel>
+
+                                <!-- Hàng 2: Mã nhân viên + Tên nhân viên -->
+                                <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="0" Margin="0,10,0,0">
+                                    <TextBlock Text="Mã nhân viên: " FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding SelectedImport.NhanVien.MaNhanVien, Converter={StaticResource PrefixConverter}, ConverterParameter=NV}" FontWeight="SemiBold" />
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1" Margin="0,10,0,0">
+                                    <TextBlock Text="Tên nhân viên: " FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding SelectedImport.NhanVien.TenNhanVien}" FontWeight="SemiBold" />
+                                </StackPanel>
+
+                                <!-- Hàng 3: Tổng số lượng + Tổng tiền nhập -->
+                                <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="0" Margin="0,10,0,0">
+                                    <TextBlock Text="Tổng số lượng: " FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding SelectedImport.TongSoLuong}" FontWeight="SemiBold" />
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="1" Margin="0,10,0,0">
+                                    <TextBlock Text="Tổng tiền nhập: " FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding SelectedImport.TongTien, StringFormat='{}{0:N0} VNĐ'}" FontWeight="SemiBold" />
+                                </StackPanel>
+                                
+                                <!--Hàng 4: Nút xuất pdf-->
+                                <Button Content="Xuất pdf" Grid.Row="3" HorizontalAlignment="Left" Width="120" Margin="0,10,0,0"
+                                        Command="{Binding ExportSelectedImportToPdfCommand}"
+                                        Style="{StaticResource SecondaryButtonStyle}"/>
+                            </Grid>
+
+                            <DataGrid Grid.Row="1"
+                                      Margin="0, 20, 0, 0"
+                                      SelectionMode="Single"
+                                      AutoGenerateColumns="False"
+                                      Background="Transparent"
+                                      CanUserReorderColumns="False"
+                                      CanUserResizeRows="False"
+                                      CanUserAddRows="False"
+                                      CanUserDeleteRows="False"
+                                      BorderThickness="1"
+                                      IsReadOnly="True"
+                                      HeadersVisibility="Column"
+                                      MaxHeight="250"
+                                      ItemsSource="{Binding SelectedImport.DsChiTietPhieuNhap}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Mã sách" 
+                                              Width="*" 
+                                              Binding="{Binding Sach.MaSach, Converter={StaticResource PrefixConverter}, ConverterParameter=S}">
+                                        <DataGridTextColumn.HeaderStyle>
+                                            <Style TargetType="DataGridColumnHeader">
+                                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                            </Style>
+                                        </DataGridTextColumn.HeaderStyle>
+                                    </DataGridTextColumn>
+
+                                    <DataGridTextColumn Header="Tên sách" 
+                                              Width="*" 
+                                              Binding="{Binding Sach.TenSach}">
+                                        <DataGridTextColumn.HeaderStyle>
+                                            <Style TargetType="DataGridColumnHeader">
+                                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                            </Style>
+                                        </DataGridTextColumn.HeaderStyle>
+                                    </DataGridTextColumn>
+
+                                    <DataGridTextColumn Header="Đơn giá" 
+                                              Width="*" 
+                                              Binding="{Binding DonGiaNhap, StringFormat='{}{0:N0} VNĐ'}">
+                                        <DataGridTextColumn.HeaderStyle>
+                                            <Style TargetType="DataGridColumnHeader">
+                                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                            </Style>
+                                        </DataGridTextColumn.HeaderStyle>
+                                    </DataGridTextColumn>
+                                    
+                                    <DataGridTextColumn Header="Số lượng" 
+                                              Width="*" 
+                                              Binding="{Binding SoLuong}">
+                                        <DataGridTextColumn.HeaderStyle>
+                                            <Style TargetType="DataGridColumnHeader">
+                                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                            </Style>
+                                        </DataGridTextColumn.HeaderStyle>
+                                    </DataGridTextColumn>
+
+                                    <DataGridTextColumn Header="Thành tiền" 
+                                              Width="*" 
+                                              Binding="{Binding ThanhTien, StringFormat='{}{0:N0} VNĐ'}">
+                                        <DataGridTextColumn.HeaderStyle>
+                                            <Style TargetType="DataGridColumnHeader">
+                                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                            </Style>
+                                        </DataGridTextColumn.HeaderStyle>
+                                    </DataGridTextColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </Border>
+
+                    <Border BorderThickness="0"
+                    CornerRadius="10"
+                    Margin="0, 40, 0, 0"
+                    Padding="20"
+                    Grid.Row="1">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="#FF536FB5" Offset="0"/>
+                                <GradientStop Color="#FF24304F" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Orientation="Horizontal" Grid.Row="0">
+                                <Border BorderThickness="0"
+                                CornerRadius="15"
+                                Background="White"
+                                Height="40"
+                                Width="350"
+                                Padding="10, 0, 10, 0">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Grid Grid.Column="0">
+                                            <Grid>
+                                                <TextBox x:Name="SearchPhieuNhap"
+                                                 Text="{Binding SearchImportQuery, UpdateSourceTrigger=PropertyChanged}"
+                                                 VerticalAlignment="Center" 
+                                                 HorizontalAlignment="Stretch" 
+                                                 Margin="5"
+                                                 Padding="5,0"
+                                                 BorderThickness="0"
+                                                 VerticalContentAlignment="Center" />
+                                                <TextBlock Text="Tìm kiếm"
+                                                   IsHitTestVisible="False"
+                                                   VerticalAlignment="Center"
+                                                   Margin="15,0,0,0"
+                                                   Foreground="DarkGray"
+                                                   HorizontalAlignment="Left">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Text, ElementName=SearchPhieuNhap}" Value="">
+                                                                    <Setter Property="Visibility" Value="Visible" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Grid>
+                                        </Grid>
+                                        <Button Grid.Column="1"
+                                        Command="{Binding SearchImportsCommand}">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Grid>
+                                                        <Ellipse x:Name="ellipse"
+                                                         Width="40"
+                                                         Height="40"
+                                                         Fill="Transparent"
+                                                         Stroke="Transparent"
+                                                         StrokeThickness="0" />
+
+                                                        <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                                    </Grid>
+
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="ellipse" Property="Fill" Value="#EEE" />
+                                                        </Trigger>
+
+                                                        <Trigger Property="IsPressed" Value="True">
+                                                            <Setter TargetName="ellipse" Property="Fill" Value="#CCC" />
+                                                        </Trigger>
+
+                                                        <Trigger Property="IsEnabled" Value="False">
+                                                            <Setter TargetName="ellipse" Property="Opacity" Value="0.5" />
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Button.Template>
+
+                                            <Image Source="/Assets/icon_search.png" Stretch="Uniform" Width="30" Height="30" />
+                                        </Button>
+                                    </Grid>
+                                </Border>
+
+                                <Button Content="Lập phiếu nhập"
+                                Command="{Binding ImportBooksCommand}"
+                                Margin="40, 0, 0, 0"
+                                Style="{StaticResource AddButtonDarkIconStyle}" />
+                            </StackPanel>
+
+                            <Grid Background="White"
+                          Grid.Row="1"
+                          Margin="0, 40, 0, 0">
+                                <DataGrid SelectionMode="Single"
+                                  AutoGenerateColumns="False"
+                                  Background="Transparent"
+                                  CanUserReorderColumns="False"
+                                  CanUserResizeRows="False"
+                                  CanUserAddRows="False"
+                                  CanUserDeleteRows="False"
+                                  BorderThickness="0"
+                                  IsReadOnly="True"
+                                  HeadersVisibility="Column"
+                                  HorizontalScrollBarVisibility="Hidden"
+                                  VerticalScrollBarVisibility="Hidden"
+                                  ItemsSource="{Binding DsPhieuNhap}"
+                                  SelectedItem="{Binding SelectedImport}">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Mã phiếu" 
+                                                  Width="*" 
+                                                  Binding="{Binding MaPhieuNhap, Converter={StaticResource PrefixConverter}, ConverterParameter=PN}">
+                                            <DataGridTextColumn.HeaderStyle>
+                                                <Style TargetType="DataGridColumnHeader">
+                                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                                </Style>
+                                            </DataGridTextColumn.HeaderStyle>
+                                        </DataGridTextColumn>
+
+                                        <DataGridTextColumn Header="Ngày nhập" 
+                                                  Width="*" 
+                                                  Binding="{Binding NgayNhap, Converter={StaticResource DateOnlyFormattedConverter}}">
+                                            <DataGridTextColumn.HeaderStyle>
+                                                <Style TargetType="DataGridColumnHeader">
+                                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                                </Style>
+                                            </DataGridTextColumn.HeaderStyle>
+                                        </DataGridTextColumn>
+
+                                        <DataGridTextColumn Header="Nhân viên" 
+                                                  Width="*" 
+                                                  Binding="{Binding NhanVien.TenNhanVien}">
+                                            <DataGridTextColumn.HeaderStyle>
+                                                <Style TargetType="DataGridColumnHeader">
+                                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                                </Style>
+                                            </DataGridTextColumn.HeaderStyle>
+                                        </DataGridTextColumn>
+
+                                        <DataGridTextColumn Header="Tổng số lượng" 
+                                                  Width="*" 
+                                                  Binding="{Binding TongSoLuong}">
+                                            <DataGridTextColumn.HeaderStyle>
+                                                <Style TargetType="DataGridColumnHeader">
+                                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                                </Style>
+                                            </DataGridTextColumn.HeaderStyle>
+                                        </DataGridTextColumn>
+
+                                        <DataGridTextColumn Header="Tổng tiền nhập" 
+                                                  Width="*" 
+                                                  Binding="{Binding TongTien, StringFormat='{}{0:N0} VNĐ'}">
+                                            <DataGridTextColumn.HeaderStyle>
+                                                <Style TargetType="DataGridColumnHeader">
+                                                    <Setter Property="FontWeight" Value="SemiBold"/>
                                                 </Style>
                                             </DataGridTextColumn.HeaderStyle>
                                         </DataGridTextColumn>

@@ -23,7 +23,15 @@
                     BorderThickness="1"
                     BorderBrush="Black"
                     Grid.ColumnSpan="2"/>
-            <Image Source="/Assets/icon_user_black.png"/>
+            <!-- Vector user icon with a circle around it -->
+            <Viewbox Width="120" Height="120">
+              <Canvas Width="60" Height="60">
+                <!-- Circle background -->
+                <Ellipse Width="80" Height="80" Canvas.Left="-10" Canvas.Top="-9" Stroke="Black" StrokeThickness="2" Fill="Transparent"/>
+                <!-- User icon -->
+                <Path Fill="Black" Data="M30,6C36.6274,6 42,11.3726 42,18C42,24.6274 36.6274,30 30,30C23.3726,30 18,24.6274 18,18C18,11.3726 23.3726,6 30,6ZM30,36C41.0457,36 50,41.9543 50,49V54H10V49C10,41.9543 18.9543,36 30,36Z"/>
+              </Canvas>
+            </Viewbox>
             <TextBlock Text="Quản lý thư viện"
                        Grid.Column="1"
                        VerticalAlignment="Top"

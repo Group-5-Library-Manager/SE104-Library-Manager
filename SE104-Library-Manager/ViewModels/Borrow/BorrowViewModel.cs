@@ -26,6 +26,9 @@ namespace SE104_Library_Manager.ViewModels.Borrow
         [ObservableProperty]
         private string searchQuery = string.Empty;
 
+        [ObservableProperty]
+        private Visibility showAddButton = Visibility.Collapsed;
+
         private List<PhieuMuon> originalDsPhieuMuon = new List<PhieuMuon>();
         private readonly IPhieuMuonRepository phieuMuonRepo;
         private readonly INhanVienRepository nhanVienRepo;
@@ -39,6 +42,11 @@ namespace SE104_Library_Manager.ViewModels.Borrow
             nhanVienRepo = nhanVienRepository;
             docGiaRepo = docGiaRepository;
             this.staffSessionReader = staffSessionReader;
+
+            if (staffSessionReader.GetCurrentStaffRole() == "Thủ thư")
+            {
+                ShowAddButton = Visibility.Visible;
+            }
 
             LoadDataAsync().ConfigureAwait(false);
         }

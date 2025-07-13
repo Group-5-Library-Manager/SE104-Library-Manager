@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using SE104_Library_Manager.Views.Return;
+using SE104_Library_Manager.Interfaces;
 
 namespace SE104_Library_Manager.ViewModels;
 
@@ -13,7 +14,8 @@ public partial class ReturnViewModel(
     IPhieuTraRepository phieuTraRepo,
     IDocGiaRepository docGiaRepo,
     IChiTietPhieuTraRepository chiTietPhieuTraRepo,
-    IPhieuPhatRepository phieuPhatRepo
+    IPhieuPhatRepository phieuPhatRepo,
+    IStaffSessionReader staffSessionReader
 ) : ObservableObject
 {
     [ObservableProperty]
@@ -33,12 +35,19 @@ public partial class ReturnViewModel(
 
     [ObservableProperty] private string searchQueryPhieuPhat = string.Empty;
 
+    [ObservableProperty] private Visibility showAddButton = Visibility.Collapsed;
+
     public async Task LoadDataAsync()
     {
         DsPhieuTra = new ObservableCollection<PhieuTra>(await phieuTraRepo.GetAllAsync());
         DsPhieuTraFiltered = new ObservableCollection<PhieuTra>(DsPhieuTra);
         SelectedPhieuTra = null;
         _ = SearchPhieuTra();
+
+        if (staffSessionReader.GetCurrentStaffRole() == "Thủ thư")
+        {
+            ShowAddButton = Visibility.Visible;
+        }
     }
 
     partial void OnSearchQueryChanged(string value)

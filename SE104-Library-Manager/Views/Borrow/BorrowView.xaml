@@ -254,7 +254,8 @@
                     <Button Content="Lập phiếu mượn"
                             Command="{Binding AddBorrowCommand}"
                             Margin="40, 0, 0, 0" FontSize="14"
-                            Style="{StaticResource AddButtonDarkIconStyle}" />
+                            Style="{StaticResource AddButtonDarkIconStyle}"
+                            Visibility="{Binding ShowAddButton}"/>
                 </StackPanel>
 
                 <Grid Background="White"

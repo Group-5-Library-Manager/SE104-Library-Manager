@@ -20,9 +20,6 @@ namespace SE104_Library_Manager.ViewModels
         private Visibility _adminItemsVisibility = Visibility.Collapsed; // Ẩn/Hiển các mục cần quyền quản trị viên (Nhân viên, Quy định, ...)
 
         [ObservableProperty]
-        private Visibility _borrowReturnItemsVisibility = Visibility.Collapsed; // Hiển thị các mục mượn/trả sách
-
-        [ObservableProperty]
         private object? _currentView;
 
         public MainViewModel(IStaffSessionManager staffSessionManager)
@@ -36,12 +33,6 @@ namespace SE104_Library_Manager.ViewModels
             if (_staffSessionManager.GetCurrentStaffRole() == "Quản trị viên")
             {
                 AdminItemsVisibility = Visibility.Visible; // Hiển thị các mục quản trị viên
-                BorrowReturnItemsVisibility = Visibility.Collapsed; // Ẩn thị các mục mượn/trả sách
-            }
-            else
-            {
-                AdminItemsVisibility = Visibility.Collapsed; // Ẩn các mục quản trị viên
-                BorrowReturnItemsVisibility = Visibility.Visible; // Hiển thị các mục mượn/trả sách
             }
         }
 

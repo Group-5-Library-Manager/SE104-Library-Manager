@@ -90,8 +90,7 @@
                                  Command="{Binding NavigateCommand}"
                                  CommandParameter="Borrow"
                                  Content="Mượn sách"
-                                 Cursor="Hand"
-                                 Visibility="{Binding BorrowReturnItemsVisibility}">
+                                 Cursor="Hand">
                         <RadioButton.Tag>
                             <BitmapImage UriSource="/Assets/icon_borrow.png" />
                         </RadioButton.Tag>
@@ -103,8 +102,7 @@
                                  Command="{Binding NavigateCommand}"
                                  CommandParameter="Return"
                                  Content="Trả sách"
-                                 Cursor="Hand"
-                                 Visibility="{Binding BorrowReturnItemsVisibility}">
+                                 Cursor="Hand">
                         <RadioButton.Tag>
                             <BitmapImage UriSource="/Assets/icon_return.png" />
                         </RadioButton.Tag>

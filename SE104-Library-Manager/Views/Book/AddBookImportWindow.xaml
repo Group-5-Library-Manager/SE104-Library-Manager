@@ -88,12 +88,14 @@
                                         <!-- Quantity -->
                                         <StackPanel Grid.Column="1" VerticalAlignment="Top" Margin="20 0 10 0">
                                             <TextBlock Text="Số lượng:" FontWeight="SemiBold" Margin="0 0 0 5"/>
-                                            <TextBox Width="60" Text="{Binding Quantity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                            <TextBox PreviewTextInput="tb_PreviewTextInput"
+                                                Width="60" Text="{Binding Quantity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                         </StackPanel>
                                         <!-- Unit Price -->
                                         <StackPanel Grid.Column="2" VerticalAlignment="Top"  Margin="10 0 10 0">
                                             <TextBlock Text="Đơn giá:" FontWeight="SemiBold" Margin="0 0 0 5"/>
-                                            <TextBox Width="100" Text="{Binding UnitPrice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                            <TextBox PreviewTextInput="tb_PreviewTextInput"
+                                                Width="100" Text="{Binding UnitPrice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, StringFormat='{}{0:N0}'}"/>
                                         </StackPanel>
                                         <!-- Total -->
                                         <StackPanel Grid.Column="3" VerticalAlignment="Center" Margin="10 0 10 0">

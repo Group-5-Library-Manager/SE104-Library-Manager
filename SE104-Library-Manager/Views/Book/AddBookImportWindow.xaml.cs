@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -24,6 +25,14 @@ namespace SE104_Library_Manager.Views.Book
         {
             InitializeComponent();
             DataContext = vm;
+        }
+        private void tb_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = !IsTextNumeric(e.Text);
+        }
+        private bool IsTextNumeric(string text)
+        {
+            return Regex.IsMatch(text, @"^[0-9]+$");
         }
     }
 }

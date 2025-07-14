@@ -63,7 +63,7 @@ namespace SE104_Library_Manager.Repositories
                     var banSao = new BanSaoSach
                     {
                         MaSach = ct.MaSach,
-                        TinhTrang = "Mới nhập"
+                        TinhTrang = "Có sẵn"
                     };
                     _dbService.DbContext.DsBanSaoSach.Add(banSao);
                 }

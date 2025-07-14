@@ -466,6 +466,22 @@ namespace SE104_Library_Manager.Repositories
             // Return only phieu muon that still have unreturned books
             return overduePhieuMuon.Where(pm => pm.DsChiTietPhieuMuon.Any()).ToList();
         }
+
+        public async Task<int> GetCurrentBorrowedCountAsync(int maDocGia)
+        {
+            // Đếm số lượng bản sao sách mà độc giả này đã mượn nhưng chưa trả
+            return await dbService.DbContext.DsChiTietPhieuMuon
+                .Where(ct =>
+                    dbService.DbContext.DsPhieuMuon
+                        .Any(pm => pm.MaPhieuMuon == ct.MaPhieuMuon && pm.MaDocGia == maDocGia && !pm.DaXoa)
+                    &&
+                    !dbService.DbContext.DsChiTietPhieuTra
+                        .Any(tr => tr.MaPhieuMuon == ct.MaPhieuMuon && tr.MaBanSao == ct.MaBanSao)
+                )
+                .CountAsync();
+        }
+
+
         public async Task<bool> HasReturnedBooksAsync(int maPhieuMuon)
         {
             // Kiểm tra xem phiếu mượn có bản sao nào đã trả hay không

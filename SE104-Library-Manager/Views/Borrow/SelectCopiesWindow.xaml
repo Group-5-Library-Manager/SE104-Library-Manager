@@ -101,7 +101,7 @@
                        Text="{Binding SelectedCountText, Mode=OneWay}" />
         </StackPanel>
         <DataGrid Grid.Row="1" CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="True"
-                  ItemsSource="{Binding SelectableCopies}" AutoGenerateColumns="False" Height="350" SelectionMode="Extended" SelectionUnit="FullRow">
+                  ItemsSource="{Binding SelectableCopies}" AutoGenerateColumns="False" Height="320" SelectionMode="Extended" SelectionUnit="FullRow">
             <DataGrid.ColumnHeaderStyle>
                 <Style TargetType="DataGridColumnHeader">
                     <Setter Property="FontWeight" Value="SemiBold"/>

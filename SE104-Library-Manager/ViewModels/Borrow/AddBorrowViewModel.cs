@@ -60,10 +60,16 @@ namespace SE104_Library_Manager.ViewModels.Borrow
             try
             {
                 var dsDocGia = await docGiaRepo.GetAllAsync();
+                var quyDinh = await quyDinhRepo.GetQuyDinhAsync();
+                maxBorrowCount = quyDinh.SoSachMuonToiDa;
                 var validReaders = new List<DocGia>();
                 foreach (var reader in dsDocGia)
                 {
-                    if (!await phieuMuonRepo.HasOverdueBooksAsync(reader.MaDocGia))
+                    // Check overdue books
+                    bool hasOverdue = await phieuMuonRepo.HasOverdueBooksAsync(reader.MaDocGia);
+                    // Check current borrowed count
+                    int currentBorrowed = await phieuMuonRepo.GetCurrentBorrowedCountAsync(reader.MaDocGia);
+                    if (!hasOverdue && currentBorrowed < maxBorrowCount)
                     {
                         validReaders.Add(reader);
                     }
@@ -75,7 +81,6 @@ namespace SE104_Library_Manager.ViewModels.Borrow
                     CurrentStaff = await nhanVienRepo.GetByIdAsync(staffSessionReader.CurrentStaffId);
                 }
                 BorrowDate = DateOnly.FromDateTime(DateTime.Now);
-                maxBorrowCount = quyDinhRepo.GetQuyDinhAsync().Result.SoSachMuonToiDa;
             }
             catch (Exception ex)
             {
